@@ -1,0 +1,28 @@
+/* Starting values from DESIGN.md; subject to client approval. */
+:root {
+  --forest-900: #12301f;
+  --forest-700: #1f4d33;
+  --leaf-500: #4e8f3a;
+  --paddy-300: #b7c96b;
+  --laterite-600: #b4482a;
+  --turmeric-500: #e9a21b;
+  --cream-50: #fbf6ea;
+  --clay-100: #f1e4cf;
+  --ink-900: #1b1b18;
+  --mist-500: #6b7a72;
+  --night-900: #0c1620;
+}
+
+@theme inline {
+  --color-forest-900: var(--forest-900);
+  --color-forest-700: var(--forest-700);
+  --color-leaf-500: var(--leaf-500);
+  --color-paddy-300: var(--paddy-300);
+  --color-laterite-600: var(--laterite-600);
+  --color-turmeric-500: var(--turmeric-500);
+  --color-cream-50: var(--cream-50);
+  --color-clay-100: var(--clay-100);
+  --color-ink-900: var(--ink-900);
+  --color-mist-500: var(--mist-500);
+  --color-night-900: var(--night-900);
+}
