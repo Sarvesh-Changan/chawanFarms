@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chawan Farms
 
-## Getting Started
+Chawan Farms is a Next.js App Router scaffold for the agri-tourism platform. This phase contains route placeholders, shared tokens, environment validation, and developer-quality tooling. Business features are intentionally not implemented yet.
 
-First, run the development server:
+## Setup in under 15 minutes
+
+Requirements: Node.js 22 or newer and npm.
 
 ```bash
+git clone <repository-url>
+cd ChawanFarms
+npm ci
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost:3000>. The health endpoint is <http://localhost:3000/api/health>.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+On Windows PowerShell, copy the environment template with:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+Copy-Item .env.example .env.local
+```
 
-## Learn More
+## Quality checks
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run test:e2e
+npm run format
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The Playwright smoke test starts a local Next.js server automatically. Install Playwright browsers once if needed:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npx playwright install
+```
 
-## Deploy on Vercel
+Husky runs lint-staged before commits and commitlint checks Conventional Commit messages. Replace `@REPLACE_WITH_REVIEWER` in `.github/CODEOWNERS` with the real GitHub user or team before relying on protected-path review enforcement.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Environment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Only `NEXT_PUBLIC_SITE_URL` and `APP_ENV` are currently supported. Copy `.env.example`; do not commit `.env.local` or secrets.
+
+## Current scope
+
+There is no Prisma schema, database, authentication provider, payment integration, or Cloudinary integration in this scaffold. Refer to `docs/BUILD_GUIDE.md` for the phased implementation plan.

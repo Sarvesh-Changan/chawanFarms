@@ -1,1 +1,3 @@
-export default function ActivityDetailPage() { return <div>Activity detail placeholder</div>; }
+export default function ActivityDetailPage() {
+  return <div>Activity detail placeholder</div>;
+}

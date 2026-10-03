@@ -14,7 +14,8 @@ const securityHeaders = [
   },
   {
     key: "Content-Security-Policy-Report-Only",
-    value: "default-src 'self'; frame-ancestors 'none'; report-uri /api/csp-report",
+    value:
+      "default-src 'self'; frame-ancestors 'none'; report-uri /api/csp-report",
   },
 ];
 

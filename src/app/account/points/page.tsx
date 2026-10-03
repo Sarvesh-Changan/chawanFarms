@@ -1,1 +1,3 @@
-export default function AccountPointsPage() { return <div>Points placeholder</div>; }
+export default function AccountPointsPage() {
+  return <div>Points placeholder</div>;
+}

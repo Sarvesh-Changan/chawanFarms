@@ -1,0 +1,5 @@
+# Replace the placeholder with the GitHub user or team responsible for review.
+src/server/authz/ @REPLACE_WITH_REVIEWER
+src/server/services/ @REPLACE_WITH_REVIEWER
+prisma/ @REPLACE_WITH_REVIEWER
+src/app/api/ @REPLACE_WITH_REVIEWER

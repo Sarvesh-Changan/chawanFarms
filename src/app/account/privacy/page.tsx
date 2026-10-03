@@ -1,1 +1,3 @@
-export default function AccountPrivacyPage() { return <div>Account privacy placeholder</div>; }
+export default function AccountPrivacyPage() {
+  return <div>Account privacy placeholder</div>;
+}

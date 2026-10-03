@@ -1,0 +1,10 @@
+.next
+.github/CODEOWNERS
+.husky
+coverage
+docs
+node_modules
+package-lock.json
+playwright-report
+public
+test-results

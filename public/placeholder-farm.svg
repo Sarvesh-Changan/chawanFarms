@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Abstract farm placeholder</title>
+  <desc id="desc">A non-photographic placeholder made from hills, fields, and a sun.</desc>
+  <rect width="1200" height="800" fill="#fbf6ea" />
+  <circle cx="930" cy="170" r="92" fill="#e9a21b" />
+  <path d="M0 440 250 250l210 150 180-170 250 210 180-120 130 120v360H0Z" fill="#1f4d33" />
+  <path d="M0 550 220 390l190 120 230-170 210 170 180-120 170 120v290H0Z" fill="#4e8f3a" />
+  <path d="M0 650c210-60 360-30 570 20s390 55 630-20v150H0Z" fill="#b7c96b" />
+  <path d="M0 735c220-55 420-40 620 12s390 40 580-10v63H0Z" fill="#b4482a" opacity=".72" />
+</svg>

@@ -1,1 +1,3 @@
-export default function AccountLedgerPage() { return <div>Ledger placeholder</div>; }
+export default function AccountLedgerPage() {
+  return <div>Ledger placeholder</div>;
+}

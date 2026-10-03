@@ -1,1 +1,3 @@
-export default function StoryDetailPage() { return <div>Story detail placeholder</div>; }
+export default function StoryDetailPage() {
+  return <div>Story detail placeholder</div>;
+}

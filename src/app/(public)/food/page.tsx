@@ -1,1 +1,3 @@
-export default function FoodPage() { return <div>Food placeholder</div>; }
+export default function FoodPage() {
+  return <div>Food placeholder</div>;
+}

@@ -1,1 +1,3 @@
-export default function AccountReferralsPage() { return <div>Referrals placeholder</div>; }
+export default function AccountReferralsPage() {
+  return <div>Referrals placeholder</div>;
+}

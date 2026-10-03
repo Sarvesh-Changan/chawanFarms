@@ -1,1 +1,3 @@
-export default function RewardsPage() { return <div>Rewards placeholder</div>; }
+export default function RewardsPage() {
+  return <div>Rewards placeholder</div>;
+}
