@@ -1,3 +1,6 @@
+import { AuthForm } from "@/components/auth/AuthForm";
+import { forgotPasswordAction } from "@/server/auth/actions";
+
 export default function ForgotPasswordPage() {
-  return <div>Forgot password placeholder</div>;
+  return <AuthForm mode="forgot" action={forgotPasswordAction} />;
 }

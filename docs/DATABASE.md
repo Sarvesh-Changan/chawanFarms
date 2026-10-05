@@ -580,11 +580,20 @@ model AuditLog {                        // IMMUTABLE
 }
 ```
 
+Implementation note for the Prisma v7 schema: PDF-derived catalogue, menu,
+policy, reward-rule, and setting rows carry nullable `meta Json?` with
+`{ "source": "client-pdf" }`. `PackageRate`, `MenuCategory`, and `MenuItem`
+also carry nullable unique `seedKey String?` values for deterministic,
+repeatable seed upserts. The Prisma v7 datasource URL is configured in
+`prisma7.config.ts`; `DIRECT_URL` is used for migrations and the pooled
+`DATABASE_URL` is used at runtime.
+
 ## 4. Seed data
 `prisma/seed.ts` is idempotent (upsert by slug/key) and loads:
 1. **Permissions & roles** (below).
-2. **PDF-sourced catalogue** (Appendix A of PRD): Packages A/B/C/Picnic, `PackageRate` rows (₹1400/1800, 2300/2800, 1200/1800, 1100 adult / 750 kids; child 4–10 = 60%; under-4 = 0), accommodation (Tent, Dormitory, Guest House [2 AC rooms with terrace], Camp Lawn), menu items, activities list, amenities, policies (stay rules as `PolicyVersion` v1 **DRAFT-flagged pending D-2**), contact numbers and address into `Setting`. Each row carries `meta.source = "client-pdf:slide-N"`.
-3. Items not in the PDF → **not seeded** (or seeded `DRAFT` with `meta.source="old-site"` for client confirmation).
+2. **PDF-sourced catalogue** (Appendix A of PRD): Packages A/B/C/Picnic, `PackageRate` rows (₹1400/1800, 2300/2800, 1200/1800, 1100 adult / 750 kids; child 4–10 = 60%; under-4 = 0), accommodation (Tent, Dormitory, Guest House [2 AC rooms with terrace], Camp Lawn), menu items, activities list, amenities, policies (stay rules as `PolicyVersion` v1 **DRAFT-flagged pending D-2**), contact numbers and address into `Setting`. Every PDF-derived row carries `meta = { "source": "client-pdf" }`; the policy additionally carries `pendingDecision = "D-2 cancellation conflict"`.
+   `PackageRate`, `MenuCategory`, and `MenuItem` use deterministic unique `seedKey` values for rerunnable upserts.
+3. Items not in the PDF → **not seeded**.
 4. Default inactive `RewardRule` v1 with **placeholder zeros/nulls** — values must be set by the client in admin (D-8). Never ship invented reward numbers.
 5. Dev-only fixtures behind `NODE_ENV !== 'production'`.
 

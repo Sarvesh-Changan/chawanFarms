@@ -15,7 +15,7 @@ const securityHeaders = [
   {
     key: "Content-Security-Policy-Report-Only",
     value:
-      "default-src 'self'; frame-ancestors 'none'; report-uri /api/csp-report",
+      "default-src 'self'; frame-ancestors 'none'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; report-uri /api/csp-report",
   },
 ];
 

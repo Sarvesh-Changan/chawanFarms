@@ -1,3 +1,6 @@
+import { AuthForm } from "@/components/auth/AuthForm";
+import { signupAction } from "@/server/auth/actions";
+
 export default function SignupPage() {
-  return <div>Signup placeholder</div>;
+  return <AuthForm mode="signup" action={signupAction} />;
 }
