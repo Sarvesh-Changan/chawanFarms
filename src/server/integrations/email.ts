@@ -6,6 +6,7 @@ import { Resend } from "resend";
 
 import { env } from "@/config/env";
 import { ResetPasswordEmail } from "@/server/email/templates/ResetPasswordEmail";
+import { StaffInviteEmail } from "@/server/email/templates/StaffInviteEmail";
 import { VerifyEmailEmail } from "@/server/email/templates/VerifyEmailEmail";
 
 function redactUrl(value: string): string {
@@ -18,6 +19,12 @@ function redactUrl(value: string): string {
   }
 }
 
+function maskEmail(value: string): string {
+  const [local, domain] = value.split("@");
+  if (!local || !domain) return "[redacted email]";
+  return `${local.slice(0, 1)}***@${domain}`;
+}
+
 async function sendEmail(input: {
   to: string;
   subject: string;
@@ -26,7 +33,7 @@ async function sendEmail(input: {
 }): Promise<void> {
   if (!env.RESEND_API_KEY) {
     if (env.APP_ENV === "development") {
-      console.info(`[email] ${input.subject} to ${input.to}: ${redactUrl(input.link)}`);
+      console.info(`[email] ${input.subject} to ${maskEmail(input.to)}: ${redactUrl(input.link)}`);
       return;
     }
     throw new Error("Email delivery is not configured.");
@@ -64,6 +71,15 @@ export async function sendResetPasswordEmail(input: {
     to: input.to,
     subject: "Reset your Chawan Farms password",
     html: await render(createElement(ResetPasswordEmail, { name: input.name, url: input.url })),
+    link: input.url,
+  });
+}
+
+export async function sendStaffInviteEmail(input: { to: string; url: string }): Promise<void> {
+  await sendEmail({
+    to: input.to,
+    subject: "You are invited to Chawan Farms",
+    html: await render(createElement(StaffInviteEmail, { url: input.url })),
     link: input.url,
   });
 }

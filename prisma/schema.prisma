@@ -31,6 +31,7 @@ enum AccommodationType {
   GUEST_HOUSE
   CAMP_LAWN
   DAY_VISIT
+  COTTAGE
 }
 
 enum FoodPreference {
@@ -187,6 +188,7 @@ model User {
   twoFactor        TwoFactor?
   profile          CustomerProfile?
   staffRoles       StaffRole[]
+  sentStaffInvites StaffInvite[]     @relation("StaffInviteSender")
   bookings         Booking[]
   videos           VideoSubmission[]
   ledger           PointsLedger[]
@@ -338,28 +340,47 @@ model StaffRole {
   @@id([userId, roleId])
 }
 
+model StaffInvite {
+  id          String    @id @default(uuid())
+  email       String
+  roleIds     String[]
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  usedAt      DateTime?
+  revokedAt   DateTime?
+  invitedById String
+  createdAt   DateTime  @default(now())
+  invitedBy   User      @relation("StaffInviteSender", fields: [invitedById], references: [id], onDelete: Restrict)
+
+  @@index([email])
+  @@index([invitedById, createdAt])
+}
+
 model Accommodation {
-  id           String                 @id @default(uuid())
-  slug         String                 @unique
-  type         AccommodationType
-  name         Json
-  summary      Json?
-  description  Json?
-  unitsTotal   Int?
-  maxGuests    Int?
-  amenities    Json?
-  heroMediaId  String?
-  status       PublishStatus          @default(DRAFT)
-  sortOrder    Int                    @default(0)
-  deletedAt    DateTime?
-  meta         Json?
-  createdAt    DateTime               @default(now())
-  updatedAt    DateTime               @updatedAt
-  availability AvailabilityDay[]
-  packages     PackageAccommodation[]
-  bookings     Booking[]
+  id            String                 @id @default(uuid())
+  slug          String                 @unique
+  type          AccommodationType
+  name          Json
+  summary       Json?
+  description   Json?
+  unitsTotal    Int?
+  maxGuests     Int?
+  amenities     Json?
+  heroMediaId   String?
+  imageMediaIds String[]               @default([])
+  status        PublishStatus          @default(DRAFT)
+  publishAt     DateTime?
+  sortOrder     Int                    @default(0)
+  deletedAt     DateTime?
+  meta          Json?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  availability  AvailabilityDay[]
+  packages      PackageAccommodation[]
+  bookings      Booking[]
 
   @@index([status, sortOrder])
+  @@index([status, publishAt])
 }
 
 model Package {
@@ -436,6 +457,7 @@ model Activity {
   seasonNote       Json?
   heroMediaId      String?
   status           PublishStatus     @default(DRAFT)
+  publishAt        DateTime?
   sortOrder        Int               @default(0)
   deletedAt        DateTime?
   meta             Json?
@@ -463,6 +485,7 @@ model Experience {
   body        Json?
   heroMediaId String?
   status      PublishStatus @default(DRAFT)
+  publishAt   DateTime?
   sortOrder   Int           @default(0)
   deletedAt   DateTime?
   createdAt   DateTime      @default(now())
@@ -472,13 +495,20 @@ model Experience {
 }
 
 model MenuCategory {
-  id        String     @id @default(uuid())
-  slug      String     @unique
+  id        String        @id @default(uuid())
+  slug      String        @unique
   name      Json
-  sortOrder Int        @default(0)
-  seedKey   String?    @unique
+  status    PublishStatus @default(DRAFT)
+  publishAt DateTime?
+  sortOrder Int           @default(0)
+  deletedAt DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  seedKey   String?       @unique
   meta      Json?
   items     MenuItem[]
+
+  @@index([status, sortOrder])
 }
 
 model MenuItem {
@@ -490,8 +520,13 @@ model MenuItem {
   isExtraCharge   Boolean         @default(false)
   extraPricePaise Int?
   extraUnitLabel  String?
-  isPublished     Boolean         @default(true)
+  isPublished     Boolean         @default(false)
+  status          PublishStatus   @default(DRAFT)
+  publishAt       DateTime?
   sortOrder       Int             @default(0)
+  deletedAt       DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   seedKey         String?         @unique
   meta            Json?
   category        MenuCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
@@ -720,12 +755,12 @@ model PolicyAcceptance {
 }
 
 model Media {
-  id           String       @id @default(uuid())
+  id           String        @id @default(uuid())
   kind         MediaKind
-  origin       MediaOrigin  @default(ADMIN)
-  publicId     String       @unique
+  origin       MediaOrigin   @default(ADMIN)
+  publicId     String        @unique
   resourceType String
-  deliveryType String       @default("upload")
+  deliveryType String        @default("upload")
   format       String?
   bytes        Int?
   width        Int?
@@ -739,11 +774,12 @@ model Media {
   tags         String[]
   category     String?
   uploadedById String?
-  isPublic     Boolean      @default(false)
+  isPublic     Boolean       @default(false)
   deletedAt    DateTime?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   usages       MediaUsage[]
+  galleryItems GalleryItem[]
 
   @@index([kind, category])
   @@index([contentHash])
@@ -760,6 +796,24 @@ model MediaUsage {
 
   @@unique([mediaId, entityType, entityId, field])
   @@index([entityType, entityId])
+}
+
+model GalleryItem {
+  id         String        @id @default(uuid())
+  mediaId    String
+  category   String
+  caption    Json?
+  sortOrder  Int           @default(0)
+  isFeatured Boolean       @default(false)
+  status     PublishStatus @default(DRAFT)
+  publishAt  DateTime?
+  deletedAt  DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  media      Media         @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@index([category, status, sortOrder])
+  @@index([mediaId])
 }
 
 model VideoSubmission {
@@ -939,9 +993,11 @@ model Testimonial {
   mediaId          String?
   consentConfirmed Boolean       @default(false)
   status           PublishStatus @default(DRAFT)
+  publishAt        DateTime?
   sortOrder        Int           @default(0)
   deletedAt        DateTime?
   createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
 model Favourite {
@@ -982,10 +1038,13 @@ model PageSection {
 }
 
 model PostCategory {
-  id    String @id @default(uuid())
-  slug  String @unique
-  name  Json
-  posts Post[]
+  id        String    @id @default(uuid())
+  slug      String    @unique
+  name      Json
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  posts     Post[]
 }
 
 model Post {
@@ -1008,13 +1067,17 @@ model Post {
 }
 
 model Faq {
-  id          String    @id @default(uuid())
+  id          String        @id @default(uuid())
   question    Json
   answer      Json
   groupKey    String?
-  sortOrder   Int       @default(0)
-  isPublished Boolean   @default(true)
+  sortOrder   Int           @default(0)
+  isPublished Boolean       @default(false)
+  status      PublishStatus @default(DRAFT)
+  publishAt   DateTime?
   deletedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 model Offer {

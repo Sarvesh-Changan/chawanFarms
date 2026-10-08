@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default function AdminSecurityPage() {
-  return <div>Admin security placeholder</div>;
+  redirect("/admin/security/staff");
 }

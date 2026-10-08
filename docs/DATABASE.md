@@ -21,7 +21,7 @@
 | Catalogue | `Package`, `PackageRate`, `Accommodation`, `Activity`, `Experience`, `MenuCategory`, `MenuItem`, `PackageActivity`, `PackageAccommodation` |
 | Availability | `AvailabilityDay`, `BlackoutPeriod` |
 | Sales | `Lead`, `LeadEvent`, `LeadNote`, `Enquiry`, `Booking`, `BookingLine`, `Payment`, `PolicyAcceptance`, `PolicyVersion` |
-| Media | `Media`, `MediaUsage` |
+| Media | `Media`, `MediaUsage`, `GalleryItem` |
 | Rewards | `VideoSubmission`, `RewardRule`, `RewardTier`, `RewardTierPackage`, `RewardTierAccommodation`, `PointsLedger`, `Coupon`, `CouponRedemption`, `Referral` |
 | Social proof | `Review`, `Testimonial`, `Favourite` |
 | CMS | `Page`, `PageSection`, `Post`, `PostCategory`, `Faq`, `Offer`, `SeoMetadata`, `Setting` |
@@ -587,6 +587,33 @@ also carry nullable unique `seedKey String?` values for deterministic,
 repeatable seed upserts. The Prisma v7 datasource URL is configured in
 `prisma7.config.ts`; `DIRECT_URL` is used for migrations and the pooled
 `DATABASE_URL` is used at runtime.
+
+Gallery uses first-class ordered entries, per client decision D-38 (2026-10-08):
+
+```prisma
+model GalleryItem {
+  id         String        @id @default(uuid())
+  mediaId    String
+  category   String
+  caption    Json?
+  sortOrder  Int           @default(0)
+  isFeatured Boolean       @default(false)
+  status     PublishStatus @default(DRAFT)
+  publishAt  DateTime?
+  deletedAt  DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  media      Media         @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@index([category, status, sortOrder])
+  @@index([mediaId])
+}
+```
+
+Allowed category values are maintained in `src/config/gallery.ts`. Each entry
+has a matching `MediaUsage` (`entityType = "GalleryItem"`) created in the same
+transaction; customer-origin media is not eligible. Public reads require both a
+published, non-deleted GalleryItem and public, non-deleted media.
 
 ## 4. Seed data
 `prisma/seed.ts` is idempotent (upsert by slug/key) and loads:

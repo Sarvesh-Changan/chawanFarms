@@ -3,6 +3,10 @@ import { config as loadEnv } from "dotenv";
 import { z } from "zod";
 
 import { PrismaClient, Prisma } from "../src/generated/prisma/client";
+import {
+  PERMISSIONS,
+  ROLE_PERMISSION_MATRIX,
+} from "../src/server/authz/permissions";
 
 loadEnv({ path: ".env.local" });
 loadEnv();
@@ -43,48 +47,7 @@ const metaSchema = z
   })
   .strict();
 
-const permissionKeys = [
-  "dashboard.read",
-  "cms.read",
-  "cms.write",
-  "cms.publish",
-  "cms.delete",
-  "media.read",
-  "media.write",
-  "media.delete",
-  "bookings.read",
-  "bookings.write",
-  "bookings.confirm",
-  "bookings.cancel",
-  "payments.record",
-  "availability.write",
-  "enquiries.read",
-  "enquiries.write",
-  "leads.read",
-  "leads.write",
-  "leads.assign",
-  "leads.export",
-  "customers.read",
-  "customers.write",
-  "customers.export",
-  "rewards.videos.read",
-  "rewards.videos.review",
-  "rewards.rules.read",
-  "rewards.rules.write",
-  "rewards.ledger.read",
-  "rewards.adjust",
-  "rewards.adjust.approve",
-  "rewards.reverse",
-  "coupons.read",
-  "coupons.revoke",
-  "seo.write",
-  "settings.read",
-  "settings.write",
-  "staff.read",
-  "staff.write",
-  "roles.write",
-  "audit.read",
-] as const;
+const permissionKeys = PERMISSIONS;
 
 const permissionSeedSchema = z.array(
   z.object({ key: z.string().min(1), description: z.string().min(1) }).strict(),
@@ -257,42 +220,7 @@ const menuItemSeeds = [
   { seedKey: "menu:extras:barbecue", category: "menu:extras", name: "barbecue facility available", description: "extra", isExtraCharge: true },
 ] as const;
 
-const rolePermissionMap: Record<string, readonly string[]> = {
-  "Super Admin": permissionKeys,
-  "Owner/Manager": permissionKeys.filter(
-    (key) => key !== "roles.write" && key !== "staff.write",
-  ),
-  Reservations: [
-    "bookings.read",
-    "bookings.write",
-    "bookings.confirm",
-    "bookings.cancel",
-    "payments.record",
-    "availability.write",
-    "enquiries.read",
-    "enquiries.write",
-    "leads.read",
-    "leads.write",
-    "leads.assign",
-    "leads.export",
-    "customers.read",
-  ],
-  "Content Editor": [
-    "cms.read",
-    "cms.write",
-    "cms.delete",
-    "media.read",
-    "media.write",
-    "media.delete",
-    "seo.write",
-  ],
-  "Reward Moderator": [
-    "rewards.videos.read",
-    "rewards.videos.review",
-    "rewards.ledger.read",
-  ],
-  "Read-only": permissionKeys.filter((key) => key.endsWith(".read")),
-};
+const rolePermissionMap = ROLE_PERMISSION_MATRIX;
 
 const roleNames = Object.keys(rolePermissionMap);
 const roleSeedSchema = z.array(z.string().min(1));

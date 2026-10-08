@@ -1,3 +1,3 @@
-export default function OffersPage() {
-  return <div>Offers placeholder</div>;
-}
+import { PublicContentList } from "@/components/cms/PublicContentList";
+
+export default function OffersPage() { return <PublicContentList type="offer" />; }

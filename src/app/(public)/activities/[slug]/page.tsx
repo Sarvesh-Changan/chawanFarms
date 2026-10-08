@@ -1,3 +1,3 @@
-export default function ActivityDetailPage() {
-  return <div>Activity detail placeholder</div>;
-}
+import { PublicContentList } from "@/components/cms/PublicContentList";
+
+export default async function ActivityPage({ params }: { params: Promise<{ slug: string }> }) { return <PublicContentList type="activity" slug={(await params).slug} />; }

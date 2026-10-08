@@ -1,3 +1,3 @@
-export default function ActivitiesPage() {
-  return <div>Activities placeholder</div>;
-}
+import { PublicContentList } from "@/components/cms/PublicContentList";
+
+export default function ActivitiesPage() { return <PublicContentList type="activity" />; }

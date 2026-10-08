@@ -50,10 +50,19 @@ Status: all questions below remain open unless the client records a written answ
 | D-35 | Does the Guest House “2 self-contained AC rooms” mean a maximum of two bookable rooms, and can a group of 10 share/occupy them under one package? | The physical room count and the Part B minimum-group wording need an operational mapping. | Phase 10 — Availability |
 | D-36 | Does “100% payment to confirm” override the PRD’s `PARTIALLY_PAID` booking status, and which offline payment methods are accepted in v1? | PDF says 100% payment and cheque realisation; PRD/database also model partial payment and UPI/cash. | Phase 10 — Booking/payments |
 | D-37 | Should old website email/contact information be permanently rejected, or is any of it still owned/current? | Archived contact page lists different phone numbers, emails and a contact person than the PDF. | Phase 8 — Leads; Phase 15 — SEO |
-| D-38 | Should gallery content be a first-class ordered collection, or is Media category/tag/order metadata sufficient? | PRD requires gallery filters/order/video tiles; DATABASE has no gallery collection/order model. | Phase 3 — Database; Phase 7 — CMS |
+| D-38 | **Resolved 2026-10-08:** use dedicated, ordered `GalleryItem` entries linked to `Media`, not Media category/tag ordering. Keep categories in `src/config/gallery.ts`; create `MediaUsage` rows for deletion protection. | Client decision in implementation request. | Resolved for Phase 3 — Database and Phase 7 — CMS |
 | D-39 | Is revision history required at launch, and how long should unpublished revisions be retained? | PRD marks revisions P1 but the schema has no revision models or retention rule. | Phase 7 — CMS |
 | D-40 | What is the account export/deletion workflow, approval SLA and legal retention exception for bookings, payments, points and audit records? | PRD/SECURITY require export/delete, while DATABASE has no request/workflow model. | Phase 3 — Database; Phase 13 — Customer dashboard |
 
 ## Decision recording rule
 
 When the client answers a question, record the date, respondent/role, exact decision and any exceptions below the row or in an ADR. A decision is not considered resolved because an implementation assumption was made. Until recorded, keep the affected content nullable/draft and block the listed phase.
+
+### Provisional implementation parameters (2026-10-07)
+
+These values were supplied for implementation, are **provisional**, and do not resolve D-7 or D-9. Reconfirm them with the client before production use.
+
+- D-7 locales: `en` required; `mr` and `hi` optional. Default locale: `en`.
+- D-9 `customer_video`: `mp4`, `mov`, `webm`; maximum 100 MB; maximum duration 90 seconds.
+- Admin media: images `jpg`, `png`, `webp`, `avif`; maximum 10 MB. Videos `mp4`, `webm`; maximum 100 MB; maximum duration 120 seconds. Admin video use is in scope for hero loops and brand film.
+- Customer videos should receive eager H.264/MP4 and first-frame JPEG poster transformations. These limits and transformations are centralized in `src/config/media.ts` pending client confirmation.

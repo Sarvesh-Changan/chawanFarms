@@ -1,3 +1,3 @@
-export default function GalleryPage() {
-  return <div>Gallery placeholder</div>;
-}
+import { PublicContentList } from "@/components/cms/PublicContentList";
+
+export default function GalleryPage() { return <PublicContentList type="gallery-item" />; }
