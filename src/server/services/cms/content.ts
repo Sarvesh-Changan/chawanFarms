@@ -5,6 +5,7 @@ import { unstable_cache } from "next/cache";
 import { CMS_CONTENT_PAGE_SIZE, type CmsContentType } from "@/config/cms-content";
 import { Prisma, type PublishStatus } from "@/generated/prisma/client";
 import { publicCmsWhere } from "@/lib/cms-public-policy";
+import { hasCmsReferences } from "@/lib/cms-reference-policy";
 import type { CmsContentFormData } from "@/lib/schemas/cms/content";
 import { sanitizeLocalizedHtml } from "@/server/cms/html";
 import { db } from "@/server/db";
@@ -24,8 +25,8 @@ function toRecord(input: CmsContentFormData) {
     case "activity": return { ...common, slug: required(input.slug, "SLUG"), name: required(input.name, "NAME"), summary: nullableJson(input.summary), description: nullableJson(html(input.description)), isExtraCost: input.isExtraCost ?? false, priceNote: nullableJson(input.priceNote), needsPriorNotice: input.needsPriorNotice ?? false, conditionsNote: nullableJson(input.conditionsNote), heroMediaId: input.heroMediaId || null };
     case "experience": return { ...common, slug: required(input.slug, "SLUG"), title: required(input.title, "TITLE"), summary: nullableJson(input.summary), body: nullableJson(html(input.body)), heroMediaId: input.heroMediaId || null };
     case "menu-category": return { ...common, slug: required(input.slug, "SLUG"), name: required(input.name, "NAME") };
-    case "menu-item": return { ...common, name: required(input.name, "NAME"), categoryId: required(input.categoryId, "CATEGORY"), description: nullableJson(input.description), foodPreference: input.foodPreference || null, isExtraCharge: input.isExtraCharge ?? false, extraPricePaise: input.extraPriceRupees ?? null, extraUnitLabel: input.extraUnitLabel || null, isPublished: false };
-    case "faq": return { ...common, question: required(input.question, "QUESTION"), answer: nullableJson(html(required(input.answer, "ANSWER"))), groupKey: input.groupKey || null, isPublished: false };
+    case "menu-item": return { ...common, name: required(input.name, "NAME"), categoryId: required(input.categoryId, "CATEGORY"), description: nullableJson(input.description), foodPreference: input.foodPreference || null, isExtraCharge: input.isExtraCharge ?? false, extraPricePaise: input.extraPriceRupees ?? null, extraUnitLabel: input.extraUnitLabel || null, isPublished: input.id ? undefined : false };
+    case "faq": return { ...common, question: required(input.question, "QUESTION"), answer: nullableJson(html(required(input.answer, "ANSWER"))), groupKey: input.groupKey || null, isPublished: input.id ? undefined : false };
     case "offer": return { ...common, slug: required(input.slug, "SLUG"), title: required(input.title, "TITLE"), description: nullableJson(html(input.description)), discountType: input.discountType || null, discountValue: input.discountType === "FIXED" ? input.discountValueInput ? Math.round(Number(input.discountValueInput) * 100) : null : input.discountValueInput ? Number(input.discountValueInput) : null, startsAt: new Date(required(input.startsAt, "STARTS_AT")), endsAt: new Date(required(input.endsAt, "ENDS_AT")), packageIds: input.packageIds ?? [] };
     case "testimonial": return { ...common, authorName: required(input.authorName, "AUTHOR"), authorMeta: input.authorMeta || null, quote: required(input.quote, "QUOTE"), mediaId: input.mediaId || null, consentConfirmed: input.consentConfirmed ?? false };
     case "gallery-item": return { ...common, mediaId: required(input.mediaId, "MEDIA"), category: required(input.category, "CATEGORY"), caption: nullableJson(input.caption), isFeatured: input.isFeatured ?? false };
@@ -99,17 +100,54 @@ export async function getCmsContent(type: CmsContentType, id: string) {
 }
 
 export async function listCmsContent(input: { entityType: CmsContentType; page: number; q: string; status?: PublishStatus; trash: boolean }) {
-  // input.entityType is a Zod-validated member of the fixed model map below.
-  // eslint-disable-next-line security/detect-object-injection
   const delegate = db[modelByType[input.entityType]] as unknown as { findMany(args: object): Promise<Array<Record<string, unknown>>>; count(args: object): Promise<number> };
-  const where = { deletedAt: input.trash ? { not: null } : null, ...(input.entityType !== "post-category" ? statusWhere(input.status) : {}) };
+  const searchableFields: Partial<Record<CmsContentType, { text: string[]; json: string[] }>> = {
+    activity: { text: ["slug"], json: ["name", "summary", "description"] }, experience: { text: ["slug"], json: ["title", "summary", "body"] },
+    "menu-category": { text: ["slug"], json: ["name"] }, "menu-item": { text: [], json: ["name", "description"] }, faq: { text: ["groupKey"], json: ["question", "answer"] },
+    offer: { text: ["slug"], json: ["title", "description"] }, testimonial: { text: ["authorName"], json: ["quote"] }, "gallery-item": { text: ["category"], json: ["caption"] },
+    post: { text: ["slug", "authorName"], json: ["title", "excerpt", "body"] }, "post-category": { text: ["slug"], json: ["name"] },
+  };
+  const fields = searchableFields[input.entityType] ?? { text: [], json: [] };
+  const searchOr = [
+    ...fields.text.map((field) => ({ [field]: { contains: input.q, mode: "insensitive" } })),
+    ...fields.json.map((field) => ({ [field]: { path: ["en"], string_contains: input.q, mode: "insensitive" } })),
+  ];
+  const where = {
+    deletedAt: input.trash ? { not: null } : null,
+    ...(input.entityType !== "post-category" ? statusWhere(input.status) : {}),
+    ...(input.q ? { OR: searchOr } : {}),
+  };
   const [rows, total] = await Promise.all([delegate.findMany({ where, skip: (input.page - 1) * CMS_CONTENT_PAGE_SIZE, take: CMS_CONTENT_PAGE_SIZE, orderBy: { id: "asc" } }), delegate.count({ where })]);
-  const filtered = input.q ? rows.filter((row) => JSON.stringify(row).toLocaleLowerCase().includes(input.q.toLocaleLowerCase())) : rows;
-  return { rows: filtered, total: input.q ? filtered.length : total, page: input.page, pageSize: CMS_CONTENT_PAGE_SIZE, pageCount: Math.max(1, Math.ceil((input.q ? filtered.length : total) / CMS_CONTENT_PAGE_SIZE)) };
+  return { rows, total, page: input.page, pageSize: CMS_CONTENT_PAGE_SIZE, pageCount: Math.max(1, Math.ceil(total / CMS_CONTENT_PAGE_SIZE)) };
+}
+
+export async function getCmsEditorOptions(type: CmsContentType) {
+  const [menuCategories, postCategories, packages, media] = await Promise.all([
+    type === "menu-item" ? db.menuCategory.findMany({ where: { deletedAt: null }, orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }) : [],
+    type === "post" ? db.postCategory.findMany({ where: { deletedAt: null }, orderBy: { id: "asc" }, select: { id: true, name: true } }) : [],
+    type === "offer" ? db.package.findMany({ where: { deletedAt: null }, orderBy: { sortOrder: "asc" }, select: { id: true, slug: true, code: true } }) : [],
+    ["gallery-item", "activity", "experience", "post", "testimonial"].includes(type)
+      ? db.media.findMany({ where: { origin: "ADMIN", isPublic: true, deletedAt: null }, orderBy: { createdAt: "desc" }, take: 60, select: { id: true, publicId: true, kind: true, altText: true, format: true } })
+      : [],
+  ]);
+  const label = (value: unknown, fallback: string) => value && typeof value === "object" && "en" in value ? String(value.en ?? fallback) : fallback;
+  return {
+    options: [...menuCategories, ...postCategories].map((row) => ({ id: row.id, label: label(row.name, row.id) })),
+    packageOptions: packages.map((row) => ({ id: row.id, label: `${row.code ?? ""} — ${row.slug}` })),
+    media,
+  };
 }
 
 export async function setCmsContentStatus(type: CmsContentType, id: string, status: PublishStatus, publishAt: Date | null) {
   if (type === "offer") return db.offer.update({ where: { id }, data: { status } });
+  if (type === "testimonial") {
+    const result = await db.testimonial.updateMany({
+      where: { id, deletedAt: null, ...(status === "PUBLISHED" || status === "SCHEDULED" ? { consentConfirmed: true } : {}) },
+      data: { status, publishAt: status === "SCHEDULED" ? publishAt : null },
+    });
+    if (!result.count) throw new Error("CMS_TESTIMONIAL_CONSENT_REQUIRED");
+    return db.testimonial.findUniqueOrThrow({ where: { id } });
+  }
   if (type === "gallery-item" && status === "PUBLISHED") {
     const item = await db.galleryItem.findFirst({ where: { id, deletedAt: null }, include: { media: { select: { origin: true, isPublic: true, deletedAt: true } } } });
     if (!item || item.media.origin !== "ADMIN" || !item.media.isPublic || item.media.deletedAt) throw new Error("CMS_GALLERY_MEDIA_NOT_PUBLIC");
@@ -119,32 +157,41 @@ export async function setCmsContentStatus(type: CmsContentType, id: string, stat
     case "activity": return db.activity.update({ where: { id }, data }); case "experience": return db.experience.update({ where: { id }, data });
     case "menu-category": return db.menuCategory.update({ where: { id }, data }); case "menu-item": return db.menuItem.update({ where: { id }, data });
     case "faq": return db.faq.update({ where: { id }, data });
-    case "testimonial": return db.testimonial.update({ where: { id }, data }); case "gallery-item": return db.galleryItem.update({ where: { id }, data });
+    case "gallery-item": return db.galleryItem.update({ where: { id }, data });
     case "post": return db.post.update({ where: { id }, data }); case "post-category": throw new Error("POST_CATEGORY_CANNOT_PUBLISH");
   }
 }
 
 export async function reorderGalleryItems(id: string, direction: "up" | "down") {
   return db.$transaction(async (tx) => {
-    const rows = await tx.galleryItem.findMany({ where: { deletedAt: null }, orderBy: [{ category: "asc" }, { sortOrder: "asc" }, { id: "asc" }], select: { id: true, category: true, sortOrder: true } });
-    const index = rows.findIndex((row) => row.id === id);
-    const current = rows[index];
-    const neighbor = rows[index + (direction === "up" ? -1 : 1)];
-    if (!current || !neighbor || current.category !== neighbor.category) return { moved: false, current };
-    await tx.galleryItem.update({ where: { id: current.id }, data: { sortOrder: neighbor.sortOrder } });
-    await tx.galleryItem.update({ where: { id: neighbor.id }, data: { sortOrder: current.sortOrder } });
-    return { moved: true, current, neighbor };
+    const current = await tx.galleryItem.findFirst({ where: { id, deletedAt: null }, select: { id: true, category: true } });
+    if (!current) return { moved: false, current: undefined };
+    const rows = await tx.galleryItem.findMany({ where: { category: current.category, deletedAt: null }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], select: { id: true, sortOrder: true } });
+    const currentIndex = rows.findIndex((row) => row.id === id);
+    const targetIndex = currentIndex + (direction === "up" ? -1 : 1);
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= rows.length) return { moved: false, current };
+    const reordered = [...rows];
+    const [moving] = reordered.splice(currentIndex, 1);
+    if (!moving) return { moved: false, current };
+    reordered.splice(targetIndex, 0, moving);
+    await Promise.all(reordered.map((row, sortOrder) => tx.galleryItem.update({ where: { id: row.id }, data: { sortOrder } })));
+    return { moved: true, current, from: currentIndex, to: targetIndex };
   }, { isolationLevel: "Serializable" });
 }
 
 export async function softDeleteCmsContent(type: CmsContentType, id: string) {
   const before = await getCmsContent(type, id);
   if (!before) return null;
-  if (type === "menu-category" && await db.menuItem.count({ where: { categoryId: id, deletedAt: null } })) throw new Error("CMS_REFERENCED");
-  if (type === "post-category" && await db.post.count({ where: { categoryId: id, deletedAt: null } })) throw new Error("CMS_REFERENCED");
-  if (type === "activity" && await db.packageActivity.count({ where: { activityId: id } })) throw new Error("CMS_REFERENCED");
-  if (type === "offer" && await db.booking.count({ where: { offerId: id } })) throw new Error("CMS_REFERENCED");
-  if (type === "post" && await db.post.count({ where: { categoryId: id, deletedAt: null } })) throw new Error("CMS_REFERENCED");
+  if (["menu-category", "post-category"].includes(type)) {
+    const linkedChildren = type === "menu-category" ? await db.menuItem.count({ where: { categoryId: id, deletedAt: null } }) : await db.post.count({ where: { categoryId: id, deletedAt: null } });
+    if (hasCmsReferences(type, { linkedChildren })) throw new Error("CMS_REFERENCED");
+  }
+  if (type === "activity") {
+    const [packageActivities, favourites] = await Promise.all([db.packageActivity.count({ where: { activityId: id } }), db.favourite.count({ where: { entityType: type, entityId: id } })]);
+    if (hasCmsReferences(type, { packageActivities, favourites })) throw new Error("CMS_REFERENCED");
+  }
+  if (type === "experience" && hasCmsReferences(type, { favourites: await db.favourite.count({ where: { entityType: type, entityId: id } }) })) throw new Error("CMS_REFERENCED");
+  if (type === "offer" && hasCmsReferences(type, { bookings: await db.booking.count({ where: { offerId: id } }) })) throw new Error("CMS_REFERENCED");
   const data = { deletedAt: new Date() };
   switch (type) {
     case "activity": return db.activity.update({ where: { id }, data }); case "experience": return db.experience.update({ where: { id }, data });

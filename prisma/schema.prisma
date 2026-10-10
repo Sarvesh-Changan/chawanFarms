@@ -188,6 +188,7 @@ model User {
   twoFactor        TwoFactor?
   profile          CustomerProfile?
   staffRoles       StaffRole[]
+  savedFilters     SavedFilter[]
   sentStaffInvites StaffInvite[]     @relation("StaffInviteSender")
   bookings         Booking[]
   videos           VideoSubmission[]
@@ -338,6 +339,20 @@ model StaffRole {
   role         Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
 
   @@id([userId, roleId])
+}
+
+model SavedFilter {
+  id        String   @id @default(uuid())
+  userId    String
+  scope     String
+  name      String
+  filters   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, scope, name])
+  @@index([userId, scope, createdAt])
 }
 
 model StaffInvite {
@@ -568,12 +583,18 @@ model Lead {
   closeReason      LeadCloseReason?
   assignedToId     String?
   source           String?
+  firstUtmSource   String?
+  firstUtmMedium   String?
+  firstUtmCampaign String?
+  firstUtmTerm     String?
+  firstUtmContent  String?
   utmSource        String?
   utmMedium        String?
   utmCampaign      String?
   utmTerm          String?
   utmContent       String?
   firstReferrer    String?
+  lastReferrer     String?
   firstLandingPath String?
   lastLandingPath  String?
   deviceClass      String?
@@ -635,8 +656,10 @@ model Enquiry {
   adults           Int?
   children         Int?
   infants          Int?
+  groupSize        Int?
   consentToContact Boolean     @default(false)
   pagePath         String?
+  idempotencyKey   String?     @unique
   createdAt        DateTime    @default(now())
   lead             Lead        @relation(fields: [leadId], references: [id], onDelete: Restrict)
 
@@ -672,6 +695,7 @@ model Booking {
   pricingSnapshot   Json
   couponId          String?            @unique
   offerId           String?
+  idempotencyKey    String?            @unique
   holdExpiresAt     DateTime?
   confirmedAt       DateTime?
   cancelledAt       DateTime?
@@ -735,7 +759,8 @@ model PolicyVersion {
   version     Int
   title       String
   body        Json
-  publishedAt DateTime           @default(now())
+  status      PublishStatus      @default(DRAFT)
+  publishedAt DateTime?
   meta        Json?
   acceptances PolicyAcceptance[]
 
@@ -1017,6 +1042,7 @@ model Page {
   status    PublishStatus @default(DRAFT)
   publishAt DateTime?
   template  String        @default("default")
+  meta      Json?
   deletedAt DateTime?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt

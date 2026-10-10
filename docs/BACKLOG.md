@@ -318,4 +318,8 @@ Blockers:
 
 ## Current safe next step
 
+## Lead CRM follow-up
+
+- TODO: When the booking phase lands, automatically transition a lead to `CONVERTED` when an associated booking reaches the approved conversion point; the CRM permits manual conversion before that integration.
+
 Obtain written answers to the rows in `OPEN_QUESTIONS.md`, beginning with D-20/D-21 for content, D-1–D-5/D-16/D-18 for booking, and D-8/D-9 for rewards/media. Then review this backlog and explicitly approve the next phase. No code or infrastructure should be started by this analysis step.

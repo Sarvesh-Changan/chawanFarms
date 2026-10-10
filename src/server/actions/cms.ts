@@ -293,7 +293,7 @@ export async function saveCmsSettingsAction(rawInput: unknown): Promise<Result<{
       before,
       after: parsed.data,
       tags: ["cms:settings"],
-      paths: ["/admin/settings"],
+      paths: ["/admin/settings", "/", "/about", "/packages", "/book", "/contact"],
     });
     return auditResult.ok ? ok({ id: updated.updatedKeys.join(",") }) : auditResult;
   } catch {

@@ -10,7 +10,12 @@ import type { Permission } from "@/server/authz/permissions";
 const navigation = [
   { label: "Dashboard", href: "/admin", permission: "dashboard.read" },
   { label: "CMS", href: "/admin/cms", permission: "cms.read" },
-  { label: "Bookings", href: "/admin/bookings", permission: "bookings.read" },
+  { label: "Bookings", href: "/admin/bookings", permission: "bookings.read", children: [
+    { label: "All Bookings", href: "/admin/bookings", permission: "bookings.read" },
+    { label: "New Booking", href: "/admin/bookings/new", permission: "bookings.write" },
+    { label: "Arrivals & Calendar", href: "/admin/calendar", permission: "bookings.read" },
+    { label: "Availability Grid", href: "/admin/availability", permission: "bookings.read" },
+  ] },
   { label: "Enquiries", href: "/admin/enquiries", permission: "enquiries.read" },
   { label: "Leads", href: "/admin/leads", permission: "leads.read" },
   { label: "Customers", href: "/admin/customers", permission: "customers.read" },

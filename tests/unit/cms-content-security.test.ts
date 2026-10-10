@@ -4,6 +4,7 @@ vi.mock("server-only", () => ({}));
 
 import { CMS_CONTENT_ACTION_PERMISSIONS, CMS_CONTENT_TYPES } from "@/config/cms-content";
 import { publicCmsWhere, isScheduledTimeReached } from "@/lib/cms-public-policy";
+import { hasCmsReferences } from "@/lib/cms-reference-policy";
 import { cmsContentFormSchema } from "@/lib/schemas/cms/content";
 import { ROLE_PERMISSION_MATRIX, type RoleName } from "@/server/authz/permissions";
 import { hasPermission } from "@/server/authz/policies";
@@ -43,6 +44,18 @@ describe("public content and scheduling policy", () => {
   });
 });
 
+describe("where-used deletion policy", () => {
+  it("blocks deletion while CMS records have linked children or downstream references", () => {
+    expect(hasCmsReferences("menu-category", { linkedChildren: 1 })).toBe(true);
+    expect(hasCmsReferences("post-category", { linkedChildren: 2 })).toBe(true);
+    expect(hasCmsReferences("activity", { packageActivities: 1 })).toBe(true);
+    expect(hasCmsReferences("activity", { favourites: 1 })).toBe(true);
+    expect(hasCmsReferences("experience", { favourites: 1 })).toBe(true);
+    expect(hasCmsReferences("offer", { bookings: 1 })).toBe(true);
+    expect(hasCmsReferences("activity", {})).toBe(false);
+  });
+});
+
 describe("CMS content validation defaults", () => {
   it("starts legacy-only activity and food entries as drafts", () => {
     const activity = cmsContentFormSchema.safeParse({ entityType: "activity", slug: "jungle-safari", name: { en: "Jungle safari" } });
@@ -55,11 +68,12 @@ describe("CMS content validation defaults", () => {
 
 describe("signed content preview", () => {
   it("rejects tampered preview tokens", async () => {
+    process.env.AUTH_SECRET = "test-auth-secret-value-that-is-long-enough-123";
     process.env.PREVIEW_SECRET = "test-secret-value-that-is-long-enough-123";
     const { createPreviewToken, verifyPreviewToken } = await import("@/server/cms/preview");
     const token = createPreviewToken({ entityType: "post", id: "00000000-0000-4000-8000-000000000001" });
     expect(verifyPreviewToken(token)).not.toBeNull();
-    expect(verifyPreviewToken(`${token}x`)).toBeNull();
+    const [payload, signature] = token.split(".");
+    expect(verifyPreviewToken(`${payload}.${signature?.slice(0, -1)}x`)).toBeNull();
   });
 });
-

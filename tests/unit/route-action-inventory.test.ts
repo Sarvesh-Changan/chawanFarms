@@ -20,7 +20,11 @@ function sourceFiles(directory: string): string[] {
 
 const publicRouteAllowlist = new Set([
   "src/app/api/auth/[...all]/route.ts",
+  "src/app/api/availability/route.ts",
+  "src/app/api/csp-report/route.ts",
   "src/app/api/health/route.ts",
+  "src/app/api/lead-events/route.ts",
+  "src/app/api/quote/route.ts",
 ]);
 
 function relativeSourcePath(path: string): string {

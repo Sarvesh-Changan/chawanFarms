@@ -51,7 +51,6 @@ export const ROLE_PERMISSION_MATRIX = {
   Reservations: [
     "bookings.read",
     "bookings.write",
-    "bookings.confirm",
     "bookings.cancel",
     "payments.record",
     "availability.write",
@@ -60,7 +59,6 @@ export const ROLE_PERMISSION_MATRIX = {
     "leads.read",
     "leads.write",
     "leads.assign",
-    "leads.export",
     "customers.read",
   ],
   "Content Editor": [

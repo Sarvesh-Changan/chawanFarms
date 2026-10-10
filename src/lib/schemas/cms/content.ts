@@ -43,7 +43,16 @@ const rupeesToPaise = (value: string): number | null => {
   return Number(rupees) * 100 + Number(fractional.padEnd(2, "0"));
 };
 
-const optionalRupees = z.string().trim().max(12).regex(/^$|^[0-9]{1,9}(\.[0-9]{1,2})?$/, "Enter rupees with up to two decimal places.")
+function isValidAmountInput(value: string): boolean {
+  if (!value) return true;
+  const parts = value.split(".");
+  const whole = parts[0] ?? "";
+  if (parts.length > 2 || whole.length < 1 || whole.length > 9) return false;
+  if (parts.some((part) => !part.length || [...part].some((character) => character < "0" || character > "9"))) return false;
+  return parts.length === 1 || (parts[1]?.length ?? 0) <= 2;
+}
+
+const optionalRupees = z.string().trim().max(12).refine(isValidAmountInput, "Enter rupees with up to two decimal places.")
   .refine((value) => !value || Number(value) <= 999_999_999.99, "Amount is out of range.")
   .transform(rupeesToPaise).optional();
 
@@ -74,7 +83,7 @@ export const cmsContentFormSchema = z.object({
   startsAt: datetimeInput.optional(),
   endsAt: datetimeInput.optional(),
   discountType: z.union([z.enum(["FIXED", "PERCENTAGE"]), z.literal("")]).optional(),
-  discountValueInput: z.string().trim().max(12).regex(/^$|^[0-9]{1,9}(\.[0-9]{1,2})?$/, "Enter a valid discount value.").optional(),
+  discountValueInput: z.string().trim().max(12).refine(isValidAmountInput, "Enter a valid discount value.").optional(),
   packageIds: optionalIds,
   authorName: optionalString(160),
   authorMeta: optionalString(200),

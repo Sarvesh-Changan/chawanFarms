@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { getCmsPageStaff } from "@/server/services/cms/page-access";
 
 const sections = [
+  { title: "Pages", description: "Build Home and About pages with typed, reorderable sections, preview and publish controls.", href: "/admin/cms/pages" },
+  { title: "Policies", description: "Manage immutable, versioned stay rules, cancellation, privacy and terms.", href: "/admin/cms/policies" },
   { title: "Packages", description: "Edit package content, rate versions and catalogue relationships.", href: "/admin/cms/packages" },
   { title: "Accommodation", description: "Edit accommodation descriptions, capacities, amenities and images.", href: "/admin/cms/accommodations" },
   ...["activity", "experience", "menu-category", "menu-item", "faq", "offer", "testimonial", "gallery-item", "post", "post-category"].map((entity) => ({ title: entity.replaceAll("-", " ").replace(/^./, (letter) => letter.toUpperCase()), description: "Create and manage localized content with draft, schedule and publishing controls.", href: `/admin/cms/${entity}` })),

@@ -14,15 +14,15 @@ function kolkataStartOfDay(date: Date): Date {
   return new Date(Date.UTC(Number(values.year), Number(values.month) - 1, Number(values.day), -5, -30));
 }
 
-export async function getAdminDashboardData(now = new Date(), includeAudit = true) {
+export async function getAdminDashboardData(now = new Date(), includeAudit = true, includeLeads = true) {
   const today = kolkataStartOfDay(now);
   const sevenDaysAgo = new Date(today.getTime() - 6 * 86_400_000);
   const thirtyDaysAgo = new Date(today.getTime() - 29 * 86_400_000);
 
   const [leadsToday, leadsSevenDays, leadsThirtyDays, enquiriesByLeadStatus, bookingsByStatus, pendingVideos, recentAudit] = await Promise.all([
-    db.lead.count({ where: { deletedAt: null, createdAt: { gte: today } } }),
-    db.lead.count({ where: { deletedAt: null, createdAt: { gte: sevenDaysAgo } } }),
-    db.lead.count({ where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } } }),
+    includeLeads ? db.lead.count({ where: { deletedAt: null, createdAt: { gte: today } } }) : Promise.resolve(0),
+    includeLeads ? db.lead.count({ where: { deletedAt: null, createdAt: { gte: sevenDaysAgo } } }) : Promise.resolve(0),
+    includeLeads ? db.lead.count({ where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } } }) : Promise.resolve(0),
     db.$queryRaw<Array<{ status: string; count: bigint }>>`
       SELECT lead."status"::text AS status, COUNT(enquiry."id")::bigint AS count
       FROM "Enquiry" AS enquiry

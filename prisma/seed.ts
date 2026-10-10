@@ -3,6 +3,7 @@ import { config as loadEnv } from "dotenv";
 import { z } from "zod";
 
 import { PrismaClient, Prisma } from "../src/generated/prisma/client";
+import { pageBuilderSchema } from "../src/lib/schemas/cms/pages";
 import {
   PERMISSIONS,
   ROLE_PERMISSION_MATRIX,
@@ -25,7 +26,7 @@ const seedEnv = seedEnvSchema.parse({
 
 const db = new PrismaClient({
   adapter: new PrismaPg({
-    connectionString: seedEnv.DIRECT_URL ?? seedEnv.DATABASE_URL,
+    connectionString: seedEnv.DATABASE_URL,
   }),
 });
 
@@ -150,6 +151,30 @@ const activitySeeds = [
   },
 ] as const;
 
+const experienceSeeds = [
+  {
+    slug: "horticultural-farming",
+    title: { en: "Horticultural Farming" },
+    summary: { en: "Mango, cashew, coconut, beetle nuts (supari) and aromatic spice plantations." },
+    body: { en: "Experience farm life firsthand and explore extensive orchards of Alphonso mangoes, cashews, coconuts, and spices in Baitwadi, Kolad." },
+    sortOrder: 0,
+  },
+  {
+    slug: "dairy-and-poultry",
+    title: { en: "Dairy & Poultry Farming" },
+    summary: { en: "Hands-on rural learning with traditional dairy cattle and poultry care." },
+    body: { en: "Connect with rural roots and learn animal husbandry and sustainable milk production in a serene village atmosphere." },
+    sortOrder: 1,
+  },
+  {
+    slug: "organic-farming",
+    title: { en: "Organic Farming & Nature Trails" },
+    summary: { en: "Chemical-free sustainable farming, Kundalika riverbank walks, and rich biodiversity." },
+    body: { en: "Rediscover nature with native trees, bird watching, and natural organic agriculture suited for families and school children." },
+    sortOrder: 2,
+  },
+] as const;
+
 const amenitySeeds = [
   "morning & evening tea",
   "breakfast",
@@ -235,23 +260,29 @@ const settingSeeds = [
 ] as const;
 
 const policyBody = {
-  rules: [
-    "Confirm check-in/out time at booking.",
-    "Outside food, catering and alcohol/beverages not permitted.",
-    "Mosquito coil provided; bring repellents.",
-    "Not responsible for accidents/loss of belongings.",
-    "Animals & pets not permitted.",
-    "Management may vacate guests for noise, nuisance, unruly behaviour.",
-    "Original photo ID mandatory at check-in (driver's licence, passport, photo credit card etc.).",
-    "Bank details provided on request.",
-    "Booking confirmed against 100% payment (cheque: after realisation).",
-    "Guests visit an agricultural farm; insects and animals are common; basic first aid available; bring mosquito/insect repellent, painkillers, band-aids.",
-  ],
-  cancellationConflict: [
-    "No refund/cancellation/postponement for any reason once confirmed & paid.",
-    "25% charged when booking cancelled seven days before check-in.",
-  ],
+  en: "<p>Confirm check-in/out time at booking.</p><p>Outside food, catering and alcohol/beverages not permitted.</p><p>Mosquito coil provided; bring repellents.</p><p>Not responsible for accidents/loss of belongings.</p><p>Animals &amp; pets not permitted.</p><p>Management may vacate guests for noise, nuisance, unruly behaviour.</p><p>Original photo ID mandatory at check-in (driver's licence, passport, photo credit card etc.).</p><p>Bank details provided on request.</p><p>Booking confirmed against 100% payment (cheque: after realisation).</p><p>Guests visit an agricultural farm; insects and animals are common; basic first aid available; bring mosquito/insect repellent, painkillers, band-aids.</p><h2>Cancellation statements — pending decision D-2</h2><p>No Refund, Cancellation or Postponement shall be accepted for whatsoever Reasons given by the guest once confirmed &amp; paid.</p><p>25% charged when booking cancelled seven days before checking.</p>",
 } satisfies Prisma.InputJsonObject;
+
+const homePageSections: Array<{ type: string; content: Prisma.InputJsonObject; isVisible?: boolean }> = [
+  { type: "hero", content: { eyebrow: { en: "Chawan Farms — Agri-Tourism Centre" }, heading: { en: "Come live, experience & rediscover yourself & nature at its best" } } },
+  { type: "why-chawan", content: { heading: { en: "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens" }, items: [] } },
+  { type: "experiences-grid", content: { heading: { en: "Horticultural farming, dairy, poultry" }, body: { en: "Organic farming" } } },
+  { type: "accommodation", content: { heading: { en: "Camping tents / Dormitory · Guest House" }, body: { en: "Lawn area only for Camp Organisers" } } },
+  { type: "packages", content: { heading: { en: "Per person per day, one night stay" } } },
+  { type: "food", content: { heading: { en: "Breakfast Menu" } } },
+  { type: "activities", content: { heading: { en: "Optional activities" }, body: { en: "Arranged according to prevailing conditions and availability" } } },
+  { type: "gallery", content: {} },
+  { type: "stories", content: {} },
+  { type: "rewards-teaser", content: {}, isVisible: false },
+  { type: "location", content: { heading: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra, India" } } },
+  { type: "final-cta", content: { heading: { en: "Come live, experience & rediscover yourself & nature at its best" } } },
+];
+
+const aboutPageSections: Array<{ type: string; content: Prisma.InputJsonObject; isVisible?: boolean }> = [
+  { type: "hero", content: { eyebrow: { en: "Chawan Farms — Agri-Tourism Centre" }, heading: { en: "Come live, experience & rediscover yourself & nature at its best" } } },
+  { type: "rich-text", content: { heading: { en: "Agri-Tourism" }, body: { en: "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens." } } },
+  { type: "image-text", content: { heading: { en: "Agri-Tourism" }, body: { en: "Agri-Tourism: An Inexpensive gateway, curiosity about the farming industry and life style, restoration of rural culture……etc." }, imageMediaId: null, imageSide: "right" } },
+];
 
 function validateSeedData(): void {
   metaSchema.parse(pdfMeta);
@@ -267,17 +298,23 @@ function validateSeedData(): void {
   z.record(z.string(), z.array(z.string().min(1))).parse(rolePermissionMap);
   z.array(z.object({ key: z.string().min(1) }).passthrough()).parse(settingSeeds);
   z.record(z.string(), z.unknown()).parse(policyBody);
+  pageBuilderSchema.parse({ id: "00000000-0000-4000-8000-000000000001", title: { en: "Home" }, sections: homePageSections.map((section) => ({ ...section, isVisible: section.isVisible ?? true })) });
+  pageBuilderSchema.parse({ id: "00000000-0000-4000-8000-000000000002", title: { en: "About" }, sections: aboutPageSections.map((section) => ({ ...section, isVisible: section.isVisible ?? true })) });
 }
 
 async function seedPermissionsAndRoles(): Promise<void> {
   const permissions = new Map<string, string>();
 
-  for (const permission of permissionSeeds) {
-    const row = await db.permission.upsert({
-      where: { key: permission.key },
-      update: { description: permission.description },
-      create: permission,
-    });
+  const permissionRows = await Promise.all(
+    permissionSeeds.map((permission) =>
+      db.permission.upsert({
+        where: { key: permission.key },
+        update: { description: permission.description },
+        create: permission,
+      }),
+    ),
+  );
+  for (const row of permissionRows) {
     permissions.set(row.key, row.id);
   }
 
@@ -288,55 +325,75 @@ async function seedPermissionsAndRoles(): Promise<void> {
       create: { name: roleName, isSystem: true },
     });
 
-    for (const key of keys) {
-      const permissionId = permissions.get(key);
-      if (!permissionId) throw new Error(`Missing permission seed: ${key}`);
-
-      await db.rolePermission.upsert({
-        where: {
-          roleId_permissionId: { roleId: role.id, permissionId },
-        },
-        update: {},
-        create: { roleId: role.id, permissionId },
-      });
+    if (roleName === "Reservations") {
+      const exportPermissionId = permissions.get("leads.export");
+      if (exportPermissionId) {
+        await db.rolePermission.deleteMany({ where: { roleId: role.id, permissionId: exportPermissionId } });
+      }
     }
+
+    await Promise.all(
+      keys.map((key) => {
+        const permissionId = permissions.get(key);
+        if (!permissionId) throw new Error(`Missing permission seed: ${key}`);
+
+        return db.rolePermission.upsert({
+          where: {
+            roleId_permissionId: { roleId: role.id, permissionId },
+          },
+          update: {},
+          create: { roleId: role.id, permissionId },
+        });
+      }),
+    );
   }
 }
 
 async function seedSettings(): Promise<void> {
-  for (const setting of settingSeeds) {
-    await db.setting.upsert({
-      where: { key: setting.key },
-      update: { value: setting.value, meta: pdfMeta },
-      create: { key: setting.key, value: setting.value, meta: pdfMeta },
-    });
-  }
+  await Promise.all(
+    settingSeeds.map((setting) =>
+      db.setting.upsert({
+        where: { key: setting.key },
+        update: { value: setting.value, meta: pdfMeta },
+        create: { key: setting.key, value: setting.value, meta: pdfMeta },
+      }),
+    ),
+  );
 }
 
 async function seedCatalogue(): Promise<void> {
   const accommodations = new Map<string, string>();
-  for (const accommodation of accommodationSeeds) {
-    const row = await db.accommodation.upsert({
-      where: { slug: accommodation.slug },
-      update: {
-        type: accommodation.type,
-        name: accommodation.name,
-        description: accommodation.description,
-        meta: pdfMeta,
-      },
-      create: { ...accommodation, meta: pdfMeta },
-    });
-    accommodations.set(accommodation.slug, row.id);
+  const accommodationRows = await Promise.all(
+    accommodationSeeds.map((accommodation) =>
+      db.accommodation.upsert({
+        where: { slug: accommodation.slug },
+        update: {
+          type: accommodation.type,
+          name: accommodation.name,
+          description: accommodation.description,
+          status: "PUBLISHED",
+          meta: pdfMeta,
+        },
+        create: { ...accommodation, status: "PUBLISHED", meta: pdfMeta },
+      }),
+    ),
+  );
+  for (const row of accommodationRows) {
+    accommodations.set(row.slug, row.id);
   }
 
   const packages = new Map<string, string>();
-  for (const packageSeed of packageSeeds) {
-    const row = await db.package.upsert({
-      where: { slug: packageSeed.slug },
-      update: { ...packageSeed, meta: pdfMeta },
-      create: { ...packageSeed, meta: pdfMeta },
-    });
-    packages.set(packageSeed.slug, row.id);
+  const packageRows = await Promise.all(
+    packageSeeds.map((packageSeed) =>
+      db.package.upsert({
+        where: { slug: packageSeed.slug },
+        update: { ...packageSeed, status: "PUBLISHED", meta: pdfMeta },
+        create: { ...packageSeed, status: "PUBLISHED", meta: pdfMeta },
+      }),
+    ),
+  );
+  for (const row of packageRows) {
+    packages.set(row.slug, row.id);
   }
 
   const packageAccommodationMap = [
@@ -345,17 +402,19 @@ async function seedCatalogue(): Promise<void> {
     ["package-b", "guest-house"],
     ["package-c", "camp-lawn"],
   ] as const;
-  for (const [packageSlug, accommodationSlug] of packageAccommodationMap) {
-    const packageId = packages.get(packageSlug);
-    const accommodationId = accommodations.get(accommodationSlug);
-    if (!packageId || !accommodationId) throw new Error("Missing catalogue relation seed");
+  await Promise.all(
+    packageAccommodationMap.map(([packageSlug, accommodationSlug]) => {
+      const packageId = packages.get(packageSlug);
+      const accommodationId = accommodations.get(accommodationSlug);
+      if (!packageId || !accommodationId) throw new Error("Missing catalogue relation seed");
 
-    await db.packageAccommodation.upsert({
-      where: { packageId_accommodationId: { packageId, accommodationId } },
-      update: {},
-      create: { packageId, accommodationId },
-    });
-  }
+      return db.packageAccommodation.upsert({
+        where: { packageId_accommodationId: { packageId, accommodationId } },
+        update: {},
+        create: { packageId, accommodationId },
+      });
+    }),
+  );
 
   const rateSeeds = [
     ["package-a", "VEG", "ADULT", 140000, null, 0],
@@ -381,124 +440,148 @@ async function seedCatalogue(): Promise<void> {
     ["one-day-picnic", null, "INFANT_UNDER_4", 0, 0, 0],
   ] as const;
 
-  for (const [packageSlug, foodPreference, audience, amountPaise, percentOfAdult] of rateSeeds) {
-    const packageId = packages.get(packageSlug);
-    if (!packageId) throw new Error(`Missing package seed: ${packageSlug}`);
-    const foodKey = foodPreference ?? "ALL";
-    const seedKey = `pkg-${packageSlug.replace("package-", "")}:${foodKey}:${audience}`;
-    await db.packageRate.upsert({
-      where: { seedKey },
-      update: {
-        packageId,
-        foodPreference,
-        audience,
-        unit: "PER_PERSON_PER_DAY",
-        amountPaise,
-        percentOfAdult,
-        meta: pdfMeta,
-      },
-      create: {
-        seedKey,
-        packageId,
-        foodPreference,
-        audience,
-        unit: "PER_PERSON_PER_DAY",
-        amountPaise,
-        percentOfAdult,
-        meta: pdfMeta,
-      },
-    });
-  }
+  await Promise.all(
+    rateSeeds.map(([packageSlug, foodPreference, audience, amountPaise, percentOfAdult]) => {
+      const packageId = packages.get(packageSlug);
+      if (!packageId) throw new Error(`Missing package seed: ${packageSlug}`);
+      const foodKey = foodPreference ?? "ALL";
+      const seedKey = `pkg-${packageSlug.replace("package-", "")}:${foodKey}:${audience}`;
+      return db.packageRate.upsert({
+        where: { seedKey },
+        update: {
+          packageId,
+          foodPreference,
+          audience,
+          unit: "PER_PERSON_PER_DAY",
+          amountPaise,
+          percentOfAdult,
+          isActive: true,
+          meta: pdfMeta,
+        },
+        create: {
+          seedKey,
+          packageId,
+          foodPreference,
+          audience,
+          unit: "PER_PERSON_PER_DAY",
+          amountPaise,
+          percentOfAdult,
+          isActive: true,
+          meta: pdfMeta,
+        },
+      });
+    }),
+  );
 
   const categories = new Map<string, string>();
-  for (const category of menuCategorySeeds) {
-    const row = await db.menuCategory.upsert({
-      where: { seedKey: category.seedKey },
-      update: { slug: category.slug, name: { en: category.name }, meta: pdfMeta },
-      create: {
-        seedKey: category.seedKey,
-        slug: category.slug,
-        name: { en: category.name },
-        meta: pdfMeta,
-      },
-    });
-    categories.set(category.seedKey, row.id);
+  const categoryRows = await Promise.all(
+    menuCategorySeeds.map((category) =>
+      db.menuCategory.upsert({
+        where: { seedKey: category.seedKey },
+        update: { slug: category.slug, name: { en: category.name }, status: "PUBLISHED", meta: pdfMeta },
+        create: {
+          seedKey: category.seedKey,
+          slug: category.slug,
+          name: { en: category.name },
+          status: "PUBLISHED",
+          meta: pdfMeta,
+        },
+      }),
+    ),
+  );
+  for (const row of categoryRows) {
+    if (row.seedKey) categories.set(row.seedKey, row.id);
   }
 
-  for (const [sortOrder, item] of menuItemSeeds.entries()) {
-    const categoryId = categories.get(item.category);
-    if (!categoryId) throw new Error(`Missing menu category seed: ${item.category}`);
-    const description = "description" in item ? item.description : undefined;
-    const foodPreference = "foodPreference" in item ? item.foodPreference : undefined;
-    const isExtraCharge = "isExtraCharge" in item ? item.isExtraCharge : false;
-    const extraUnitLabel = "extraUnitLabel" in item ? item.extraUnitLabel : undefined;
-    await db.menuItem.upsert({
-      where: { seedKey: item.seedKey },
-      update: {
-        categoryId,
-        name: { en: item.name },
-        description: description ? { en: description } : undefined,
-        foodPreference,
-        isExtraCharge,
-        extraPricePaise: null,
-        extraUnitLabel,
-        sortOrder,
-        meta: pdfMeta,
-      },
-      create: {
-        seedKey: item.seedKey,
-        categoryId,
-        name: { en: item.name },
-        description: description ? { en: description } : undefined,
-        foodPreference,
-        isExtraCharge,
-        extraPricePaise: null,
-        extraUnitLabel,
-        sortOrder,
-        meta: pdfMeta,
-      },
-    });
-  }
+  await Promise.all(
+    menuItemSeeds.map((item, sortOrder) => {
+      const categoryId = categories.get(item.category);
+      if (!categoryId) throw new Error(`Missing menu category seed: ${item.category}`);
+      const description = "description" in item ? item.description : undefined;
+      const foodPreference = "foodPreference" in item ? item.foodPreference : undefined;
+      const isExtraCharge = "isExtraCharge" in item ? item.isExtraCharge : false;
+      const extraUnitLabel = "extraUnitLabel" in item ? item.extraUnitLabel : undefined;
+      return db.menuItem.upsert({
+        where: { seedKey: item.seedKey },
+        update: {
+          categoryId,
+          name: { en: item.name },
+          description: description ? { en: description } : undefined,
+          foodPreference,
+          isExtraCharge,
+          extraPricePaise: null,
+          extraUnitLabel,
+          isPublished: true,
+          status: "PUBLISHED",
+          sortOrder,
+          meta: pdfMeta,
+        },
+        create: {
+          seedKey: item.seedKey,
+          categoryId,
+          name: { en: item.name },
+          description: description ? { en: description } : undefined,
+          foodPreference,
+          isExtraCharge,
+          extraPricePaise: null,
+          extraUnitLabel,
+          isPublished: true,
+          status: "PUBLISHED",
+          sortOrder,
+          meta: pdfMeta,
+        },
+      });
+    }),
+  );
 
-  for (const [sortOrder, activity] of activitySeeds.entries()) {
-    const isExtraCost = "isExtraCost" in activity ? activity.isExtraCost : false;
-    const needsPriorNotice = "needsPriorNotice" in activity ? activity.needsPriorNotice : false;
-    const priceNote = "priceNote" in activity ? activity.priceNote : undefined;
-    await db.activity.upsert({
-      where: { slug: activity.slug },
-      update: {
-        name: { en: activity.name },
-        isExtraCost,
-        needsPriorNotice,
-        priceNote: priceNote ? { en: priceNote } : undefined,
-        conditionsNote: { en: "Arranged according to prevailing conditions and availability" },
-        sortOrder,
-        meta: pdfMeta,
-      },
-      create: {
-        slug: activity.slug,
-        name: { en: activity.name },
-        isExtraCost,
-        needsPriorNotice,
-        priceNote: priceNote ? { en: priceNote } : undefined,
-        conditionsNote: { en: "Arranged according to prevailing conditions and availability" },
-        sortOrder,
-        meta: pdfMeta,
-      },
-    });
-  }
+  await Promise.all(
+    activitySeeds.map((activity, sortOrder) => {
+      const isExtraCost = "isExtraCost" in activity ? activity.isExtraCost : false;
+      const needsPriorNotice = "needsPriorNotice" in activity ? activity.needsPriorNotice : false;
+      const priceNote = "priceNote" in activity ? activity.priceNote : undefined;
+      return db.activity.upsert({
+        where: { slug: activity.slug },
+        update: {
+          name: { en: activity.name },
+          isExtraCost,
+          needsPriorNotice,
+          priceNote: priceNote ? { en: priceNote } : undefined,
+          conditionsNote: { en: "Arranged according to prevailing conditions and availability" },
+          status: "PUBLISHED",
+          sortOrder,
+          meta: pdfMeta,
+        },
+        create: {
+          slug: activity.slug,
+          name: { en: activity.name },
+          isExtraCost,
+          needsPriorNotice,
+          priceNote: priceNote ? { en: priceNote } : undefined,
+          conditionsNote: { en: "Arranged according to prevailing conditions and availability" },
+          status: "PUBLISHED",
+          sortOrder,
+          meta: pdfMeta,
+        },
+      });
+    }),
+  );
 }
 
 async function seedPoliciesAndRewards(): Promise<void> {
   await db.policyVersion.upsert({
     where: { key_version: { key: "stay-rules-and-cancellation", version: 1 } },
-    update: { title: "Stay rules and cancellation policy", body: policyBody, meta: policyMeta },
+    update: {
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+    },
     create: {
       key: "stay-rules-and-cancellation",
       version: 1,
       title: "Stay rules and cancellation policy",
       body: policyBody,
       meta: policyMeta,
+      status: "PUBLISHED",
+      publishedAt: new Date(),
     },
   });
 
@@ -532,13 +615,127 @@ async function seedPoliciesAndRewards(): Promise<void> {
   });
 }
 
+async function seedExperiences(): Promise<void> {
+  await Promise.all(
+    experienceSeeds.map((exp) =>
+      db.experience.upsert({
+        where: { slug: exp.slug },
+        update: {
+          title: exp.title,
+          summary: exp.summary,
+          body: exp.body,
+          status: "PUBLISHED",
+          sortOrder: exp.sortOrder,
+        },
+        create: {
+          slug: exp.slug,
+          title: exp.title,
+          summary: exp.summary,
+          body: exp.body,
+          status: "PUBLISHED",
+          sortOrder: exp.sortOrder,
+        },
+      }),
+    ),
+  );
+}
+
+async function seedCmsPages(): Promise<void> {
+  const home = await db.page.upsert({
+    where: { slug: "home" },
+    update: {
+      status: "PUBLISHED",
+    },
+    create: {
+      slug: "home",
+      title: { en: "Home" },
+      status: "PUBLISHED",
+      meta: pdfMeta,
+    },
+  });
+
+  for (const [sortOrder, section] of homePageSections.entries()) {
+    const existing = await db.pageSection.findFirst({
+      where: { pageId: home.id, type: section.type },
+    });
+    if (existing) {
+      await db.pageSection.update({
+        where: { id: existing.id },
+        data: {
+          content: section.content,
+          sortOrder,
+          isVisible: section.isVisible ?? true,
+        },
+      });
+    } else {
+      await db.pageSection.create({
+        data: {
+          pageId: home.id,
+          type: section.type,
+          content: section.content,
+          sortOrder,
+          isVisible: section.isVisible ?? true,
+        },
+      });
+    }
+  }
+
+  const about = await db.page.upsert({
+    where: { slug: "about" },
+    update: {
+      status: "PUBLISHED",
+    },
+    create: {
+      slug: "about",
+      title: { en: "About" },
+      status: "PUBLISHED",
+      meta: pdfMeta,
+    },
+  });
+
+  for (const [sortOrder, section] of aboutPageSections.entries()) {
+    const existing = await db.pageSection.findFirst({
+      where: { pageId: about.id, type: section.type },
+    });
+    if (existing) {
+      await db.pageSection.update({
+        where: { id: existing.id },
+        data: {
+          content: section.content,
+          sortOrder,
+          isVisible: section.isVisible ?? true,
+        },
+      });
+    } else {
+      await db.pageSection.create({
+        data: {
+          pageId: about.id,
+          type: section.type,
+          content: section.content,
+          sortOrder,
+          isVisible: section.isVisible ?? true,
+        },
+      });
+    }
+  }
+}
+
 async function main(): Promise<void> {
+  console.log("1. Validating seed data...");
   validateSeedData();
+  console.log("2. Seeding permissions and roles...");
   await seedPermissionsAndRoles();
+  console.log("3. Seeding settings...");
   await seedSettings();
+  console.log("4. Seeding catalogue...");
   await seedCatalogue();
+  console.log("5. Seeding experiences...");
+  await seedExperiences();
+  console.log("6. Seeding policies and rewards...");
   await seedPoliciesAndRewards();
-  console.log("Prisma seed completed: permissions, roles, PDF catalogue, policies, and inactive RewardRule v1.");
+  console.log("7. Seeding CMS pages...");
+  await seedCmsPages();
+  console.log("Prisma seed completed: permissions, roles, PDF catalogue, experiences, published policies/pages, and inactive RewardRule v1.");
 }
 
 main()

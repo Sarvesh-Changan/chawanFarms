@@ -166,7 +166,7 @@ Upload flow: client requests **signed params** from `/api/upload-signature` (aut
 | `POST /api/webhooks/cloudinary` | Upload/moderation notifications | signature |
 | `GET /api/availability?from&to&accommodationId` | Public availability summary | public, rate-limited |
 | `POST /api/quote` | Price estimate (server-computed) | public, rate-limited |
-| `GET /api/admin/export/leads.csv` | CSV export | `leads.export`, audited |
+| `GET /api/admin/export/leads` | CSV export | `leads.export`, rate-limited and audited |
 | `GET /api/cron/*` | expire points/coupons, reminders, reconcile, outbox | `CRON_SECRET` bearer |
 | `GET /api/health` | Uptime | public minimal |
 

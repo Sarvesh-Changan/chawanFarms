@@ -307,8 +307,9 @@ model Lead {
   closeReason LeadCloseReason?
   assignedToId String?
   source String?                        // organic/google/instagram/whatsapp/referral/offline
-  utmSource String? utmMedium String? utmCampaign String? utmTerm String? utmContent String?
-  firstReferrer String? firstLandingPath String? lastLandingPath String?
+  firstUtmSource String? firstUtmMedium String? firstUtmCampaign String? firstUtmTerm String? firstUtmContent String?
+  utmSource String? utmMedium String? utmCampaign String? utmTerm String? utmContent String? // last touch
+  firstReferrer String? lastReferrer String? firstLandingPath String? lastLandingPath String?
   deviceClass String?
   followUpAt DateTime?
   convertedAt DateTime? closedAt DateTime?
@@ -318,6 +319,22 @@ model Lead {
   events LeadEvent[] notes LeadNote[] enquiries Enquiry[] bookings Booking[]
   @@index([status, createdAt]) @@index([assignedToId, status]) @@index([phone]) @@index([email]) @@index([followUpAt])
 }
+
+model SavedFilter {
+  id String @id @default(uuid())
+  userId String // FK User, ON DELETE CASCADE
+  scope String // CRM view scope; v1 uses "leads"
+  name String
+  filters Json // strict validated filter schema; private to user
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([userId, scope, name])
+  @@index([userId, scope, createdAt])
+}
+
+Add `savedFilters SavedFilter[]` to `User`; the relation enforces owner deletion cascade.
+
+Service invariant: maximum 20 saved filters per user and scope. The database migration is `add_saved_filter`; it adds this table without modifying prior migrations.
 model LeadEvent { id String @id @default(cuid()) leadId String? anonymousId String?
   type String                           // WHATSAPP_CLICK CALL_CLICK FORM_SUBMIT STATUS_CHANGE …
   path String? meta Json? createdAt DateTime @default(now())
@@ -333,13 +350,15 @@ model Enquiry {
   packageId String? activityId String? accommodationId String?
   message String?
   preferredStart DateTime? @db.Date preferredEnd DateTime? @db.Date
-  adults Int? children Int? infants Int?
+  adults Int? children Int? infants Int? groupSize Int?
   consentToContact Boolean @default(false)
-  pagePath String?
+  pagePath String? idempotencyKey String? @unique
   createdAt DateTime @default(now())
   lead Lead @relation(fields:[leadId], references:[id], onDelete: Restrict)
   @@index([leadId]) @@index([createdAt])
 }
+// NEW migration add_lead_capture creates enquiry_reference_seq and adds first-touch attribution,
+// group size, and idempotency columns. References are ENQ-YYYY-NNNNNN. Never db push.
 model Booking {
   id String @id @default(cuid())
   reference String @unique              // BKG-2026-000045
@@ -360,6 +379,7 @@ model Booking {
   pricingSnapshot Json                  // rates, rules, coupon, version used
   couponId String? @unique
   offerId String?
+  idempotencyKey String? @unique
   holdExpiresAt DateTime?
   confirmedAt DateTime? cancelledAt DateTime? cancelReason String?
   internalNotes String?
@@ -374,7 +394,7 @@ model Booking {
   couponRedemption CouponRedemption?
   @@index([status, checkIn]) @@index([userId, createdAt]) @@index([checkIn, checkOut])
 }
-// RAW SQL: CHECK ("checkOut" > "checkIn" AND adults >= 1 AND "totalPaise" >= 0 AND "discountPaise" <= "subtotalPaise")
+// RAW SQL: CHECK ("checkOut" >= "checkIn" AND "nights" >= 0 AND adults >= 1 AND "totalPaise" >= 0 AND "discountPaise" <= "subtotalPaise")
 
 model BookingLine { id String @id @default(cuid()) bookingId String
   kind String                           // STAY | FOOD_EXTRA | ACTIVITY | EXTRA | DISCOUNT | TAX
@@ -395,7 +415,7 @@ model Payment {                         // manual in v1; gateway-ready
   booking Booking @relation(fields:[bookingId], references:[id], onDelete: Restrict)
   @@index([bookingId])
 }
-model PolicyVersion { id String @id @default(cuid()) key String version Int title String body Json publishedAt DateTime @default(now())
+model PolicyVersion { id String @id @default(cuid()) key String version Int title String body Json status PublishStatus @default(DRAFT) publishedAt DateTime? meta Json?
   acceptances PolicyAcceptance[] @@unique([key, version]) }
 model PolicyAcceptance { id String @id @default(cuid()) bookingId String policyVersionId String ip String? acceptedAt DateTime @default(now())
   booking Booking @relation(fields:[bookingId], references:[id], onDelete: Cascade)
@@ -549,10 +569,10 @@ model Favourite { userId String entityType String entityId String createdAt Date
   user User @relation(fields:[userId], references:[id], onDelete: Cascade) @@id([userId, entityType, entityId]) }
 
 // ───────── CMS ─────────
-model Page { id String @id @default(cuid()) slug String @unique title Json status PublishStatus @default(DRAFT) publishAt DateTime? template String @default("default") deletedAt DateTime? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
+model Page { id String @id @default(cuid()) slug String @unique title Json status PublishStatus @default(DRAFT) publishAt DateTime? template String @default("default") meta Json? deletedAt DateTime? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
   sections PageSection[] @@index([status]) }
 model PageSection { id String @id @default(cuid()) pageId String type String   // hero, why, experiences-grid, rewards-teaser …
-  content Json                          // validated by per-type zod schema
+  content Json                          // validated by per-type Zod discriminated schema
   sortOrder Int isVisible Boolean @default(true)
   page Page @relation(fields:[pageId], references:[id], onDelete: Cascade) @@index([pageId, sortOrder]) }
 model PostCategory { id String @id @default(cuid()) slug String @unique name Json posts Post[] }
@@ -619,7 +639,7 @@ published, non-deleted GalleryItem and public, non-deleted media.
 `prisma/seed.ts` is idempotent (upsert by slug/key) and loads:
 1. **Permissions & roles** (below).
 2. **PDF-sourced catalogue** (Appendix A of PRD): Packages A/B/C/Picnic, `PackageRate` rows (₹1400/1800, 2300/2800, 1200/1800, 1100 adult / 750 kids; child 4–10 = 60%; under-4 = 0), accommodation (Tent, Dormitory, Guest House [2 AC rooms with terrace], Camp Lawn), menu items, activities list, amenities, policies (stay rules as `PolicyVersion` v1 **DRAFT-flagged pending D-2**), contact numbers and address into `Setting`. Every PDF-derived row carries `meta = { "source": "client-pdf" }`; the policy additionally carries `pendingDecision = "D-2 cancellation conflict"`.
-   `PackageRate`, `MenuCategory`, and `MenuItem` use deterministic unique `seedKey` values for rerunnable upserts.
+   `PackageRate`, `MenuCategory`, and `MenuItem` use deterministic unique `seedKey` values for rerunnable upserts. Home and About `Page`/`PageSection` structures are inserted only when absent, remain `DRAFT`, and carry `meta.source = client-pdf`; seeded copy is limited to extracted PDF wording. The stay/cancellation version is `DRAFT` with `meta.pendingDecision = D-2 cancellation conflict` and is never overwritten by a seed rerun.
 3. Items not in the PDF → **not seeded**.
 4. Default inactive `RewardRule` v1 with **placeholder zeros/nulls** — values must be set by the client in admin (D-8). Never ship invented reward numbers.
 5. Dev-only fixtures behind `NODE_ENV !== 'production'`.
@@ -669,3 +689,11 @@ Isolation: default Read Committed + explicit row locks; use Serializable only wh
 
 ## 9. Migration workflow
 `prisma migrate dev` locally → review SQL → commit → CI `migrate deploy` on release. Hand-written SQL migrations for triggers/constraints via `--create-only`. Never `db push` against production. Backfills as separate scripts with dry-run.
+
+### CMS page, SEO and policy workflow migration
+
+`20261009120000_add_cms_page_policy_workflow` adds explicit `PolicyVersion.status` (`DRAFT` by default) and makes `publishedAt` nullable, so a draft cannot be treated as a published policy. It also adds `Page.meta` for source provenance. It is additive; do not edit earlier migrations or use `prisma db push`. Published policy rows are immutable in application services; a new version is created instead. The D-2 cancellation records remain unpublished until a client decision is recorded.
+
+### Booking day visits and idempotency migration
+
+`20261010100000_booking_day_visits_and_idempotency` updates the `Booking` CHECK constraint to allow day visits (`"checkOut" >= "checkIn" AND "nights" >= 0`), adds `Booking.idempotencyKey` with a unique index for race-safe request submission, updates `AvailabilityDay` counters check to accommodate unconstrained capacity (`capacity <= 0`), and creates `booking_reference_seq` for race-safe reference generation (`BKG-YYYY-NNNNNN`). Never edit applied migrations; never db push.
