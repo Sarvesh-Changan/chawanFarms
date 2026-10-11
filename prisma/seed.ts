@@ -2,6 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { config as loadEnv } from "dotenv";
 import { z } from "zod";
 
+import { PROVISIONAL_REWARD_DEFAULTS } from "../src/config/reward-defaults";
 import { PrismaClient, Prisma } from "../src/generated/prisma/client";
 import { pageBuilderSchema } from "../src/lib/schemas/cms/pages";
 import {
@@ -585,34 +586,50 @@ async function seedPoliciesAndRewards(): Promise<void> {
     },
   });
 
-  await db.rewardRule.upsert({
-    where: { version: 1 },
-    update: {
-      isActive: false,
-      pointsPerApprovedVideo: 0,
-      maxPointsPerCustomer: null,
-      maxSubmissionsPerPeriod: null,
-      periodDays: null,
-      pointExpiryDays: null,
-      minPointsToRedeem: 0,
-      couponValidityDays: 0,
-      allowCombineWithOffers: false,
-      allowMultipleCouponsPerBooking: false,
-      manualAdjustMaxPoints: 0,
-      manualAdjustApprovalThreshold: 0,
-      meta: pdfMeta,
-    },
-    create: {
-      version: 1,
-      isActive: false,
-      pointsPerApprovedVideo: 0,
-      minPointsToRedeem: 0,
-      couponValidityDays: 0,
-      manualAdjustMaxPoints: 0,
-      manualAdjustApprovalThreshold: 0,
-      meta: pdfMeta,
-    },
-  });
+  const existingRewardRuleCount = await db.rewardRule.count();
+  if (existingRewardRuleCount === 0) {
+    const provisionalMeta = {
+      source: "provisional-default",
+      provisional: true,
+      needsClientApproval: "D-8",
+    } satisfies Prisma.InputJsonObject;
+
+    const rule = await db.rewardRule.create({
+      data: {
+        version: 1,
+        isActive: false,
+        pointsPerApprovedVideo: PROVISIONAL_REWARD_DEFAULTS.pointsPerApprovedVideo,
+        maxPointsPerCustomer: PROVISIONAL_REWARD_DEFAULTS.maxPointsPerCustomer ?? null,
+        maxSubmissionsPerPeriod: PROVISIONAL_REWARD_DEFAULTS.maxSubmissionsPerPeriod ?? null,
+        periodDays: PROVISIONAL_REWARD_DEFAULTS.periodDays ?? null,
+        pointExpiryDays: PROVISIONAL_REWARD_DEFAULTS.pointExpiryDays ?? null,
+        minPointsToRedeem: PROVISIONAL_REWARD_DEFAULTS.minPointsToRedeem,
+        couponValidityDays: PROVISIONAL_REWARD_DEFAULTS.couponValidityDays,
+        allowCombineWithOffers: PROVISIONAL_REWARD_DEFAULTS.allowCombineWithOffers,
+        allowMultipleCouponsPerBooking: PROVISIONAL_REWARD_DEFAULTS.allowMultipleCouponsPerBooking,
+        manualAdjustMaxPoints: PROVISIONAL_REWARD_DEFAULTS.manualAdjustMaxPoints,
+        manualAdjustApprovalThreshold: PROVISIONAL_REWARD_DEFAULTS.manualAdjustApprovalThreshold,
+        meta: provisionalMeta,
+      },
+    });
+
+    for (const tier of PROVISIONAL_REWARD_DEFAULTS.tiers) {
+      await db.rewardTier.create({
+        data: {
+          ruleId: rule.id,
+          name: tier.name,
+          pointsCost: tier.pointsCost,
+          discountType: tier.discountType,
+          discountValue: tier.discountValue,
+          maxDiscountPaise: tier.maxDiscountPaise ?? null,
+          minBookingPaise: tier.minBookingPaise ?? null,
+          allPackages: tier.allPackages ?? true,
+          allAccommodation: tier.allAccommodation ?? true,
+          isActive: tier.isActive ?? true,
+        },
+      });
+    }
+  }
 }
 
 async function seedExperiences(): Promise<void> {

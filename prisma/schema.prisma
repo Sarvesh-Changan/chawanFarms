@@ -901,6 +901,8 @@ model RewardTier {
   discountValue    Int
   maxDiscountPaise Int?
   minBookingPaise  Int?
+  allPackages      Boolean                   @default(true)
+  allAccommodation Boolean                   @default(true)
   isActive         Boolean                   @default(true)
   rule             RewardRule                @relation(fields: [ruleId], references: [id], onDelete: Restrict)
   packages         RewardTierPackage[]

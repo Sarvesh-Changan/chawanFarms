@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default function AdminRewardsPage() {
-  return <div>Admin rewards placeholder</div>;
+  redirect("/admin/rewards/rules");
 }

@@ -1,8 +1,10 @@
 import { createInterface } from "node:readline/promises";
-import { config as loadEnv } from "dotenv";
-import { hashPassword } from "better-auth/crypto";
-import { PrismaClient } from "../src/generated/prisma/client";
+
 import { PrismaPg } from "@prisma/adapter-pg";
+import { hashPassword } from "better-auth/crypto";
+import { config as loadEnv } from "dotenv";
+
+import { PrismaClient } from "../src/generated/prisma/client";
 
 loadEnv({ path: ".env.local" });
 loadEnv();
@@ -22,18 +24,22 @@ async function main() {
   let email = "";
   let name = "";
   let password = "";
+  let twoFactorEnabled = true;
 
   for (let i = 0; i < args.length; i += 1) {
-    const val = args[i + 1];
-    if (args[i] === "--email" && typeof val === "string") {
+    const current = args.at(i);
+    const val = args.at(i + 1);
+    if (current === "--email" && typeof val === "string") {
       email = val;
       i += 1;
-    } else if (args[i] === "--name" && typeof val === "string") {
+    } else if (current === "--name" && typeof val === "string") {
       name = val;
       i += 1;
-    } else if (args[i] === "--password" && typeof val === "string") {
+    } else if (current === "--password" && typeof val === "string") {
       password = val;
       i += 1;
+    } else if (current === "--no-2fa") {
+      twoFactorEnabled = false;
     }
   }
 
@@ -98,6 +104,7 @@ async function main() {
         type: "STAFF",
         status: "ACTIVE",
         emailVerified: true,
+        twoFactorEnabled,
       },
     });
   } else {
@@ -108,6 +115,7 @@ async function main() {
         type: "STAFF",
         status: "ACTIVE",
         emailVerified: true,
+        twoFactorEnabled,
       },
     });
     console.log(`Created staff user record (${user.id}).`);

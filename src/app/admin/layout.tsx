@@ -18,9 +18,9 @@ const navigation = [
   ] },
   { label: "Enquiries", href: "/admin/enquiries", permission: "enquiries.read" },
   { label: "Leads", href: "/admin/leads", permission: "leads.read" },
-  { label: "Customers", href: "/admin/customers", permission: "customers.read" },
-  { label: "Rewards", href: "/admin/rewards", permission: ["rewards.videos.read", "rewards.rules.read", "rewards.ledger.read"] },
-  { label: "Media", href: "/admin/media", permission: "media.read" },
+  { label: "Rewards", href: "/admin/rewards/rules", permission: ["rewards.videos.read", "rewards.rules.read", "rewards.ledger.read"], children: [
+    { label: "Rules & Tiers", href: "/admin/rewards/rules", permission: "rewards.rules.read" },
+  ] },
   { label: "SEO", href: "/admin/seo", permission: "seo.write" },
   { label: "Settings", href: "/admin/settings", permission: "settings.read" },
   { label: "Security", href: "/admin/security/staff", permission: "staff.read", children: [

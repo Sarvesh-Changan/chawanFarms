@@ -500,6 +500,8 @@ model RewardTier {
   discountValue Int                     // paise if FIXED; percent (1–100) if PERCENTAGE
   maxDiscountPaise Int?
   minBookingPaise Int?
+  allPackages Boolean @default(true)
+  allAccommodation Boolean @default(true)
   isActive Boolean @default(true)
   rule RewardRule @relation(fields:[ruleId], references:[id], onDelete: Restrict)
   packages RewardTierPackage[] accommodations RewardTierAccommodation[] coupons Coupon[]
@@ -641,7 +643,7 @@ published, non-deleted GalleryItem and public, non-deleted media.
 2. **PDF-sourced catalogue** (Appendix A of PRD): Packages A/B/C/Picnic, `PackageRate` rows (₹1400/1800, 2300/2800, 1200/1800, 1100 adult / 750 kids; child 4–10 = 60%; under-4 = 0), accommodation (Tent, Dormitory, Guest House [2 AC rooms with terrace], Camp Lawn), menu items, activities list, amenities, policies (stay rules as `PolicyVersion` v1 **DRAFT-flagged pending D-2**), contact numbers and address into `Setting`. Every PDF-derived row carries `meta = { "source": "client-pdf" }`; the policy additionally carries `pendingDecision = "D-2 cancellation conflict"`.
    `PackageRate`, `MenuCategory`, and `MenuItem` use deterministic unique `seedKey` values for rerunnable upserts. Home and About `Page`/`PageSection` structures are inserted only when absent, remain `DRAFT`, and carry `meta.source = client-pdf`; seeded copy is limited to extracted PDF wording. The stay/cancellation version is `DRAFT` with `meta.pendingDecision = D-2 cancellation conflict` and is never overwritten by a seed rerun.
 3. Items not in the PDF → **not seeded**.
-4. Default inactive `RewardRule` v1 with **placeholder zeros/nulls** — values must be set by the client in admin (D-8). Never ship invented reward numbers.
+4. Default inactive `RewardRule` v1 with provisional placeholder defaults loaded from `src/config/reward-defaults.ts` (`meta = { source: 'provisional-default', provisional: true, needsClientApproval: 'D-8' }`). The seed is **create-only**: if any `RewardRule` exists, it does nothing and never overwrites active or edited rules. Values must be reviewed and confirmed with the client before activation (D-8).
 5. Dev-only fixtures behind `NODE_ENV !== 'production'`.
 
 ## 5. Roles & permissions (seed)
@@ -697,3 +699,8 @@ Isolation: default Read Committed + explicit row locks; use Serializable only wh
 ### Booking day visits and idempotency migration
 
 `20261010100000_booking_day_visits_and_idempotency` updates the `Booking` CHECK constraint to allow day visits (`"checkOut" >= "checkIn" AND "nights" >= 0`), adds `Booking.idempotencyKey` with a unique index for race-safe request submission, updates `AvailabilityDay` counters check to accommodate unconstrained capacity (`capacity <= 0`), and creates `booking_reference_seq` for race-safe reference generation (`BKG-YYYY-NNNNNN`). Never edit applied migrations; never db push.
+
+### Reward tier eligibility flags migration
+
+`20261011120000_reward_tier_eligibility_flags` adds `allPackages` (boolean, default true) and `allAccommodation` (boolean, default true) to `RewardTier`. When these flags are true, the tier applies to all packages and accommodations without requiring join table rows. When false, explicit eligibility is restricted to linked `RewardTierPackage` and `RewardTierAccommodation` rows. Never edit applied migrations; never db push.
+

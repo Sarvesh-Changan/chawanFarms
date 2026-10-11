@@ -51,9 +51,9 @@ const permissionContextSchema = z
       })
       .optional(),
   })
-  .strict();
+  .passthrough();
 
-const userSchema = z.object({ id: z.string().uuid() }).strict();
+const userSchema = z.object({ id: z.string().uuid() });
 
 async function loadStaffUser(userId: string): Promise<StaffPrincipal | null> {
   const user = await db.user.findUnique({
