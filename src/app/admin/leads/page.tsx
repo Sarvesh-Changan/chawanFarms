@@ -32,7 +32,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps<"/admin
   const staff = session ? await getStaffPrincipal(session.user.id) : null;
   if (!staff) return <NoAccess title="Staff access required" />;
   try { await requirePermission("leads.read"); }
-  catch (error) { return <NoAccess title={error instanceof AuthorizationError && !staff.twoFactorEnabled ? "Set up two-factor authentication" : "Lead access required"} message="Your staff role does not have permission to view the CRM." />; }
+  catch { return <NoAccess title="Lead access required" message="Your staff role does not have permission to view the CRM." />; }
 
   const raw = await searchParams;
   const parsedQuery = leadListQuerySchema.safeParse(raw);

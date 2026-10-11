@@ -10,7 +10,7 @@ import { listRoles } from "@/server/services/admin-dashboard";
 export default async function AdminRolesPage() {
   const session = await getSession();
   const actor = session ? await getStaffPrincipal(session.user.id) : null;
-  if (!actor || !(await can(actor, "roles.write"))) return <NoAccess title={actor && !actor.twoFactorEnabled ? "Set up two-factor authentication" : "Roles access required"} />;
+  if (!actor || !(await can(actor, "roles.write"))) return <NoAccess title="Roles access required" />;
   const roles = await listRoles();
   const matrixSchema = z.array(z.object({ id: z.string().uuid(), permissions: z.array(z.object({ permission: z.object({ key: z.string().min(1) }) })) }));
   const parsedRoles = matrixSchema.parse(roles);

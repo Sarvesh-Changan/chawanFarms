@@ -26,7 +26,7 @@ const columns = [
 export default async function AdminAuditPage({ searchParams }: PageProps<"/admin/security/audit">) {
   const session = await getSession();
   const actor = session ? await getStaffPrincipal(session.user.id) : null;
-  if (!actor || !(await can(actor, "audit.read"))) return <NoAccess title={actor && !actor.twoFactorEnabled ? "Set up two-factor authentication" : "Audit access required"} />;
+  if (!actor || !(await can(actor, "audit.read"))) return <NoAccess title="Audit access required" />;
   const query = querySchema.parse(await searchParams);
   const result = await listAudit(query.page, 50, { action: query.action, entityType: query.entityType, actorId: query.actorId }, query.sort, query.direction);
   return <div className="space-y-6"><PageHeader eyebrow="Access management" title="Audit log" description="Append-only records of staff actions. Sensitive fields are redacted before display." /><FilterBar fields={[{ name: "action", label: "Action", placeholder: "staff.invite.create" }, { name: "entityType", label: "Entity type", placeholder: "User" }, { name: "actorId", label: "Actor ID", placeholder: "UUID" }]} /><p className="text-sm text-muted-foreground">{result.total} matching events</p><DataTable columns={columns} data={result.rows} page={result.page} pageCount={result.pageCount} pageSize={result.pageSize} emptyMessage="No audit events match these filters." /></div>;

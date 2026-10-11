@@ -17,7 +17,7 @@ export default async function AdminLeadDetailPage({ params }: { params: Promise<
   const staff = session ? await getStaffPrincipal(session.user.id) : null;
   if (!staff) return <NoAccess title="Staff access required" />;
   try { await requirePermission("leads.read"); }
-  catch (error) { return <NoAccess title={error instanceof AuthorizationError && !staff.twoFactorEnabled ? "Set up two-factor authentication" : "Lead access required"} />; }
+  catch { return <NoAccess title="Lead access required" />; }
   const { id } = await params;
   const lead = await getLeadDetail(id);
   if (!lead) notFound();

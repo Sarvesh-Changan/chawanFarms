@@ -13,7 +13,7 @@ export default async function AdminPage() {
   if (!session) return <NoAccess title="Sign in to continue" message="Use your invited staff account to open the admin dashboard." />;
   const staff = await getStaffPrincipal(session.user.id);
   if (!staff) return <NoAccess title="Staff access required" message="The admin dashboard is available to invited staff accounts." />;
-  if (!(await can(staff, "dashboard.read"))) return <NoAccess title={staff.twoFactorEnabled ? "Dashboard access required" : "Set up two-factor authentication"} message={staff.twoFactorEnabled ? "Your current role cannot view the dashboard." : "Two-factor authentication is required for this staff role."} />;
+  if (!(await can(staff, "dashboard.read"))) return <NoAccess title="Dashboard access required" message="Your current role cannot view the dashboard." />;
 
   const canReadAudit = await can(staff, "audit.read");
   const canReadLeads = await can(staff, "leads.read");

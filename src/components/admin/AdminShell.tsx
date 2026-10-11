@@ -68,7 +68,6 @@ export function AdminShell({ children, items, staff, displayName }: { children: 
       </header>
       <main className="mx-auto w-full max-w-[100rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
         <Breadcrumbs pathname={pathname} />
-        {!staff.twoFactorEnabled && (staff.roleNames.includes("Super Admin") || staff.roleNames.includes("Owner/Manager")) ? <div role="status" className="mb-5 flex flex-col gap-2 rounded-xl border border-laterite-600/30 bg-laterite-600/5 p-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-sm">Set up an authenticator to unlock protected admin features.</p><Button asChild size="sm"><Link href="/admin/security/two-factor">Set up two-factor</Link></Button></div> : null}
         {children}
       </main>
     </div>

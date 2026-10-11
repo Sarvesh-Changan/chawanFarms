@@ -286,35 +286,12 @@ export async function disableStaffAction(rawInput: unknown): Promise<Result<{ di
   }
 }
 
-export async function startTwoFactorSetupAction(rawInput: unknown): Promise<Result<{ totpURI: string; backupCodes: string[] }>> {
-  const access = await authorizeStaff("staff.read", { allowTwoFactorSetup: true });
-  if (!access.ok) return err(access.error.code, access.error.message);
-  const actor = access.data;
-  const parsed = totpSetupSchema.safeParse(rawInput);
-  if (!parsed.success) return validationError();
-  try {
-    const result = await auth.api.enableTwoFactor({ body: { password: parsed.data.password, method: "totp" }, headers: await headers() });
-    if (result.method !== "totp") return err("INTERNAL", "TOTP setup is unavailable.");
-    const auditResult = await requestAudit(actor.id, "auth.2fa.setup.started", "User", actor.id, { enabled: false }, { setupStarted: true });
-    return auditResult.ok ? ok({ totpURI: result.totpURI, backupCodes: result.backupCodes }) : auditResult;
-  } catch {
-    return err("FORBIDDEN", "Unable to start two-factor setup. Confirm your password and try again.");
-  }
+export async function startTwoFactorSetupAction(_rawInput: unknown): Promise<Result<{ totpURI: string; backupCodes: string[] }>> {
+  return err("CONFLICT", "Two-factor authentication is disabled for this workspace.");
 }
 
-export async function verifyTwoFactorSetupAction(rawInput: unknown): Promise<Result<{ enabled: true }>> {
-  const access = await authorizeStaff("staff.read", { allowTwoFactorSetup: true });
-  if (!access.ok) return err(access.error.code, access.error.message);
-  const actor = access.data;
-  const parsed = totpVerifySchema.safeParse(rawInput);
-  if (!parsed.success) return validationError();
-  try {
-    await auth.api.verifyTOTP({ body: { code: parsed.data.code }, headers: await headers() });
-    const auditResult = await requestAudit(actor.id, "auth.2fa.enabled", "User", actor.id, { enabled: false }, { enabled: true });
-    return auditResult.ok ? ok({ enabled: true }) : auditResult;
-  } catch {
-    return err("VALIDATION", "That authenticator code could not be verified.");
-  }
+export async function verifyTwoFactorSetupAction(_rawInput: unknown): Promise<Result<{ enabled: true }>> {
+  return err("CONFLICT", "Two-factor authentication is disabled for this workspace.");
 }
 
 export async function revokeOwnSessionAction(rawInput: unknown): Promise<Result<{ revoked: true }>> {

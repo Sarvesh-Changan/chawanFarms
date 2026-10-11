@@ -3,7 +3,6 @@ import "server-only";
 import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
-import { twoFactor } from "better-auth/plugins";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -76,10 +75,6 @@ export const auth = betterAuth({
     },
   },
   plugins: [
-    twoFactor({
-      issuer: "Chawan Farms",
-      accountLockout: { enabled: true, maxFailedAttempts: 5, durationSeconds: 900 },
-    }),
     nextCookies(),
   ],
 });

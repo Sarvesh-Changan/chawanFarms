@@ -26,7 +26,7 @@ const columns = [
 export default async function AdminStaffPage({ searchParams }: PageProps<"/admin/security/staff">) {
   const session = await getSession();
   const staffUser = session ? await getStaffPrincipal(session.user.id) : null;
-  if (!staffUser || !(await can(staffUser, "staff.read"))) return <NoAccess title={staffUser && !staffUser.twoFactorEnabled ? "Set up two-factor authentication" : "Staff list access required"} />;
+  if (!staffUser || !(await can(staffUser, "staff.read"))) return <NoAccess title="Staff list access required" />;
   const query = querySchema.parse(await searchParams);
   const canInvite = await can(staffUser, "staff.write");
   const canEditRoles = await can(staffUser, "roles.write");

@@ -28,7 +28,6 @@ const navigation = [
     { label: "Roles & permissions", href: "/admin/security/roles", permission: "roles.write" },
     { label: "Audit log", href: "/admin/security/audit", permission: "audit.read" },
     { label: "Your sessions", href: "/admin/security/sessions", permission: "staff.read" },
-    { label: "Two-factor setup", href: "/admin/security/two-factor", permission: "staff.read" },
   ] },
 ] satisfies AdminNavigationItem[];
 
@@ -39,7 +38,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   if (!staff) return <NoAccess title="Staff access required" message="The admin workspace is available to invited staff accounts." />;
 
   const items = (await Promise.all(navigation.map(async (item) => {
-    const children = item.children ? (await Promise.all(item.children.map(async (child) => ({ child, allowed: await can(staff, child.permission as Permission, child.href.endsWith("two-factor") ? { allowTwoFactorSetup: true } : undefined) })))).filter(({ child, allowed }) => allowed || (child.href.endsWith("two-factor") && !staff.twoFactorEnabled && (staff.roleNames.includes("Super Admin") || staff.roleNames.includes("Owner/Manager")))).map(({ child }) => child) : undefined;
+    const children = item.children
+      ? (await Promise.all(item.children.map(async (child) => ({ child, allowed: await can(staff, child.permission as Permission) }))))
+          .filter(({ allowed }) => allowed)
+          .map(({ child }) => child)
+      : undefined;
     const permissions = Array.isArray(item.permission) ? item.permission : [item.permission];
     const allowed = (await Promise.all(permissions.map((permission) => can(staff, permission as Permission)))).some(Boolean);
     const visible = item.children ? Boolean(children?.length) : allowed;

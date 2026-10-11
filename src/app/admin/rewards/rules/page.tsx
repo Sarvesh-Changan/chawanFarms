@@ -33,19 +33,11 @@ export default async function RewardRulesPage() {
 
   try {
     await requirePermission("rewards.rules.read");
-  } catch (error) {
+  } catch {
     return (
       <NoAccess
-        title={
-          error instanceof AuthorizationError && !staff.twoFactorEnabled
-            ? "Set up two-factor authentication"
-            : "Reward access required"
-        }
-        message={
-          !staff.twoFactorEnabled
-            ? "Two-factor authentication is required for your staff role to configure reward rules."
-            : "Your staff role does not have permission to view reward rules."
-        }
+        title="Reward access required"
+        message="Your staff role does not have permission to view reward rules."
       />
     );
   }

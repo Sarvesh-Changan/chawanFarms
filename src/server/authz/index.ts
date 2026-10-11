@@ -109,10 +109,6 @@ export async function can(
   const staffUser = await loadStaffUser(parsedUser.data.id);
   if (!staffUser) return false;
 
-  if (requiresTwoFactor(staffUser.roleNames) && !staffUser.twoFactorEnabled) {
-    if (!(parsedContext.data?.allowTwoFactorSetup && permission === "staff.read")) return false;
-  }
-
   let rewardAdjustMaxPoints: number | undefined;
   if (permission === "rewards.adjust" && parsedContext.data?.amount !== undefined) {
     const activeRule = await db.rewardRule.findFirst({
@@ -176,8 +172,8 @@ export async function requirePermission(
   return staffUser;
 }
 
-export function requiresTwoFactor(roleNames: readonly string[]): boolean {
-  return roleNames.includes("Super Admin") || roleNames.includes("Owner/Manager");
+export function requiresTwoFactor(_roleNames?: readonly string[]): boolean {
+  return false;
 }
 
 export function owns(user: AuthzUser, ownerId: string): boolean {
