@@ -141,6 +141,12 @@ enum CouponStatus {
   REVOKED
 }
 
+enum PointsAdjustmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum ReviewStatus {
   PENDING
   APPROVED
@@ -194,6 +200,9 @@ model User {
   videos           VideoSubmission[]
   ledger           PointsLedger[]
   coupons          Coupon[]
+  pointsAdjustmentRequests PointsAdjustmentRequest[] @relation("UserPointsAdjustments")
+  requestedAdjustments     PointsAdjustmentRequest[] @relation("RequestedAdjustments")
+  decidedAdjustments       PointsAdjustmentRequest[] @relation("DecidedAdjustments")
   favourites       Favourite[]
   reviews          Review[]
   notifications    Notification[]
@@ -947,10 +956,32 @@ model PointsLedger {
   user              User             @relation(fields: [userId], references: [id], onDelete: Restrict)
   video             VideoSubmission? @relation(fields: [videoSubmissionId], references: [id], onDelete: Restrict)
   rule              RewardRule?      @relation(fields: [ruleId], references: [id], onDelete: Restrict)
+  adjustmentRequest PointsAdjustmentRequest?
 
   @@index([userId, createdAt])
   @@index([type, createdAt])
   @@index([expiresAt])
+}
+
+model PointsAdjustmentRequest {
+  id             String                 @id @default(uuid())
+  userId         String
+  points         Int
+  reason         String
+  requestedById  String
+  status         PointsAdjustmentStatus @default(PENDING)
+  decidedById    String?
+  decidedAt      DateTime?
+  ledgerEntryId  String?                @unique
+  idempotencyKey String                 @unique
+  createdAt      DateTime               @default(now())
+  user           User                   @relation("UserPointsAdjustments", fields: [userId], references: [id], onDelete: Restrict)
+  requestedBy    User                   @relation("RequestedAdjustments", fields: [requestedById], references: [id], onDelete: Restrict)
+  decidedBy      User?                  @relation("DecidedAdjustments", fields: [decidedById], references: [id], onDelete: Restrict)
+  ledgerEntry    PointsLedger?          @relation(fields: [ledgerEntryId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([userId, status])
 }
 
 model Coupon {
@@ -968,20 +999,24 @@ model Coupon {
   expiresAt        DateTime
   user             User              @relation(fields: [userId], references: [id], onDelete: Restrict)
   tier             RewardTier        @relation(fields: [tierId], references: [id], onDelete: Restrict)
-  redemption       CouponRedemption?
+  redemptions      CouponRedemption[]
 
   @@index([userId, status])
   @@index([expiresAt])
 }
 
 model CouponRedemption {
-  id            String   @id @default(uuid())
-  couponId      String   @unique
-  bookingId     String   @unique
+  id            String    @id @default(uuid())
+  couponId      String
+  bookingId     String    @unique
   discountPaise Int
-  createdAt     DateTime @default(now())
-  coupon        Coupon   @relation(fields: [couponId], references: [id], onDelete: Restrict)
-  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  releasedAt    DateTime?
+  releaseReason String?
+  createdAt     DateTime  @default(now())
+  coupon        Coupon    @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  booking       Booking   @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+
+  @@index([couponId])
 }
 
 model Referral {

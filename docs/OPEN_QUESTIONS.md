@@ -85,6 +85,7 @@ These values were supplied for implementation, are **provisional**, and do not r
 - **D-2 Cancellation/refund — UNRESOLVED CONFLICT in PDF:** ("no refund/cancellation/postponement once confirmed & paid" vs "25% charged when cancelled seven days before check-in").
   - Default: The system makes NO automatic refund decision.
   - Staff cancel with a mandatory reason and manually record any refund amount.
+  - **Coupon on booking cancellation (Decided 2026-10-11):** Restore the coupon to `ACTIVE` if its `expiresAt` is still in the future and the booking is cancelled/rejected BEFORE check-in (`releasedAt` set, `releaseReason` recorded, row retained). Do NOT restore for `NO_SHOW` or `COMPLETED`. Never refund or reverse points on cancellation (since D-2 refund policy is unresolved). If the coupon has already expired, it stays expired. Redemption history is kept (rows never deleted).
   - The policy page shows both PDF statements verbatim, flagged "needs client confirmation".
   - **LAUNCH BLOCKER:** Client must provide approved final text.
 

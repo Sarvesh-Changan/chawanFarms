@@ -15,7 +15,7 @@ import {
 import {
   validateBookingStatusTransition,
 } from "@/server/policies/bookingStatus";
-import { quote, type RateRow } from "@/server/policies/pricing";
+import { quote, type RateRow, type ValidatedCoupon } from "@/server/policies/pricing";
 import { audit } from "@/server/services/audit";
 import {
   confirmBookingAvailability,
@@ -25,6 +25,11 @@ import {
   resolveAccommodationCapacity,
   resolveRequiredUnits,
 } from "@/server/services/availability";
+import {
+  confirmCouponRedemption,
+  releaseCouponOnCancellation,
+  validateCoupon,
+} from "@/server/services/coupons";
 
 export type BookingResult = {
   id: string;
@@ -166,6 +171,50 @@ export async function submitBookingRequest(
       ? taxSetting.value
       : 0;
 
+  // Check if coupon feature is active and validate coupon if provided
+  let validatedCoupon: ValidatedCoupon | null = null;
+  let appliedCouponId: string | null = null;
+
+  if (input.couponCode) {
+    const couponFeatureSetting = await db.setting.findUnique({
+      where: { key: "feature.coupons" },
+      select: { value: true },
+    });
+    const couponsEnabled = Boolean(
+      couponFeatureSetting?.value === true ||
+      (typeof couponFeatureSetting?.value === "string" && couponFeatureSetting.value.toLowerCase() === "true")
+    );
+
+    if (couponsEnabled && options.userId) {
+      const preliminaryQuote = quote(
+        {
+          checkIn: input.checkIn,
+          checkOut: input.checkOut,
+          adults: input.adults,
+          children4to10: input.children4to10,
+          infantsUnder4: input.infantsUnder4,
+          packageSlug: input.packageSlug,
+          foodPreference: input.foodPreference,
+          extras: input.extras,
+          taxRateBps,
+        },
+        rateCard,
+      );
+
+      const validationRes = await validateCoupon(input.couponCode, {
+        userId: options.userId,
+        subtotalPaise: preliminaryQuote.subtotalPaise,
+        packageId: packageRecord?.id ?? null,
+        accommodationId: accommodationRecord?.id ?? null,
+      });
+
+      if (validationRes.ok) {
+        validatedCoupon = validationRes.data.pricingCoupon;
+        appliedCouponId = validationRes.data.coupon.id;
+      }
+    }
+  }
+
   // 3. Compute quote purely on server
   const quoteResult = quote(
     {
@@ -177,6 +226,7 @@ export async function submitBookingRequest(
       packageSlug: input.packageSlug,
       foodPreference: input.foodPreference,
       extras: input.extras,
+      coupon: validatedCoupon,
       taxRateBps,
     },
     rateCard,
@@ -262,6 +312,7 @@ export async function submitBookingRequest(
           paymentStatus: "UNPAID",
           packageId: packageRecord?.id ?? null,
           accommodationId: accommodationRecord?.id ?? null,
+          couponId: appliedCouponId,
           checkIn: new Date(`${input.checkIn}T00:00:00.000Z`),
           checkOut: new Date(`${input.checkOut}T00:00:00.000Z`),
           nights: quoteResult.nights,
@@ -420,13 +471,19 @@ export async function transitionBookingStatus(input: {
       status: true,
       paymentStatus: true,
       totalPaise: true,
+      subtotalPaise: true,
+      discountPaise: true,
       amountPaidPaise: true,
       contactName: true,
       contactEmail: true,
       checkIn: true,
       checkOut: true,
+      packageId: true,
       accommodationId: true,
       confirmedAt: true,
+      couponId: true,
+      offerId: true,
+      userId: true,
     },
   });
 
@@ -477,6 +534,21 @@ export async function transitionBookingStatus(input: {
     const updated = await db.$transaction(async (tx) => {
       if (input.targetStatus === "CONFIRMED") {
         await confirmBookingAvailability(current.id, tx);
+        if (current.couponId && current.userId) {
+          const confirmRes = await confirmCouponRedemption(tx, {
+            bookingId: current.id,
+            couponId: current.couponId,
+            discountPaise: current.discountPaise,
+            userId: current.userId,
+            subtotalPaise: current.subtotalPaise,
+            packageId: current.packageId,
+            accommodationId: current.accommodationId,
+            hasOfferApplied: Boolean(current.offerId),
+          });
+          if (!confirmRes.ok) {
+            throw new Error(`Coupon confirmation failed: ${confirmRes.error.message}`);
+          }
+        }
         const updateCount = await tx.booking.updateMany({
           where: { id: current.id, status: current.status },
           data: {
@@ -490,6 +562,13 @@ export async function transitionBookingStatus(input: {
         }
       } else if (input.targetStatus === "CANCELLED") {
         await releaseBookingAvailability(current.id, tx);
+        const isBeforeCheckIn = new Date() < current.checkIn;
+        await releaseCouponOnCancellation(tx, {
+          bookingId: current.id,
+          cancellationReason: input.cancelReason || "Cancelled by staff",
+          isBeforeCheckIn,
+          bookingStatus: "CANCELLED",
+        });
         const updateCount = await tx.booking.updateMany({
           where: { id: current.id, status: current.status },
           data: {
@@ -504,11 +583,35 @@ export async function transitionBookingStatus(input: {
         }
       } else if (input.targetStatus === "REJECTED") {
         await releaseBookingAvailability(current.id, tx);
+        const isBeforeCheckIn = new Date() < current.checkIn;
+        await releaseCouponOnCancellation(tx, {
+          bookingId: current.id,
+          cancellationReason: input.cancelReason || "Rejected by staff",
+          isBeforeCheckIn,
+          bookingStatus: "REJECTED",
+        });
         const updateCount = await tx.booking.updateMany({
           where: { id: current.id, status: current.status },
           data: {
             status: "REJECTED",
             cancelReason: input.cancelReason || "Rejected by staff",
+            internalNotes: input.internalNotes ?? undefined,
+          },
+        });
+        if (updateCount.count === 0) {
+          throw new Error("Concurrent update conflict: booking status was modified by another operation.");
+        }
+      } else if (input.targetStatus === "NO_SHOW") {
+        await releaseCouponOnCancellation(tx, {
+          bookingId: current.id,
+          cancellationReason: "Booking marked as NO_SHOW",
+          isBeforeCheckIn: false,
+          bookingStatus: "NO_SHOW",
+        });
+        const updateCount = await tx.booking.updateMany({
+          where: { id: current.id, status: current.status },
+          data: {
+            status: "NO_SHOW",
             internalNotes: input.internalNotes ?? undefined,
           },
         });

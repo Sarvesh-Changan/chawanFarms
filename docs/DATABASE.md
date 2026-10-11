@@ -542,6 +542,25 @@ model PointsLedger {                    // IMMUTABLE — trigger blocks UPDATE &
 //  CREATE TRIGGER ledger_immutable BEFORE UPDATE OR DELETE ON "PointsLedger" FOR EACH ROW EXECUTE FUNCTION forbid_mutation();
 //  (same trigger on "AuditLog")
 
+model PointsAdjustmentRequest {
+  id String @id @default(uuid())
+  userId String
+  points Int                            // signed
+  reason String
+  requestedById String
+  status PointsAdjustmentStatus @default(PENDING)
+  decidedById String?
+  decidedAt DateTime?
+  ledgerEntryId String? @unique
+  idempotencyKey String @unique
+  createdAt DateTime @default(now())
+  user User @relation("UserPointsAdjustments", fields:[userId], references:[id], onDelete: Restrict)
+  requestedBy User @relation("RequestedAdjustments", fields:[requestedById], references:[id], onDelete: Restrict)
+  decidedBy User? @relation("DecidedAdjustments", fields:[decidedById], references:[id], onDelete: Restrict)
+  ledgerEntry PointsLedger? @relation(fields:[ledgerEntryId], references:[id], onDelete: SetNull)
+  @@index([status, createdAt]) @@index([userId, status])
+}
+
 model Coupon {
   id String @id @default(cuid())
   code String @unique                   // random, non-guessable (>= 10 chars, unambiguous alphabet)
@@ -554,12 +573,23 @@ model Coupon {
   expiresAt DateTime
   user User @relation(fields:[userId], references:[id], onDelete: Restrict)
   tier RewardTier @relation(fields:[tierId], references:[id], onDelete: Restrict)
-  redemption CouponRedemption?
+  redemptions CouponRedemption[]
   @@index([userId, status]) @@index([expiresAt])
 }
-model CouponRedemption { id String @id @default(cuid()) couponId String @unique bookingId String @unique discountPaise Int createdAt DateTime @default(now())
+model CouponRedemption {
+  id String @id @default(cuid())
+  couponId String
+  bookingId String @unique
+  discountPaise Int
+  releasedAt DateTime?
+  releaseReason String?
+  createdAt DateTime @default(now())
   coupon Coupon @relation(fields:[couponId], references:[id], onDelete: Restrict)
-  booking Booking @relation(fields:[bookingId], references:[id], onDelete: Restrict) }
+  booking Booking @relation(fields:[bookingId], references:[id], onDelete: Restrict)
+  @@index([couponId])
+}
+// RAW SQL: CREATE UNIQUE INDEX "CouponRedemption_couponId_active_unique" ON "CouponRedemption"("couponId") WHERE "releasedAt" IS NULL;
+
 model Referral { id String @id @default(cuid()) referrerId String refereeId String @unique firstBookingId String? status String @default("PENDING") rewardedAt DateTime? createdAt DateTime @default(now()) @@index([referrerId]) }
 
 // ───────── Social proof ─────────
