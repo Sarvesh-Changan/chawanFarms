@@ -33,7 +33,9 @@ export async function verifyTurnstileToken(
     secret: env.TURNSTILE_SECRET_KEY,
     response: parsedToken.data,
   });
-  if (parsedRemoteIp.success) body.set("remoteip", parsedRemoteIp.data);
+  if (parsedRemoteIp.success && parsedRemoteIp.data !== "unknown") {
+    body.set("remoteip", parsedRemoteIp.data);
+  }
 
   try {
     const response = await fetch(

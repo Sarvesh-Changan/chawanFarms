@@ -90,29 +90,36 @@ export async function loginAction(rawInput: unknown): Promise<AuthActionResult> 
     limit(`auth:login:account:${emailKey(rawEmail)}`, 5, 900),
   ]);
   const limitedResult = limited(ipLimit) ?? limited(accountLimit);
-  if (limitedResult) return { ...limitedResult, message: genericLoginError };
+  if (limitedResult) return limitedResult;
 
   const parsed = loginSchema.safeParse(rawInput);
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
 
   const user = await accountState(parsed.data.email);
   if (user?.lockedUntil && user.lockedUntil > new Date()) {
-    return { ok: false, message: genericLoginError };
+    return { ok: false, message: "This account has been temporarily locked due to failed attempts. Please try again later." };
   }
 
   const needsTurnstile = (user?.failedLoginCount ?? 0) >= 3 || ipLimit.remaining <= 16;
   if (needsTurnstile && !(await verifyTurnstileToken(parsed.data.turnstileToken, ip))) {
-    return { ok: false, message: genericLoginError };
+    return { ok: false, message: "Security check failed. Please refresh and try again." };
   }
 
   const redirectTo = safeCallbackUrl(parsed.data.callbackUrl, "/account");
   try {
-    await auth.api.signInEmail({
+    const signInResult = await auth.api.signInEmail({
       body: { email: parsed.data.email, password: parsed.data.password, callbackURL: redirectTo },
       headers: requestHeaders,
     });
+    if ((signInResult as { twoFactorRedirect?: boolean })?.twoFactorRedirect) {
+      return {
+        ok: false,
+        message: "Two-factor authentication code is required to complete sign-in.",
+      };
+    }
     return { ok: true, redirectTo };
-  } catch {
+  } catch (error) {
+    console.error("[loginAction signInEmail error]:", error);
     if (user?.emailVerified) await recordFailedLogin(user.id);
     return { ok: false, message: genericLoginError };
   }
