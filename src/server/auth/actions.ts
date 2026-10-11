@@ -195,3 +195,15 @@ export async function resetPasswordAction(rawInput: unknown): Promise<AuthAction
     return { ok: false, message: "This reset link is invalid or expired." };
   }
 }
+
+export async function logoutAction(): Promise<{ ok: boolean; redirectTo: string }> {
+  const requestHeaders = await headers();
+  try {
+    await auth.api.signOut({
+      headers: requestHeaders,
+    });
+  } catch {
+    // Session may already be expired or revoked
+  }
+  return { ok: true, redirectTo: "/login" };
+}
