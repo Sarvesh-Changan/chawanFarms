@@ -8,10 +8,11 @@ import { HomeStats } from "@/components/marketing/HomeStats";
 import { NatureFeature } from "@/components/marketing/NatureFeature";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { SpotlightBand } from "@/components/marketing/SpotlightBand";
+import { StayCards } from "@/components/marketing/StayCards";
 import { WhereWeAre } from "@/components/marketing/WhereWeAre";
 import { CldImage } from "@/components/media/CldImage";
 import { env } from "@/config/env";
-import { formatINR } from "@/lib/money";
+import { mapStayPackages } from "@/lib/stay-catalogue";
 import { localizedString, type PublicHomeData, type PublicMedia } from "@/server/services/public-content";
 
 const sectionClass = "mx-auto max-w-7xl px-4 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-28";
@@ -65,22 +66,9 @@ function AccommodationsSection({ section, accommodations }: { section: PageSecti
   return <section id="accommodation" className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Accommodation" />{accommodations.length ? <div className="mt-10 grid gap-4 md:grid-cols-2">{accommodations.map((item) => <article key={item.id} className="bg-clay-100 overflow-hidden rounded-2xl"><div className="relative aspect-[16/9]">{item.heroMedia ? <MediaImage media={item.heroMedia} sizes="(min-width: 768px) 50vw, 100vw"/> : null}<div className="from-forest-900/80 absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t to-transparent"/><div className="absolute right-0 bottom-0 left-0 p-5 text-cream-50 sm:p-6"><h3 className="font-heading text-2xl leading-tight">{text(item.name)}</h3>{text(item.summary) || text(item.description) ? <p className="text-cream-50/80 mt-2 text-sm leading-6">{text(item.summary) || text(item.description)}</p> : null}</div></div></article>)}</div> : <EmptyPublished label="accommodation options"/>}</section>;
 }
 
-function rateFor(packageData: PublicHomeData["packages"][number], audience: "ADULT" | "CHILD_4_10" | "INFANT_UNDER_4") {
-  return packageData.rates.filter((rate) => rate.audience === audience);
-}
-
 function PackagesSection({ section, packages }: { section: PageSection; packages: PublicHomeData["packages"] }) {
-  return <section id="packages" className="bg-cream-50"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Packages"/>{packages.length ? <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">{packages.map((item) => {
-    const adultRates = rateFor(item, "ADULT");
-    const from = adultRates.length ? Math.min(...adultRates.map((rate) => rate.amountPaise)) : null;
-    const childRate = rateFor(item, "CHILD_4_10")[0];
-    const infantRate = rateFor(item, "INFANT_UNDER_4")[0];
-    const inclusions = text(item.inclusions);
-    const conditions = text(item.conditions);
-    return <article key={item.id} className="bg-cream-50 border-forest-900/10 flex h-full flex-col overflow-hidden rounded-2xl border shadow-sm"><div className="bg-clay-100 relative aspect-[4/3]">{item.heroMedia ? <MediaImage media={item.heroMedia} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"/> : null}{item.code ? <span className="bg-cream-50 text-forest-700 absolute top-4 left-4 rounded-full px-3 py-1 text-xs font-semibold">{item.code}</span> : null}</div><div className="flex flex-1 flex-col p-5 sm:p-6"><h3 className="font-heading text-forest-900 text-2xl leading-tight">{text(item.name)}</h3>{text(item.summary) || text(item.description) ? <p className="text-mist-500 mt-2 text-sm">{text(item.summary) || text(item.description)}</p> : null}<div className="mt-5 min-h-16">{from !== null ? <p className="text-forest-900 font-heading text-3xl">from {formatINR(from)} <span className="text-mist-500 font-sans text-sm font-normal">per person</span></p> : <p className="text-forest-900 font-heading text-2xl">Contact us <span className="text-mist-500 font-sans text-sm font-normal">for rates</span></p>}</div>{childRate || infantRate || item.minGuests || item.maxGuests ? <div className="bg-clay-100 text-forest-900 mt-3 rounded-lg p-3 text-xs leading-5">{childRate ? <p>Children 4–10: {childRate.percentOfAdult ? `${childRate.percentOfAdult}% of adult rate` : formatINR(childRate.amountPaise)}</p> : null}{infantRate && infantRate.amountPaise === 0 ? <p>Under 4: free</p> : null}{item.minGuests ? <p>Minimum group: {item.minGuests}{item.maxGuests ? `–${item.maxGuests}` : ""} persons</p> : null}</div> : null}{inclusions ? <p className="border-forest-900/10 mt-4 border-t pt-4 text-sm leading-6">{inclusions}</p> : null}{conditions ? <p className="text-mist-500 mt-3 text-xs leading-5">{conditions}</p> : null}<Link href={`/book?package=${item.id}`} className="bg-forest-700 text-cream-50 mt-6 inline-flex min-h-12 items-center justify-center rounded-lg px-4 text-sm font-semibold transition hover:bg-forest-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500">Enquire about this package</Link></div></article>;
-  })}</div> : <EmptyPublished label="packages"/>}</div></section>;
+  return <section id="packages" className="bg-cream-50"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Packages"/>{packages.length ? <StayCards items={mapStayPackages(packages)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/> : <EmptyPublished label="packages"/>}</div></section>;
 }
-
 function FoodSection({ section, food }: { section: PageSection; food: PublicHomeData["food"] }) {
   return <section id="food" className="bg-paddy-300/25"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Food"/>{food.length ? <div className="mt-10 grid gap-3 md:grid-cols-2">{food.map((category) => <details key={category.id} className="bg-clay-100 rounded-xl p-5" open><summary className="cursor-pointer font-semibold">{text(category.name)}</summary><ul className="mt-4 grid gap-2 border-t border-forest-900/10 pt-4 text-sm sm:grid-cols-2">{category.items.map((item) => <li className="flex gap-2" key={item.id}><span className="text-leaf-500" aria-hidden="true">•</span><span>{text(item.name)}{item.isExtraCharge ? <span className="text-mist-500"> · extra</span> : null}</span></li>)}</ul></details>)}</div> : <EmptyPublished label="food items"/>}</div></section>;
 }

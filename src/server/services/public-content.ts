@@ -178,7 +178,10 @@ export async function getPublicPackages() {
     const rows = await db.package.findMany({
       where: published,
       orderBy: [{ sortOrder: "asc" }, { slug: "asc" }],
-      include: { rates: { where: validRateWhere(new Date()), orderBy: [{ amountPaise: "asc" }, { createdAt: "desc" }] } },
+      include: {
+        rates: { where: validRateWhere(new Date()), orderBy: [{ amountPaise: "asc" }, { createdAt: "desc" }] },
+        accommodations: { include: { accommodation: { select: { type: true, name: true } } } },
+      },
     });
     const media = await mediaMap(rows.map((row) => row.heroMediaId));
     return rows.map((row) => ({ ...row, heroMedia: row.heroMediaId ? media.get(row.heroMediaId) ?? null : null }));
