@@ -43,6 +43,7 @@ const envSchema = z
     CLOUDINARY_UPLOAD_PRESET_CUSTOMER_VIDEO: z.string().min(1).optional(),
     CLOUDINARY_UPLOAD_PRESET_ADMIN_IMAGE: z.string().min(1).optional(),
     CLOUDINARY_UPLOAD_PRESET_ADMIN_VIDEO: z.string().min(1).optional(),
+    CLOUDINARY_FOLDER_MODE: z.enum(["dynamic", "fixed"]).default("dynamic"),
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
     CLOUDINARY_TEST_MODE: z.enum(["0", "1"]).default("0").transform((value) => value === "1"),
     NODE_ENV: z
@@ -114,6 +115,7 @@ export const env = parseEnv({
     CLOUDINARY_UPLOAD_PRESET_CUSTOMER_VIDEO: process.env.CLOUDINARY_UPLOAD_PRESET_CUSTOMER_VIDEO,
     CLOUDINARY_UPLOAD_PRESET_ADMIN_IMAGE: process.env.CLOUDINARY_UPLOAD_PRESET_ADMIN_IMAGE,
     CLOUDINARY_UPLOAD_PRESET_ADMIN_VIDEO: process.env.CLOUDINARY_UPLOAD_PRESET_ADMIN_VIDEO,
+    CLOUDINARY_FOLDER_MODE: process.env.CLOUDINARY_FOLDER_MODE,
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
     CLOUDINARY_TEST_MODE: process.env.CLOUDINARY_TEST_MODE,
     NODE_ENV: process.env.NODE_ENV,

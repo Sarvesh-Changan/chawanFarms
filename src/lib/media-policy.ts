@@ -4,7 +4,9 @@ const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}
 
 export type CloudinaryUploadParams = {
   timestamp: number;
-  folder: string;
+  folder?: string;
+  asset_folder?: string;
+  public_id_prefix?: string;
   public_id: string;
   upload_preset: string;
   allowed_formats: string;
@@ -25,13 +27,14 @@ export function buildCloudinaryUploadParams(input: {
   timestamp: number;
   uploadPreset: string;
   notificationUrl: string;
+  folderMode?: "dynamic" | "fixed";
 }): CloudinaryUploadParams | null {
   if (!uuidPattern.test(input.userId) || !uuidPattern.test(input.assetId)) return null;
   const policy = mediaPolicy(input.purpose);
   const folder = policy.folder(input.userId);
+  const folderMode = input.folderMode ?? "fixed";
   const params: CloudinaryUploadParams = {
     timestamp: input.timestamp,
-    folder,
     public_id: input.assetId,
     upload_preset: input.uploadPreset,
     allowed_formats: policy.formats.join(","),
@@ -41,6 +44,12 @@ export function buildCloudinaryUploadParams(input: {
     unique_filename: false,
     notification_url: input.notificationUrl,
   };
+  if (folderMode === "dynamic") {
+    params.asset_folder = folder;
+    params.public_id_prefix = folder;
+  } else {
+    params.folder = folder;
+  }
   if (policy.eagerTransformations.length) {
     params.eager = policy.eagerTransformations.join("|");
     params.eager_async = true;
@@ -100,9 +109,6 @@ export function validateCloudinaryAssetMetadata(
   }
   if (policy.maxDurationSeconds !== undefined && (!Number.isFinite(asset.duration) || (asset.duration ?? 0) <= 0 || (asset.duration ?? 0) > policy.maxDurationSeconds)) {
     return { valid: false, reason: "Asset duration exceeds the purpose limit." };
-  }
-  if (asset.folder && asset.folder !== folder) {
-    return { valid: false, reason: "Cloudinary asset folder does not match the signed folder." };
   }
   return { valid: true, folder };
 }

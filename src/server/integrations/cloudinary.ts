@@ -25,6 +25,59 @@ const assetResponseSchema = z.object({
   etag: z.string().optional(),
 }).passthrough();
 
+export type CloudinaryFolderMode = "dynamic" | "fixed";
+
+/** Cloudinary may return folder paths with cosmetic slash differences. */
+export function normalizeCloudinaryFolder(value: string | null | undefined): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().replaceAll(/\s*\/\s*/g, "/").replace(/^\/+|\/+$/g, "").trim();
+  return normalized || null;
+}
+
+function publicIdFolder(publicId: string): string | null {
+  const lastSlash = publicId.lastIndexOf("/");
+  return normalizeCloudinaryFolder(lastSlash > 0 ? publicId.slice(0, lastSlash) : null);
+}
+
+export function verifyCloudinaryFolderBinding(input: {
+  mode: CloudinaryFolderMode;
+  expectedFolder: string;
+  actualAssetFolder?: string;
+  expectedPublicId: string;
+  actualPublicId: string;
+  allowSubfolders?: boolean;
+}): { valid: true; representation: "asset_folder" | "public_id" } | { valid: false; reason: string } {
+  if (input.actualPublicId !== input.expectedPublicId) {
+    return { valid: false, reason: "Cloudinary returned a different asset identity." };
+  }
+
+  const expected = normalizeCloudinaryFolder(input.expectedFolder);
+  if (!expected) return { valid: false, reason: "The authorized Cloudinary folder is invalid." };
+  const allowSubfolders = input.allowSubfolders === true;
+
+  if (input.mode === "dynamic") {
+    const actual = normalizeCloudinaryFolder(input.actualAssetFolder);
+    const matches = actual === expected || (allowSubfolders && actual?.startsWith(`${expected}/`) === true);
+    if (!matches) {
+      return {
+        valid: false,
+        reason: `Cloudinary dynamic asset_folder mismatch; expected normalized folder "${expected}", actual normalized folder "${actual ?? "<missing>"}".`,
+      };
+    }
+    return { valid: true, representation: "asset_folder" };
+  }
+
+  const actual = publicIdFolder(input.actualPublicId);
+  const matches = actual === expected || (allowSubfolders && actual?.startsWith(`${expected}/`) === true);
+  if (!matches) {
+    return {
+      valid: false,
+      reason: `Cloudinary fixed-folder public_id mismatch; expected normalized folder "${expected}", actual normalized folder "${actual ?? "<missing>"}".`,
+    };
+  }
+  return { valid: true, representation: "public_id" };
+}
+
 export type VerifiedCloudinaryAsset = {
   publicId: string;
   kind: "IMAGE" | "VIDEO";
@@ -77,7 +130,16 @@ export function createUploadSignature(input: {
   const policy = mediaPolicy(input.purpose);
   if (cloudinaryTestMode()) {
     const assetId = input.assetId ?? randomUUID();
-    const signedParams = { public_id: `${policy.folder(input.userId)}/${assetId}`, timestamp: Math.floor(Date.now() / 1000), upload_preset: "test-stub" };
+    const built = buildCloudinaryUploadParams({
+      ...input,
+      assetId,
+      timestamp: Math.floor(Date.now() / 1000),
+      uploadPreset: "test-stub",
+      notificationUrl: input.webhookUrl,
+      folderMode: env.CLOUDINARY_FOLDER_MODE,
+    });
+    if (!built) throw new Error("The upload identity is invalid.");
+    const signedParams = built;
     return {
       cloudName: "test-cloud",
       apiKey: "test-key",
@@ -99,6 +161,7 @@ export function createUploadSignature(input: {
     timestamp,
     uploadPreset,
     notificationUrl: input.webhookUrl,
+    folderMode: env.CLOUDINARY_FOLDER_MODE,
   });
   if (!signedParams) throw new Error("The upload identity is invalid.");
   return {
@@ -118,6 +181,7 @@ export async function verifyCloudinaryAsset(input: {
   purpose: MediaPurpose;
   userId: string;
   publicId: string;
+  allowSubfolders?: boolean;
 }): Promise<{ valid: true; asset: VerifiedCloudinaryAsset } | { valid: false; reason: string }> {
   const publicId = publicIdSchema.safeParse(input.publicId);
   if (!publicId.success) return { valid: false, reason: "Invalid Cloudinary public ID." };
@@ -163,7 +227,15 @@ export async function verifyCloudinaryAsset(input: {
     duration: remote.duration,
     folder: remote.asset_folder ?? remote.folder,
   };
-  if (remote.public_id !== input.publicId) return { valid: false, reason: "Cloudinary returned a different asset identity." };
+  const folderResult = verifyCloudinaryFolderBinding({
+    mode: env.CLOUDINARY_FOLDER_MODE,
+    expectedFolder: policy.folder(input.userId),
+    actualAssetFolder: remote.asset_folder,
+    expectedPublicId: input.publicId,
+    actualPublicId: remote.public_id,
+    allowSubfolders: input.purpose === "customer_video" ? false : input.allowSubfolders,
+  });
+  if (!folderResult.valid) return folderResult;
   const policyResult = validateCloudinaryAssetMetadata(input.purpose, input.userId, metadata);
   if (!policyResult.valid) return policyResult;
 

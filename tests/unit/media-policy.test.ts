@@ -35,6 +35,13 @@ describe("media policy", () => {
       purpose: "admin_image", userId, assetId, timestamp: 1,
       uploadPreset: "admin-image", notificationUrl: "https://farms.example/hook",
     })?.folder).toBe(`admin/media/images/${userId}`);
+    expect(buildCloudinaryUploadParams({
+      purpose: "admin_image", userId, assetId, timestamp: 1,
+      uploadPreset: "admin-image", notificationUrl: "https://farms.example/hook", folderMode: "dynamic",
+    })).toMatchObject({
+      asset_folder: `admin/media/images/${userId}`,
+      public_id_prefix: `admin/media/images/${userId}`,
+    });
   });
 
   it("rejects oversize, wrong-format and out-of-folder assets server-side", () => {

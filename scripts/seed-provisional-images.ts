@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import { PrismaPg } from "@prisma/adapter-pg";
+import { v2 as cloudinarySdk } from "cloudinary";
 import { config as loadEnv } from "dotenv";
 import { z } from "zod";
 
@@ -13,7 +14,7 @@ loadEnv({ path: ".env.local" });
 loadEnv();
 
 type EnvModule = typeof import("../src/config/env");
-type CloudinaryModule = Pick<typeof import("../src/server/integrations/cloudinary"), "createUploadSignature" | "verifyCloudinaryAsset">;
+type CloudinaryModule = Pick<typeof import("../src/server/integrations/cloudinary"), "createUploadSignature" | "verifyCloudinaryAsset" | "deleteCloudinaryAsset" | "normalizeCloudinaryFolder">;
 
 type Candidate = {
   objectNumber: number;
@@ -51,6 +52,7 @@ const candidates: readonly Candidate[] = [
 
 const uploadResponseSchema = z.object({ public_id: z.string().min(1), resource_type: z.literal("image") }).passthrough();
 const args = process.argv.slice(2);
+const debug = args.includes("--debug");
 
 function argument(name: string): string | undefined {
   const index = args.indexOf(name);
@@ -92,6 +94,52 @@ function asJson(value: unknown): Prisma.InputJsonValue {
   return value as Prisma.InputJsonValue;
 }
 
+function publicIdFromSignature(signed: ReturnType<CloudinaryModule["createUploadSignature"]>): string {
+  const params = signed.signedParams as Record<string, unknown>;
+  const publicId = String(params.public_id ?? "");
+  const prefix = String(params.public_id_prefix ?? params.folder ?? "").replace(/^\/+|\/+$/g, "");
+  return publicId.startsWith(`${prefix}/`) || !prefix ? publicId : `${prefix}/${publicId}`;
+}
+
+async function printCloudinaryDiagnostic({ env, cloudinary, signed, publicId, expectedFolder }: {
+  env: EnvModule["env"];
+  cloudinary: CloudinaryModule;
+  signed: ReturnType<CloudinaryModule["createUploadSignature"]>;
+  publicId: string;
+  expectedFolder: string;
+}) {
+  if (!debug || !env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) return;
+  const params = signed.signedParams as Record<string, unknown>;
+  const signedRaw = String(params.asset_folder ?? params.folder ?? "");
+  const signedNormalized = cloudinary.normalizeCloudinaryFolder(signedRaw);
+  const expectedNormalized = cloudinary.normalizeCloudinaryFolder(expectedFolder);
+  cloudinarySdk.config({ cloud_name: env.CLOUDINARY_CLOUD_NAME, api_key: env.CLOUDINARY_API_KEY, api_secret: env.CLOUDINARY_API_SECRET, secure: true });
+  let response: Record<string, unknown> | null = null;
+  try {
+    const remote = await cloudinarySdk.api.resource(publicId, { resource_type: "image", type: "upload" });
+    if (remote && typeof remote === "object") response = remote as Record<string, unknown>;
+  } catch {
+    // A missing resource is expected before the first upload; do not print SDK errors.
+  }
+  const assetFolder = typeof response?.asset_folder === "string" ? response.asset_folder : undefined;
+  const normalizedAssetFolder = cloudinary.normalizeCloudinaryFolder(assetFolder);
+  const remotePublicId = typeof response?.public_id === "string" ? response.public_id : undefined;
+  const dynamic = Boolean(assetFolder && normalizedAssetFolder && remotePublicId && !remotePublicId.startsWith(`${normalizedAssetFolder}/`));
+  console.log(`[debug] Cloudinary folder diagnostic ${JSON.stringify({
+    signedFolder: { raw: signedRaw, normalized: signedNormalized },
+    expectedFolder: { raw: expectedFolder, normalized: expectedNormalized },
+    response: response ? {
+      asset_folder: response.asset_folder ?? null,
+      folder: response.folder ?? null,
+      public_id: response.public_id ?? null,
+      display_name: response.display_name ?? null,
+      resource_type: response.resource_type ?? null,
+      type: response.type ?? null,
+    } : null,
+    detectedFolderMode: response ? (dynamic ? "dynamic" : "fixed") : "unavailable-no-asset",
+  })}`);
+}
+
 async function uploadAndRecord({ db, cloudinary, env, staffId, pdf, candidate }: {
   db: PrismaClient;
   cloudinary: CloudinaryModule;
@@ -103,50 +151,59 @@ async function uploadAndRecord({ db, cloudinary, env, staffId, pdf, candidate }:
   const image = await extractPdfJpeg(pdf, candidate);
   const webhookUrl = new URL("/api/webhooks/cloudinary", env.NEXT_PUBLIC_SITE_URL).toString();
   const signed = cloudinary.createUploadSignature({ purpose: "admin_image", userId: staffId, webhookUrl, assetId: candidate.assetId });
-  const expectedPublicId = `${mediaPolicy("admin_image").folder(staffId)}/${signed.signedParams.public_id}`;
+  const expectedPublicId = publicIdFromSignature(signed);
 
   let media = await db.media.findUnique({ where: { publicId: expectedPublicId } });
-  if (!media) {
-    let verification = await cloudinary.verifyCloudinaryAsset({ purpose: "admin_image", userId: staffId, publicId: expectedPublicId });
-    if (!verification.valid) {
-      const form = new FormData();
-      const uploadBytes = new Uint8Array(image.byteLength);
-      uploadBytes.set(image);
-      form.append("file", new Blob([uploadBytes.buffer as ArrayBuffer], { type: "image/jpeg" }), `pdf-object-${candidate.objectNumber}.jpg`);
-      form.append("api_key", signed.apiKey);
-      form.append("signature", signed.signature);
-      for (const [key, value] of Object.entries(signed.signedParams)) form.append(key, String(value));
-      const response = await fetch(signed.uploadEndpoint, { method: "POST", body: form });
-      if (!response.ok) throw new Error(`Cloudinary upload failed with HTTP ${response.status}.`);
-      const uploaded = uploadResponseSchema.safeParse(await response.json().catch(() => undefined));
-      if (!uploaded.success || uploaded.data.public_id !== expectedPublicId) throw new Error("Cloudinary returned an unexpected asset identity.");
-      verification = await cloudinary.verifyCloudinaryAsset({ purpose: "admin_image", userId: staffId, publicId: uploaded.data.public_id });
-      if (!verification.valid) throw new Error(`Cloudinary verification failed: ${verification.reason}`);
+  let verification = await cloudinary.verifyCloudinaryAsset({ purpose: "admin_image", userId: staffId, publicId: expectedPublicId });
+  if (!verification.valid) {
+    await printCloudinaryDiagnostic({ env, cloudinary, signed, publicId: expectedPublicId, expectedFolder: mediaPolicy("admin_image").folder(staffId) });
+    if (media) {
+      const removed = await cloudinary.deleteCloudinaryAsset({ publicId: expectedPublicId, resourceType: "image", deliveryType: "upload" });
+      if (!removed) throw new Error(`Existing Cloudinary asset failed verification and could not be removed: ${verification.reason}`);
     }
-    media = await db.media.create({
-      data: {
-        kind: verification.asset.kind,
-        origin: verification.asset.origin,
-        publicId: verification.asset.publicId,
-        resourceType: verification.asset.resourceType,
-        deliveryType: verification.asset.deliveryType,
-        format: verification.asset.format,
-        bytes: verification.asset.bytes,
-        width: verification.asset.width,
-        height: verification.asset.height,
-        durationSec: verification.asset.durationSec,
-        contentHash: verification.asset.contentHash,
-        altText: asJson({ en: candidate.altText }),
-        tags: ["provisional-pdf"],
-        category: candidate.category,
-        meta: asJson({ provisional: true, source: { file: "docs/source/CHAWAN FARM PRESENTATION 01.10.2026.pdf", objectNumber: candidate.objectNumber, sha256: candidate.sourceSha256 }, replacement: "Replace with original client photograph." }),
-        uploadedById: staffId,
-        isPublic: true,
-      },
-    });
-  } else {
-    media = await db.media.update({ where: { id: media.id }, data: { altText: asJson({ en: candidate.altText }), tags: ["provisional-pdf"], category: candidate.category, meta: asJson({ provisional: true, source: { file: "docs/source/CHAWAN FARM PRESENTATION 01.10.2026.pdf", objectNumber: candidate.objectNumber, sha256: candidate.sourceSha256 }, replacement: "Replace with original client photograph." }), isPublic: true } });
+    const form = new FormData();
+    const uploadBytes = new Uint8Array(image.byteLength);
+    uploadBytes.set(image);
+    form.append("file", new Blob([uploadBytes.buffer as ArrayBuffer], { type: "image/jpeg" }), `pdf-object-${candidate.objectNumber}.jpg`);
+    form.append("api_key", signed.apiKey);
+    form.append("signature", signed.signature);
+    for (const [key, value] of Object.entries(signed.signedParams)) form.append(key, String(value));
+    const response = await fetch(signed.uploadEndpoint, { method: "POST", body: form });
+    if (!response.ok) throw new Error(`Cloudinary upload failed with HTTP ${response.status}.`);
+    const uploaded = uploadResponseSchema.safeParse(await response.json().catch(() => undefined));
+    if (!uploaded.success) throw new Error("Cloudinary returned an invalid upload response.");
+    if (uploaded.data.public_id !== expectedPublicId) {
+      const removed = await cloudinary.deleteCloudinaryAsset({ publicId: uploaded.data.public_id, resourceType: "image", deliveryType: "upload" });
+      throw new Error(`Cloudinary returned an unexpected asset identity; uploaded asset cleanup ${removed ? "succeeded" : "failed"}.`);
+    }
+    verification = await cloudinary.verifyCloudinaryAsset({ purpose: "admin_image", userId: staffId, publicId: uploaded.data.public_id });
+    if (!verification.valid) {
+      await printCloudinaryDiagnostic({ env, cloudinary, signed, publicId: uploaded.data.public_id, expectedFolder: mediaPolicy("admin_image").folder(staffId) });
+      const removed = await cloudinary.deleteCloudinaryAsset({ publicId: uploaded.data.public_id, resourceType: "image", deliveryType: "upload" });
+      throw new Error(`Cloudinary verification failed: ${verification.reason}; uploaded asset cleanup ${removed ? "succeeded" : "failed"}.`);
+    }
   }
+
+  const mediaData = {
+    kind: verification.asset.kind,
+    origin: verification.asset.origin,
+    publicId: verification.asset.publicId,
+    resourceType: verification.asset.resourceType,
+    deliveryType: verification.asset.deliveryType,
+    format: verification.asset.format,
+    bytes: verification.asset.bytes,
+    width: verification.asset.width,
+    height: verification.asset.height,
+    durationSec: verification.asset.durationSec,
+    contentHash: verification.asset.contentHash,
+    altText: asJson({ en: candidate.altText }),
+    tags: ["provisional-pdf"],
+    category: candidate.category,
+    meta: asJson({ provisional: true, source: { file: "docs/source/CHAWAN FARM PRESENTATION 01.10.2026.pdf", objectNumber: candidate.objectNumber, sha256: candidate.sourceSha256 }, replacement: "Replace with original client photograph." }),
+    uploadedById: staffId,
+    isPublic: true,
+  };
+  media = media ? await db.media.update({ where: { id: media.id }, data: mediaData }) : await db.media.create({ data: mediaData });
   return media;
 }
 
@@ -177,6 +234,14 @@ async function main() {
   const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: env.DATABASE_URL }) });
   const loadedCloudinary = (await import("../src/server/integrations/cloudinary")) as unknown as { default?: CloudinaryModule } & CloudinaryModule;
   const cloudinary = loadedCloudinary.default ?? loadedCloudinary;
+  const webhookUrl = new URL("/api/webhooks/cloudinary", env.NEXT_PUBLIC_SITE_URL).toString();
+
+  if (debug) {
+    for (const candidate of candidates) {
+      const signed = cloudinary.createUploadSignature({ purpose: "admin_image", userId: staffId, webhookUrl, assetId: candidate.assetId });
+      await printCloudinaryDiagnostic({ env, cloudinary, signed, publicId: publicIdFromSignature(signed), expectedFolder: mediaPolicy("admin_image").folder(staffId) });
+    }
+  }
 
   try {
     const staff = await db.user.findFirst({ where: { id: staffId, type: "STAFF", status: "ACTIVE", deletedAt: null }, select: { id: true } });
