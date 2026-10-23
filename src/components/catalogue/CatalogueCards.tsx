@@ -15,7 +15,7 @@ function localized(value: unknown): string {
 
 function CardImage({ media, alt }: { media: PublicAccommodation["heroMedia"] | PublicActivity["heroMedia"] | PublicExperience["heroMedia"] | PublicPackage["heroMedia"]; alt: string }) {
   if (!media || !env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) return <div className="bg-clay-100 size-full" aria-hidden="true"/>;
-  return <CldImage cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME} publicId={media.publicId} resourceType={media.kind === "VIDEO" ? "video" : "image"} alt={alt || localized(media.altText)} fill sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="object-cover"/>;
+  return <CldImage cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME} publicId={media.publicId} resourceType={media.kind === "VIDEO" ? "video" : "image"} alt={alt || localized(media.altText)} fill sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-[var(--motion-duration-ui)] ease-[var(--motion-ease-standard)] group-hover:scale-[1.03] motion-reduce:transform-none"/>;
 }
 
 export function PackageCard({ item }: { item: PublicPackage }) {

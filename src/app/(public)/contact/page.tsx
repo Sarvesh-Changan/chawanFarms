@@ -6,8 +6,10 @@ import {
   ContactForm,
   SchoolGroupForm,
 } from "@/components/forms/LeadCaptureForms";
+import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
+import { PublicClosing } from "@/components/marketing/PublicClosing";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getPublicHomePage, getPublicSettings, localizedString } from "@/server/services/public-content";
@@ -47,6 +49,7 @@ export default async function ContactPage() {
     <>
       <JsonLd data={jsonLd} />
       <Header />
+      <Breadcrumbs items={[{ label: "Contact" }]} />
       <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
@@ -256,6 +259,7 @@ export default async function ContactPage() {
           </div>
         </div>
       </main>
+      <PublicClosing />
       <StickyCtaBar />
       <Footer />
     </>

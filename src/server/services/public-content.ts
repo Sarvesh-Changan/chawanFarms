@@ -348,7 +348,7 @@ export async function getPublicActiveRewardRule() {
 }
 
 export async function getPublicHomeData() {
-  const [page, settings, experiences, accommodations, packages, activities, food, gallery, testimonials, stories] = await Promise.all([
+  const [page, settings, experiences, accommodations, packages, activities, food, gallery, testimonials, stories, activeRewardRule] = await Promise.all([
     getPublicHomePage(),
     getPublicSettings(),
     getPublicExperiences(),
@@ -359,8 +359,9 @@ export async function getPublicHomeData() {
     getPublicGallery(),
     getPublicTestimonials(),
     getPublicStories(),
+    getPublicActiveRewardRule(),
   ]);
-  return { page, settings, experiences, accommodations, packages, activities, food, gallery, testimonials, stories };
+  return { page, settings, experiences, accommodations, packages, activities, food, gallery, testimonials, stories, activeRewardRule };
 }
 
 export type PublicHomeData = Awaited<ReturnType<typeof getPublicHomeData>>;

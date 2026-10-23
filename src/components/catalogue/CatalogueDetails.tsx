@@ -1,3 +1,4 @@
+import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { CldImage } from "@/components/media/CldImage";
 import { env } from "@/config/env";
 import type { PublicMedia } from "@/server/services/public-content";
@@ -10,7 +11,7 @@ export function localized(value: unknown): string {
 }
 
 export function DetailHero({ eyebrow, title, summary, media }: { eyebrow: string; title: string; summary?: string; media: PublicMedia | null }) {
-  return <section className="bg-forest-900 text-cream-50"><div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-12 lg:py-20"><div><p className="text-paddy-300 text-xs font-semibold tracking-[0.2em] uppercase">{eyebrow}</p><h1 className="font-heading mt-4 text-[clamp(2.75rem,7vw,5.5rem)] leading-[0.95]">{title}</h1>{summary ? <p className="text-cream-50/80 mt-6 max-w-2xl text-lg leading-8">{summary}</p> : null}</div><div className="bg-clay-100 relative aspect-[4/3] overflow-hidden rounded-2xl">{media && env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? <CldImage cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME} publicId={media.publicId} resourceType={media.kind === "VIDEO" ? "video" : "image"} alt={localized(media.altText)} fill priority sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover"/> : null}</div></div></section>;
+  return <section className="bg-forest-900 text-cream-50"><Breadcrumbs items={[{ label: title }]} className="text-cream-50/65"/><div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-12 lg:py-20"><div><p className="text-paddy-300 text-xs font-semibold tracking-[0.2em] uppercase"><span aria-hidden="true">{"// "}</span>{eyebrow}</p><h1 className="font-heading mt-4 text-[clamp(2.75rem,7vw,5.5rem)] leading-[0.95]">{title}</h1>{summary ? <p className="text-cream-50/80 mt-6 max-w-2xl text-lg leading-8">{summary}</p> : null}</div><div className="bg-clay-100 relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)]">{media && env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? <CldImage cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME} publicId={media.publicId} resourceType={media.kind === "VIDEO" ? "video" : "image"} alt={localized(media.altText)} fill priority sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover"/> : null}</div></div></section>;
 }
 
 export function DetailBody({ children }: { children: React.ReactNode }) {

@@ -2,8 +2,10 @@ import { ArrowRight, Calendar, User } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
+import { PublicClosing } from "@/components/marketing/PublicClosing";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { CldImage } from "@/components/media/CldImage";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -48,6 +50,7 @@ export default async function StoriesPage() {
     <>
       <JsonLd data={jsonLd} />
       <Header />
+      <Breadcrumbs items={[{ label: "Stories" }]} />
       <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
@@ -174,6 +177,7 @@ export default async function StoriesPage() {
           )}
         </div>
       </main>
+      <PublicClosing />
       <StickyCtaBar />
       <Footer />
     </>

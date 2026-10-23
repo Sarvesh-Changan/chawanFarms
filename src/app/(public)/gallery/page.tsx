@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 
 import { GalleryViewer } from "@/components/gallery/GalleryViewer";
+import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
+import { PublicClosing } from "@/components/marketing/PublicClosing";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { env } from "@/config/env";
@@ -32,6 +34,7 @@ export default async function GalleryPage() {
     <>
       <JsonLd data={jsonLd} />
       <Header />
+      <Breadcrumbs items={[{ label: "Gallery" }]} />
       <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Header & Intro */}
@@ -53,6 +56,7 @@ export default async function GalleryPage() {
           <GalleryViewer items={items} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME} />
         </div>
       </main>
+      <PublicClosing />
       <StickyCtaBar />
       <Footer />
     </>

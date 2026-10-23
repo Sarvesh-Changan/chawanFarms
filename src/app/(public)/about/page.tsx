@@ -3,8 +3,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageSectionsRenderer } from "@/components/cms/PageSectionsRenderer";
+import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
+import { PublicClosing } from "@/components/marketing/PublicClosing";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getPublishedPage } from "@/server/services/cms/pages";
@@ -33,6 +35,7 @@ export default async function AboutPage() {
     <>
       <JsonLd data={seo?.jsonLd} />
       <Header />
+      <Breadcrumbs items={[{ label: "About" }]} />
       {page ? (
         <PageSectionsRenderer page={page} />
       ) : (
@@ -166,6 +169,7 @@ export default async function AboutPage() {
           </div>
         </main>
       )}
+      <PublicClosing />
       <StickyCtaBar />
       <Footer />
     </>

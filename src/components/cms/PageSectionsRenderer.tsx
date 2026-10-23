@@ -52,7 +52,7 @@ export function PageSectionsRenderer({ page, preview = false }: { page: PublicPa
         <div className="mx-auto grid max-w-7xl gap-8 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-2 lg:items-center lg:px-12">
           <div className="space-y-5">
             {localized(content.eyebrow) ? <p className="text-sm font-semibold uppercase tracking-[0.18em] text-laterite-600">{localized(content.eyebrow)}</p> : null}
-            {heading ? <h1 className="font-heading text-4xl leading-tight sm:text-5xl">{heading}</h1> : null}
+            {heading ? (hero || index === 0 ? <h1 className="font-heading text-4xl leading-tight sm:text-5xl">{heading}</h1> : <h2 className="font-heading text-4xl leading-tight sm:text-5xl">{heading}</h2>) : null}
             {body ? section.type === "rich-text" || section.type === "image-text" ? <SafeHtml html={body} className="prose max-w-none" /> : <p className="max-w-2xl whitespace-pre-line text-base leading-7 opacity-85">{body}</p> : null}
             {items.length ? <div className="grid gap-4 sm:grid-cols-2">{items.map((item, itemIndex) => <article key={itemIndex} className="rounded-xl border border-current/15 p-4"><h2 className="font-heading text-xl">{localized(item.title) || localized(item.label)}</h2>{localized(item.body) ? <p className="mt-2 text-sm leading-6 opacity-80">{localized(item.body)}</p> : null}</article>)}</div> : null}
             {(() => { const href = sectionHref(section.type); return href ? <Link className="inline-flex min-h-11 items-center rounded-lg border border-current/30 px-4 text-sm font-semibold underline-offset-4 hover:underline" href={href}>Explore {section.type.replaceAll("-", " ")}</Link> : null; })()}

@@ -7,6 +7,7 @@ import { HomeGallery, type HomeGalleryItem } from "@/components/marketing/HomeGa
 import { HomeHero as CmsHomeHero } from "@/components/marketing/HomeHero";
 import { HomeStats } from "@/components/marketing/HomeStats";
 import { NatureFeature } from "@/components/marketing/NatureFeature";
+import { RewardsTeaser } from "@/components/marketing/RewardsTeaser";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { SpotlightBand } from "@/components/marketing/SpotlightBand";
 import { StayCards } from "@/components/marketing/StayCards";
@@ -17,7 +18,7 @@ import { mapStayPackages } from "@/lib/stay-catalogue";
 import { localizedString, type PublicHomeData, type PublicMedia } from "@/server/services/public-content";
 
 const sectionClass = "mx-auto max-w-7xl px-4 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-28";
-const sectionOrder = ["hero", "why-chawan", "spotlight", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "stats", "final-cta"] as const;
+export const homeSectionOrder = ["hero", "location", "stats", "experiences-grid", "why-chawan", "spotlight", "packages", "accommodation", "food", "activities", "gallery", "stories", "rewards-teaser", "final-cta"] as const;
 
 type PageSection = NonNullable<PublicHomeData["page"]>["sections"][number];
 type Content = Record<string, unknown>;
@@ -56,11 +57,12 @@ function MediaImage({ media, priority = false, className = "object-cover", sizes
 }
 
 function WhySection({ section, gallery }: { section: PageSection; gallery: PublicHomeData["gallery"] }) {
-  return <NatureFeature section={section} gallery={gallery} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/>;
+  return <><NatureFeature section={section} gallery={gallery} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/><ViewAllLink href="/activities" label="View all activities"/></>;
 }
 
 function ExperiencesSection({ section, experiences }: { section: PageSection; experiences: PublicHomeData["experiences"] }) {
-  return <ExperienceCarousel experiences={experiences.slice(0, 6)} heading={text(pageContent(section).heading)} description={text(pageContent(section).body)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/>;
+  if (!experiences.length) return null;
+  return <><ExperienceCarousel experiences={experiences.slice(0, 6)} heading={text(pageContent(section).heading)} description={text(pageContent(section).body)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/><ViewAllLink href="/experiences" label="View all experiences"/></>;
 }
 
 function AccommodationsSection({ section, accommodations }: { section: PageSection; accommodations: PublicHomeData["accommodations"] }) {
@@ -68,7 +70,7 @@ function AccommodationsSection({ section, accommodations }: { section: PageSecti
 }
 
 function PackagesSection({ section, packages }: { section: PageSection; packages: PublicHomeData["packages"] }) {
-  return <section id="packages" className="bg-cream-50"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Packages"/>{packages.length ? <StayCards items={mapStayPackages(packages)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/> : <EmptyPublished label="packages"/>}</div></section>;
+  return <section id="packages" className="bg-cream-50"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Stay with us"/>{packages.length ? <StayCards items={mapStayPackages(packages)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/> : <EmptyPublished label="packages"/>}<ViewAllLink href="/packages" label="View all packages"/></div></section>;
 }
 function FoodSection({ section, food }: { section: PageSection; food: PublicHomeData["food"] }) {
   return <section id="food" className="bg-paddy-300/25"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Food"/>{food.length ? <div className="mt-10 grid gap-3 md:grid-cols-2">{food.map((category) => <details key={category.id} className="bg-clay-100 rounded-xl p-5" open><summary className="cursor-pointer font-semibold">{text(category.name)}</summary><ul className="mt-4 grid gap-2 border-t border-forest-900/10 pt-4 text-sm sm:grid-cols-2">{category.items.map((item) => <li className="flex gap-2" key={item.id}><span className="text-leaf-500" aria-hidden="true">•</span><span>{text(item.name)}{item.isExtraCharge ? <span className="text-mist-500"> · extra</span> : null}</span></li>)}</ul></details>)}</div> : <EmptyPublished label="food items"/>}</div></section>;
@@ -80,6 +82,10 @@ function ActivitiesSection({ section, activities }: { section: PageSection; acti
 
 function EmptyPublished({ label }: { label: string }) {
   return <p className="bg-clay-100 text-mist-500 mt-10 rounded-2xl p-8 text-center text-sm">No published {label} are available yet.</p>;
+}
+
+function ViewAllLink({ href, label }: { href: string; label: string }) {
+  return <div className="mx-auto max-w-7xl px-4 pb-10 sm:px-8 lg:px-12"><Link href={href} className="text-forest-700 inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-turmeric-500">{label} →</Link></div>;
 }
 
 const defaultHomePage: NonNullable<PublicHomeData["page"]> = {
@@ -104,9 +110,10 @@ const defaultHomePage: NonNullable<PublicHomeData["page"]> = {
     { id: "s-act", pageId: "default-home", type: "activities", content: { heading: { en: "Optional activities" }, body: { en: "Arranged according to prevailing conditions and availability" } }, sortOrder: 6, isVisible: true },
     { id: "s-gal", pageId: "default-home", type: "gallery", content: {}, sortOrder: 7, isVisible: true },
     { id: "s-sto", pageId: "default-home", type: "stories", content: {}, sortOrder: 8, isVisible: true },
-    { id: "s-loc", pageId: "default-home", type: "location", content: { heading: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra" }, body: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra" } }, sortOrder: 9, isVisible: true },
-    { id: "s-stats", pageId: "default-home", type: "stats", content: { items: [] }, sortOrder: 10, isVisible: true },
-    { id: "s-cta", pageId: "default-home", type: "final-cta", content: { heading: { en: "Come live, experience & rediscover yourself & nature at its best" } }, sortOrder: 11, isVisible: true },
+    { id: "s-rewards", pageId: "default-home", type: "rewards-teaser", content: {}, sortOrder: 9, isVisible: true },
+    { id: "s-loc", pageId: "default-home", type: "location", content: { heading: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra" }, body: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra" } }, sortOrder: 10, isVisible: true },
+    { id: "s-stats", pageId: "default-home", type: "stats", content: { items: [] }, sortOrder: 11, isVisible: true },
+    { id: "s-cta", pageId: "default-home", type: "final-cta", content: { heading: { en: "Come live, experience & rediscover yourself & nature at its best" } }, sortOrder: 12, isVisible: true },
   ],
 };
 
@@ -118,7 +125,7 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
     const id = pageContent(section).imageMediaId;
     return typeof id === "string" ? imageMap.get(id) ?? null : null;
   };
-  return <main className="min-h-[50vh]">{sectionOrder.map((type) => {
+  return <main className="min-h-[50vh]">{homeSectionOrder.map((type) => {
     const section = sections.get(type);
     if (!section?.isVisible) return null;
     switch (type) {
@@ -126,17 +133,17 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
       case "why-chawan": return <WhySection key={type} section={section} gallery={data.gallery}/>;
       case "spotlight": return <SpotlightBand key={type} section={section}/>;
       case "experiences-grid": return <ExperiencesSection key={type} section={section} experiences={data.experiences.slice(0, 3)}/>;
-      case "accommodation": return <AccommodationsSection key={type} section={section} accommodations={data.accommodations.slice(0, 2)}/>;
+      case "accommodation": return <><AccommodationsSection key={type} section={section} accommodations={data.accommodations.slice(0, 2)}/><ViewAllLink href="/accommodation" label="View all accommodation"/></>;
       case "packages": return <PackagesSection key={type} section={section} packages={data.packages.slice(0, 4)}/>;
-      case "food": return <FoodSection key={type} section={section} food={data.food.slice(0, 2)}/>;
-      case "activities": return <ActivitiesSection key={type} section={section} activities={data.activities.slice(0, 4)}/>;
+      case "food": return <><FoodSection key={type} section={section} food={data.food.slice(0, 2)}/><ViewAllLink href="/food" label="View all food"/></>;
+      case "activities": return <><ActivitiesSection key={type} section={section} activities={data.activities.slice(0, 4)}/><ViewAllLink href="/activities" label="View all activities"/></>;
       case "gallery": {
         const items: HomeGalleryItem[] = data.gallery.filter(() => Boolean(env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)).slice(0, 6).map((item) => ({ id: item.id, category: item.category, caption: text(item.caption), publicId: item.media.publicId, alt: mediaAlt(item.media) }));
-        return <section key={type} id="gallery" className="bg-clay-100"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Gallery"/><div className="mt-10"><HomeGallery cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} items={items}/></div></div></section>;
+        return <section key={type} id="gallery" className="bg-clay-100"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Gallery"/><div className="mt-10"><HomeGallery cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} items={items}/></div><Link href="/gallery" className="text-forest-700 mt-8 inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-turmeric-500">View all gallery →</Link></div></section>;
       }
-      case "stories": return <GuestStoriesCarousel key={type} testimonials={data.testimonials} heading={text(pageContent(section).heading)} description={text(pageContent(section).body)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/>;
-      case "rewards-teaser": return <section key={type} id="rewards" className="bg-forest-700 text-cream-50"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Rewards"/><Link href="/rewards" className="bg-turmeric-500 text-ink-900 mt-8 inline-flex min-h-11 items-center rounded-lg px-5 font-semibold">How rewards work</Link></div></section>;
-      case "location": return <WhereWeAre key={type} section={section} settings={data.settings} media={imageFor(section)}/>;
+      case "stories": return data.testimonials.some((item) => item.consentConfirmed) ? <><GuestStoriesCarousel key={type} testimonials={data.testimonials} heading={text(pageContent(section).heading)} description={text(pageContent(section).body)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/><ViewAllLink href="/stories" label="View all stories"/></> : null;
+      case "rewards-teaser": return <section key={type} className="bg-cream-50"><div className={sectionClass}><RewardsTeaser rule={data.activeRewardRule}/></div></section>;
+      case "location": return <><WhereWeAre key={type} section={section} settings={data.settings} media={imageFor(section)}/><ViewAllLink href="/contact#find-us" label="View all location details"/></>;
       case "stats": return <HomeStats key={type} section={section}/>;
       case "final-cta": return <ClosingCta key={type} heading={text(pageContent(section).heading)} body={text(pageContent(section).body)} settings={data.settings}/>;
     }

@@ -4,8 +4,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SafeHtml } from "@/components/admin/SafeHtml";
+import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
+import { PublicClosing } from "@/components/marketing/PublicClosing";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { CldImage } from "@/components/media/CldImage";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -90,6 +92,7 @@ export default async function StoryDetailPage({
     <>
       <JsonLd data={jsonLd} />
       <Header />
+      <Breadcrumbs items={[{ label: "Stories", href: "/stories" }, { label: title }]} />
       <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
         <article className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           {/* Back Navigation */}
@@ -212,6 +215,7 @@ export default async function StoryDetailPage({
           </footer>
         </article>
       </main>
+      <PublicClosing />
       <StickyCtaBar />
       <Footer />
     </>
