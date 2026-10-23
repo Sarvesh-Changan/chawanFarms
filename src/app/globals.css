@@ -156,6 +156,11 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes nature-mosaic-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .hero-line-in,
 .hero-copy-in {
   animation-timing-function: var(--motion-ease-standard);
@@ -182,6 +187,10 @@ body {
   animation: experience-slide-in var(--motion-duration-reveal) var(--motion-ease-standard) both;
 }
 
+.nature-mosaic-reveal {
+  animation: nature-mosaic-in var(--motion-duration-reveal) var(--motion-ease-standard) both;
+}
+
 @media (min-width: 1024px) {
   .experience-slide {
     flex-basis: calc((100% - 1rem) / 2);
@@ -200,7 +209,8 @@ body {
 
   .hero-line-in,
   .hero-copy-in,
-  .experience-slide-reveal {
+  .experience-slide-reveal,
+  .nature-mosaic-reveal {
     animation: none;
     opacity: 1;
     transform: none;

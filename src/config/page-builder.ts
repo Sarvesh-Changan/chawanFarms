@@ -1,6 +1,7 @@
 export const PAGE_SECTION_TYPES = [
   "hero",
   "why-chawan",
+  "spotlight",
   "experiences-grid",
   "accommodation",
   "packages",
@@ -19,7 +20,7 @@ export const PAGE_SECTION_TYPES = [
 export type PageSectionType = (typeof PAGE_SECTION_TYPES)[number];
 
 export const PAGE_SEED_SECTIONS = [
-  "hero", "why-chawan", "experiences-grid", "accommodation", "packages", "food",
+  "hero", "why-chawan", "spotlight", "experiences-grid", "accommodation", "packages", "food",
   "activities", "gallery", "stories", "rewards-teaser", "location", "stats", "final-cta",
 ] as const satisfies readonly PageSectionType[];
 

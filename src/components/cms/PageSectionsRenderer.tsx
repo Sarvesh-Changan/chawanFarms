@@ -54,7 +54,7 @@ export function PageSectionsRenderer({ page, preview = false }: { page: PublicPa
             {localized(content.eyebrow) ? <p className="text-sm font-semibold uppercase tracking-[0.18em] text-laterite-600">{localized(content.eyebrow)}</p> : null}
             {heading ? <h1 className="font-heading text-4xl leading-tight sm:text-5xl">{heading}</h1> : null}
             {body ? section.type === "rich-text" || section.type === "image-text" ? <SafeHtml html={body} className="prose max-w-none" /> : <p className="max-w-2xl whitespace-pre-line text-base leading-7 opacity-85">{body}</p> : null}
-            {items.length ? <div className="grid gap-4 sm:grid-cols-2">{items.map((item, itemIndex) => <article key={itemIndex} className="rounded-xl border border-current/15 p-4"><h2 className="font-heading text-xl">{localized(item.title)}</h2>{localized(item.body) ? <p className="mt-2 text-sm leading-6 opacity-80">{localized(item.body)}</p> : null}</article>)}</div> : null}
+            {items.length ? <div className="grid gap-4 sm:grid-cols-2">{items.map((item, itemIndex) => <article key={itemIndex} className="rounded-xl border border-current/15 p-4"><h2 className="font-heading text-xl">{localized(item.title) || localized(item.label)}</h2>{localized(item.body) ? <p className="mt-2 text-sm leading-6 opacity-80">{localized(item.body)}</p> : null}</article>)}</div> : null}
             {(() => { const href = sectionHref(section.type); return href ? <Link className="inline-flex min-h-11 items-center rounded-lg border border-current/30 px-4 text-sm font-semibold underline-offset-4 hover:underline" href={href}>Explore {section.type.replaceAll("-", " ")}</Link> : null; })()}
             {localized(content.ctaLabel) && typeof content.ctaHref === "string" && content.ctaHref.startsWith("/") && !content.ctaHref.startsWith("//") ? <Link className="inline-flex min-h-11 items-center rounded-lg bg-turmeric-500 px-5 font-semibold text-forest-900" href={content.ctaHref}>{localized(content.ctaLabel)}</Link> : null}
           </div>
@@ -67,5 +67,5 @@ export function PageSectionsRenderer({ page, preview = false }: { page: PublicPa
 }
 
 function isPageSectionType(value: string): value is PageSectionType {
-  return ["hero", "why-chawan", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "stats", "final-cta", "rich-text", "image-text"].includes(value);
+  return ["hero", "why-chawan", "spotlight", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "stats", "final-cta", "rich-text", "image-text"].includes(value);
 }

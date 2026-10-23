@@ -12,6 +12,11 @@ const whyChawanContent = z.object({
   ...sectionBase,
   items: z.array(z.object({ title: nonemptyLocalized, body: localized.optional() }).strict()).max(6),
 }).strict();
+const spotlightContent = z.object({
+  ...sectionBase,
+  items: z.array(z.object({ label: nonemptyLocalized }).strict()).max(6)
+    .refine((items) => items.length === 0 || items.length >= 4, "Spotlight needs 4 to 6 items when populated."),
+}).strict();
 
 const heroContent = z.object({
   ...sectionBase,
@@ -38,6 +43,7 @@ const statsContent = z.object({
 export const pageSectionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("hero"), content: heroContent, isVisible: z.boolean().default(true) }).strict(),
   z.object({ type: z.literal("why-chawan"), content: whyChawanContent, isVisible: z.boolean().default(true) }).strict(),
+  z.object({ type: z.literal("spotlight"), content: spotlightContent, isVisible: z.boolean().default(true) }).strict(),
   ...(["experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "final-cta"] as const).map((type) => z.object({ type: z.literal(type), content: simpleSection, isVisible: z.boolean().default(true) }).strict()),
   z.object({ type: z.literal("stats"), content: statsContent, isVisible: z.boolean().default(true) }).strict(),
   z.object({ type: z.literal("rich-text"), content: richTextContent, isVisible: z.boolean().default(true) }).strict(),

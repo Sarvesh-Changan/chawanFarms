@@ -5,7 +5,9 @@ import { ExperienceCarousel } from "@/components/marketing/ExperienceCarousel";
 import { HomeGallery, type HomeGalleryItem } from "@/components/marketing/HomeGallery";
 import { HomeHero as CmsHomeHero } from "@/components/marketing/HomeHero";
 import { HomeStats } from "@/components/marketing/HomeStats";
+import { NatureFeature } from "@/components/marketing/NatureFeature";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
+import { SpotlightBand } from "@/components/marketing/SpotlightBand";
 import { WhereWeAre } from "@/components/marketing/WhereWeAre";
 import { CldImage } from "@/components/media/CldImage";
 import { env } from "@/config/env";
@@ -13,7 +15,7 @@ import { formatINR } from "@/lib/money";
 import { localizedString, type PublicHomeData, type PublicMedia } from "@/server/services/public-content";
 
 const sectionClass = "mx-auto max-w-7xl px-4 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-28";
-const sectionOrder = ["hero", "why-chawan", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "stats", "final-cta"] as const;
+const sectionOrder = ["hero", "why-chawan", "spotlight", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "stats", "final-cta"] as const;
 
 type PageSection = NonNullable<PublicHomeData["page"]>["sections"][number];
 type Content = Record<string, unknown>;
@@ -51,13 +53,8 @@ function MediaImage({ media, priority = false, className = "object-cover", sizes
   return <CldImage cloudName={cloudName} publicId={media.publicId} resourceType={mediaResource(media)} alt={mediaAlt(media)} focalX={media.focalX} focalY={media.focalY} fill priority={priority} sizes={sizes} className={className} />;
 }
 
-function WhySection({ section }: { section: PageSection }) {
-  const content = pageContent(section);
-  const items = Array.isArray(content.items) ? content.items.map(record) : [];
-  return <section id="why" className={`${sectionClass} pb-10 sm:pb-12 lg:pb-16`}>
-    <CmsHeading content={content} eyebrow="Why Chawan Farms" />
-    {items.length ? <div className="mt-10 grid gap-4 md:grid-cols-3">{items.map((item, index) => <article className="border-forest-900/10 border-t pt-5" key={`${text(item.title)}-${index}`}><span className="text-laterite-600 font-heading text-4xl">0{index + 1}</span><h3 className="font-heading text-forest-900 mt-4 text-2xl">{text(item.title)}</h3>{text(item.body) ? <p className="text-mist-500 mt-2 text-sm leading-6">{text(item.body)}</p> : null}</article>)}</div> : null}
-  </section>;
+function WhySection({ section, gallery }: { section: PageSection; gallery: PublicHomeData["gallery"] }) {
+  return <NatureFeature section={section} gallery={gallery} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/>;
 }
 
 function ExperiencesSection({ section, experiences }: { section: PageSection; experiences: PublicHomeData["experiences"] }) {
@@ -124,7 +121,7 @@ const defaultHomePage: NonNullable<PublicHomeData["page"]> = {
   images: [],
   sections: [
     { id: "s-hero", pageId: "default-home", type: "hero", content: { heading: { en: "Come live, experience & rediscover yourself & nature at its best" }, body: { en: "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens." }, ctaLabel: { en: "Plan your stay" }, ctaHref: "/book" }, sortOrder: 0, isVisible: true },
-    { id: "s-why", pageId: "default-home", type: "why-chawan", content: { heading: { en: "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens" }, items: [] }, sortOrder: 1, isVisible: true },
+    { id: "s-why", pageId: "default-home", type: "why-chawan", content: { heading: { en: "Live with the nature" }, body: { en: "Imagine a place where time slows down." }, items: [] }, sortOrder: 1, isVisible: true },
     { id: "s-exp", pageId: "default-home", type: "experiences-grid", content: { heading: { en: "Horticultural farming, dairy, poultry" }, body: { en: "Organic farming" } }, sortOrder: 2, isVisible: true },
     { id: "s-acc", pageId: "default-home", type: "accommodation", content: { heading: { en: "Camping tents / Dormitory · Guest House" }, body: { en: "Lawn area only for Camp Organisers" } }, sortOrder: 3, isVisible: true },
     { id: "s-pkg", pageId: "default-home", type: "packages", content: { heading: { en: "Per person per day, one night stay" } }, sortOrder: 4, isVisible: true },
@@ -151,7 +148,8 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
     if (!section?.isVisible) return null;
     switch (type) {
       case "hero": return <CmsHomeHero key={type} section={section} media={imageFor(section)} settings={data.settings}/>;
-      case "why-chawan": return <WhySection key={type} section={section}/>;
+      case "why-chawan": return <WhySection key={type} section={section} gallery={data.gallery}/>;
+      case "spotlight": return <SpotlightBand key={type} section={section}/>;
       case "experiences-grid": return <ExperiencesSection key={type} section={section} experiences={data.experiences.slice(0, 3)}/>;
       case "accommodation": return <AccommodationsSection key={type} section={section} accommodations={data.accommodations.slice(0, 2)}/>;
       case "packages": return <PackagesSection key={type} section={section} packages={data.packages.slice(0, 4)}/>;

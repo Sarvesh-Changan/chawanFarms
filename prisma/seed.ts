@@ -266,7 +266,7 @@ const policyBody = {
 
 const homePageSections: Array<{ type: string; content: Prisma.InputJsonObject; isVisible?: boolean }> = [
   { type: "hero", content: { eyebrow: { en: "Chawan Farms — Agri-Tourism Centre" }, heading: { en: "Come live, experience & rediscover yourself & nature at its best" } } },
-  { type: "why-chawan", content: { heading: { en: "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens" }, items: [] } },
+  { type: "why-chawan", content: { heading: { en: "Live with the nature" }, body: { en: "Imagine a place where time slows down." }, items: [] } },
   { type: "experiences-grid", content: { heading: { en: "Horticultural farming, dairy, poultry" }, body: { en: "Organic farming" } } },
   { type: "accommodation", content: { heading: { en: "Camping tents / Dormitory · Guest House" }, body: { en: "Lawn area only for Camp Organisers" } } },
   { type: "packages", content: { heading: { en: "Per person per day, one night stay" } } },

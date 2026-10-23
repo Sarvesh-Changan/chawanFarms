@@ -42,7 +42,7 @@ function localizedUpdate(value: Record<string, string>, locale: (typeof locales)
 }
 function sectionName(type: PageSectionType): string {
   switch (type) {
-    case "hero": return "Hero"; case "why-chawan": return "Why Chawan"; case "experiences-grid": return "Experiences grid";
+    case "hero": return "Hero"; case "why-chawan": return "Why Chawan"; case "spotlight": return "Spotlight"; case "experiences-grid": return "Experiences grid";
     case "accommodation": return "Accommodation"; case "packages": return "Packages"; case "food": return "Food";
     case "activities": return "Activities"; case "gallery": return "Gallery"; case "stories": return "Stories";
     case "rewards-teaser": return "Rewards teaser"; case "location": return "Location"; case "stats": return "Stats"; case "final-cta": return "Final CTA";

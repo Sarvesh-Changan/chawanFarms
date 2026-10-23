@@ -21,6 +21,7 @@ export function pageSectionDefaults(type: PageSectionType): Record<string, unkno
   switch (type) {
     case "hero": return { ...common, eyebrow: { en: "" }, heading: { en: "" }, ctaLabel: { en: "" }, ctaHref: "", imageMediaId: null };
     case "why-chawan": return { ...common, items: [] };
+    case "spotlight": return { ...common, items: [] };
     case "stats": return { ...common, items: [] };
     case "rich-text": return { heading: { en: "" }, body: { en: "" } };
     case "image-text": return { heading: { en: "" }, body: { en: "" }, imageMediaId: null, imageSide: "right" };
