@@ -10,6 +10,7 @@ type HeroVideoProps = {
 };
 
 type NetworkInformation = EventTarget & { saveData?: boolean };
+type DeviceInformation = Navigator & { connection?: NetworkInformation; deviceMemory?: number };
 
 function videoUrl(cloudName: string, publicId: string) {
   return `https://res.cloudinary.com/${encodeURIComponent(cloudName)}/video/upload/f_mp4,vc_h264,q_auto/${encodeURI(publicId)}.mp4`;
@@ -27,8 +28,10 @@ export function HeroVideo({ cloudName, publicId, posterPublicId, className }: He
 
   useEffect(() => {
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const connection = (navigator as Navigator & { connection?: NetworkInformation }).connection;
-    const update = () => setMotionAllowed(!motion.matches && !connection?.saveData);
+    const device = navigator as DeviceInformation;
+    const connection = device.connection;
+    const lowPowerMobile = window.matchMedia("(max-width: 768px) and (pointer: coarse)").matches && (connection?.saveData === true || (navigator.hardwareConcurrency ?? 8) <= 4 || (device.deviceMemory ?? 8) <= 4);
+    const update = () => setMotionAllowed(!motion.matches && !lowPowerMobile && !connection?.saveData);
     update();
     motion.addEventListener("change", update);
     connection?.addEventListener("change", update);
@@ -41,9 +44,33 @@ export function HeroVideo({ cloudName, publicId, posterPublicId, className }: He
   useEffect(() => {
     const element = containerRef.current;
     if (!element || !motionAllowed) return;
-    const observer = new IntersectionObserver(([entry]) => setIsVisible(Boolean(entry?.isIntersecting)), { rootMargin: "160px" });
+    let idleCallback: number | undefined;
+    let timeout: number | undefined;
+    const browserWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const loadAfterPaint = () => {
+      if (typeof browserWindow.requestIdleCallback === "function") {
+        idleCallback = browserWindow.requestIdleCallback(() => setIsVisible(true), { timeout: 1200 });
+      } else {
+        timeout = window.setTimeout(() => setIsVisible(true), 700);
+      }
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) {
+        loadAfterPaint();
+        observer.disconnect();
+      }
+    }, { rootMargin: "160px" });
     observer.observe(element);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (idleCallback !== undefined && typeof browserWindow.cancelIdleCallback === "function") {
+        browserWindow.cancelIdleCallback(idleCallback);
+      }
+      if (timeout !== undefined) window.clearTimeout(timeout);
+    };
   }, [motionAllowed]);
 
   return <div ref={containerRef} className={className} aria-hidden="true" style={{ backgroundImage: `url("${poster}")`, backgroundPosition: "center", backgroundSize: "cover" }}>

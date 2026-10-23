@@ -141,6 +141,34 @@ body {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+@keyframes hero-line-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hero-copy-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-line-in,
+.hero-copy-in {
+  animation-timing-function: var(--motion-ease-standard);
+  animation-fill-mode: both;
+}
+
+.hero-line-in {
+  animation-name: hero-line-in;
+  animation-duration: var(--motion-duration-reveal);
+  animation-delay: var(--hero-line-delay, 0ms);
+}
+
+.hero-copy-in {
+  animation-name: hero-copy-in;
+  animation-duration: var(--motion-duration-reveal);
+  animation-delay: var(--hero-copy-delay, 0ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -149,5 +177,12 @@ body {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .hero-line-in,
+  .hero-copy-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }

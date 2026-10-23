@@ -32,6 +32,7 @@
   --radius-pill: 999px;
   --overlay-image-bottom: linear-gradient(180deg, transparent 20%, rgb(18 48 31 / 0.9) 100%);
   --overlay-image-side: linear-gradient(90deg, rgb(18 48 31 / 0.92), rgb(18 48 31 / 0.16) 70%, transparent);
+  --overlay-hero: linear-gradient(90deg, rgb(18 48 31 / 0.96) 0%, rgb(18 48 31 / 0.78) 42%, rgb(18 48 31 / 0.3) 78%, transparent 100%), linear-gradient(0deg, rgb(18 48 31 / 0.76), transparent 48%);
 }
 
 @theme inline {

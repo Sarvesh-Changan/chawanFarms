@@ -1,11 +1,10 @@
 import Link from "next/link";
 
 import { SafeHtml } from "@/components/admin/SafeHtml";
-import { WhatsAppButton } from "@/components/marketing/ContactButtons";
 import { HomeGallery, type HomeGalleryItem } from "@/components/marketing/HomeGallery";
+import { HomeHero as CmsHomeHero } from "@/components/marketing/HomeHero";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { CldImage } from "@/components/media/CldImage";
-import { HeroVideo } from "@/components/media/HeroVideo";
 import { env } from "@/config/env";
 import { formatINR } from "@/lib/money";
 import { localizedString, type PublicHomeData, type PublicMedia } from "@/server/services/public-content";
@@ -47,32 +46,6 @@ function MediaImage({ media, priority = false, className = "object-cover", sizes
   const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   if (!cloudName) return null;
   return <CldImage cloudName={cloudName} publicId={media.publicId} resourceType={mediaResource(media)} alt={mediaAlt(media)} focalX={media.focalX} focalY={media.focalY} fill priority={priority} sizes={sizes} className={className} />;
-}
-
-function HomeHero({ section, media, settings }: { section: PageSection; media: PublicMedia | null; settings: PublicHomeData["settings"] }) {
-  const content = pageContent(section);
-  const heading = text(content.heading);
-  const eyebrow = text(content.eyebrow);
-  const body = text(content.body);
-  const ctaLabel = text(content.ctaLabel) || "Book / enquire";
-  const ctaHref = typeof content.ctaHref === "string" && content.ctaHref.startsWith("/") && !content.ctaHref.startsWith("//") ? content.ctaHref : "/book";
-  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  return <section id="hero" className="bg-forest-900 text-cream-50 relative isolate min-h-[clamp(34rem,78svh,52rem)] overflow-hidden">
-    {media && cloudName ? <div className="absolute inset-0 -z-10"><MediaImage media={media} priority className="object-cover opacity-50" sizes="100vw" />{media.kind === "VIDEO" ? <HeroVideo cloudName={cloudName} publicId={media.publicId} className="absolute inset-0 opacity-55" /> : null}</div> : null}
-    <div className="from-forest-900 via-forest-900/60 absolute inset-0 -z-[5] bg-gradient-to-r to-transparent" />
-    <div className="relative mx-auto flex min-h-[clamp(34rem,78svh,52rem)] max-w-7xl items-end px-4 pb-20 pt-28 sm:px-8 lg:px-12 lg:pb-28">
-      <div className="max-w-3xl">
-        {eyebrow ? <p className="text-paddy-300 text-xs font-semibold tracking-[0.22em] uppercase">{eyebrow}</p> : null}
-        {heading ? <h1 className="font-heading mt-4 max-w-3xl text-[clamp(3.25rem,11vw,7rem)] leading-[0.94] tracking-tight">{heading}</h1> : null}
-        {body ? <p className="text-cream-50/85 mt-6 max-w-xl text-lg leading-8 sm:text-xl">{body}</p> : null}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Link href={ctaHref} className="bg-turmeric-500 text-ink-900 inline-flex min-h-12 items-center justify-center rounded-lg px-5 font-semibold shadow-lg transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500">{ctaLabel}</Link>
-          {settings.whatsappNumber ? <WhatsAppButton number={settings.whatsappNumber} message={settings.whatsappMessage} className="border-cream-50/35 text-cream-50 inline-flex min-h-12 items-center justify-center rounded-lg border px-5 font-semibold hover:bg-cream-50/10 focus-visible:outline-2 focus-visible:outline-turmeric-500">Chat on WhatsApp</WhatsAppButton> : null}
-        </div>
-      </div>
-    </div>
-    <Link href="/experiences" className="text-cream-50/75 absolute bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-semibold tracking-[0.18em] uppercase focus-visible:outline-2 focus-visible:outline-turmeric-500">Explore →</Link>
-  </section>;
 }
 
 function WhySection({ section }: { section: PageSection }) {
@@ -147,7 +120,7 @@ const defaultHomePage: NonNullable<PublicHomeData["page"]> = {
   updatedAt: new Date("2026-01-01T00:00:00Z"),
   images: [],
   sections: [
-    { id: "s-hero", pageId: "default-home", type: "hero", content: { eyebrow: { en: "Chawan Farms — Agri-Tourism Centre" }, heading: { en: "Come live, experience & rediscover yourself & nature at its best" } }, sortOrder: 0, isVisible: true },
+    { id: "s-hero", pageId: "default-home", type: "hero", content: { heading: { en: "Come live, experience & rediscover yourself & nature at its best" }, body: { en: "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens." }, ctaLabel: { en: "Plan your stay" }, ctaHref: "/book" }, sortOrder: 0, isVisible: true },
     { id: "s-why", pageId: "default-home", type: "why-chawan", content: { heading: { en: "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens" }, items: [] }, sortOrder: 1, isVisible: true },
     { id: "s-exp", pageId: "default-home", type: "experiences-grid", content: { heading: { en: "Horticultural farming, dairy, poultry" }, body: { en: "Organic farming" } }, sortOrder: 2, isVisible: true },
     { id: "s-acc", pageId: "default-home", type: "accommodation", content: { heading: { en: "Camping tents / Dormitory · Guest House" }, body: { en: "Lawn area only for Camp Organisers" } }, sortOrder: 3, isVisible: true },
@@ -173,7 +146,7 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
     const section = sections.get(type);
     if (!section?.isVisible) return null;
     switch (type) {
-      case "hero": return <HomeHero key={type} section={section} media={imageFor(section)} settings={data.settings}/>;
+      case "hero": return <CmsHomeHero key={type} section={section} media={imageFor(section)} settings={data.settings}/>;
       case "why-chawan": return <WhySection key={type} section={section}/>;
       case "experiences-grid": return <ExperiencesSection key={type} section={section} experiences={data.experiences.slice(0, 3)}/>;
       case "accommodation": return <AccommodationsSection key={type} section={section} accommodations={data.accommodations.slice(0, 2)}/>;
