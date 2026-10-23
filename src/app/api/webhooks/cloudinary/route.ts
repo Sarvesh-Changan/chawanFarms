@@ -82,6 +82,11 @@ export async function POST(request: Request) {
   if (parsed.data.resource_type && parsed.data.resource_type !== verification.asset.resourceType) {
     return NextResponse.json({ error: "Webhook metadata did not match Cloudinary." }, { status: 400 });
   }
+  if (identity.purpose === "customer_video") {
+    // Customer media is attached only by completeUpload after the upload intent
+    // and stored public_id have both been re-verified.
+    return NextResponse.json({ received: true, deferred: true });
+  }
   try {
     await recordVerifiedMedia(verification.asset);
     return NextResponse.json({ received: true });

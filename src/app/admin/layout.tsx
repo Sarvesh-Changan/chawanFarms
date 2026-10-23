@@ -18,8 +18,11 @@ const navigation = [
   ] },
   { label: "Enquiries", href: "/admin/enquiries", permission: "enquiries.read" },
   { label: "Leads", href: "/admin/leads", permission: "leads.read" },
-  { label: "Rewards", href: "/admin/rewards/rules", permission: ["rewards.videos.read", "rewards.rules.read", "rewards.ledger.read"], children: [
+  { label: "Rewards", href: "/admin/rewards/rules", permission: ["rewards.videos.read", "rewards.rules.read", "rewards.ledger.read", "coupons.read"], children: [
+    { label: "Video review", href: "/admin/rewards/videos", permission: "rewards.videos.review" },
     { label: "Rules & Tiers", href: "/admin/rewards/rules", permission: "rewards.rules.read" },
+    { label: "Points Ledger", href: "/admin/rewards/ledger", permission: "rewards.ledger.read" },
+    { label: "Coupons", href: "/admin/rewards/coupons", permission: "coupons.read" },
   ] },
   { label: "SEO", href: "/admin/seo", permission: "seo.write" },
   { label: "Settings", href: "/admin/settings", permission: "settings.read" },

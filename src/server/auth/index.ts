@@ -1,5 +1,7 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
+
 import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
@@ -10,6 +12,11 @@ import { env } from "@/config/env";
 import { ensureCustomerProfile } from "@/server/auth/referral";
 import { db } from "@/server/db";
 import { sendResetPasswordEmail, sendVerificationEmail } from "@/server/integrations/email";
+import { clearRateLimit } from "@/server/integrations/ratelimit";
+
+function accountLoginRateLimitKey(email: string): string {
+  return `auth:login:account:${createHash("sha256").update(email.trim().toLowerCase()).digest("hex")}`;
+}
 
 export const auth = betterAuth({
   appName: "Chawan Farms",
@@ -26,6 +33,19 @@ export const auth = betterAuth({
     autoSignIn: false,
     resetPasswordTokenExpiresIn: 1_800,
     revokeSessionsOnPasswordReset: true,
+    onPasswordReset: async ({ user }) => {
+      try {
+        await db.user.update({
+          where: { id: user.id },
+          data: { failedLoginCount: 0, lockedUntil: null },
+        });
+        await clearRateLimit(accountLoginRateLimitKey(user.email));
+      } catch (error) {
+        // The password has already been changed; cleanup must not turn a
+        // successful reset into a misleading "invalid link" response.
+        console.error("[auth] failed to clear login lockout after password reset", error);
+      }
+    },
     sendResetPassword: async ({ user, url }) => {
       await sendResetPasswordEmail({ to: user.email, name: user.name, url });
     },
@@ -42,6 +62,7 @@ export const auth = betterAuth({
   session: {
     expiresIn: 2_592_000,
     updateAge: 86_400,
+    freshAge: 86_400,
     cookieCache: { enabled: false },
   },
   advanced: {

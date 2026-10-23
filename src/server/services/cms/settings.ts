@@ -52,10 +52,12 @@ export async function getCmsSettings(): Promise<CmsSettings> {
       "business.name", "business.phones", "business.email", "business.address", "business.socialLinks",
       "whatsapp.number", "whatsapp.defaultMessage", "booking.minLeadTimeHours", "booking.minimumGroupSize",
       "booking.checkInTime", "booking.checkOutTime", "booking.policyText", "notify.recipients",
+      "notify.toggles", "notify.stuckThreshold", "notify.templates",
     ] } },
     select: { key: true, value: true },
   });
   const values = new Map(rows.map((row) => [row.key, row.value]));
+  const toggles = recordValue(values.get("notify.toggles"));
   return {
     businessName: localizedValue(values.get("business.name")),
     businessPhones: stringList(values.get("business.phones")).join("\n"),
@@ -70,6 +72,14 @@ export async function getCmsSettings(): Promise<CmsSettings> {
     checkOutTime: stringValue(values.get("booking.checkOutTime")),
     bookingPolicyText: localizedValue(values.get("booking.policyText")),
     notificationRecipients: stringList(values.get("notify.recipients")).join("\n"),
+    notificationEmailEnabled: toggles?.email !== false,
+    notificationInAppEnabled: toggles?.inApp !== false,
+    notificationLeadAlertsEnabled: toggles?.LEAD_ALERT !== false,
+    notificationBookingUpdatesEnabled: toggles?.BOOKING_RECEIVED !== false && toggles?.BOOKING_CONFIRMED !== false && toggles?.BOOKING_CANCELLED !== false,
+    notificationRewardUpdatesEnabled: toggles?.POINTS_EARNED !== false && toggles?.COUPON_ISSUED !== false && toggles?.COUPON_EXPIRING !== false,
+    notificationReminderEmailsEnabled: toggles?.PRE_ARRIVAL_REMINDER !== false,
+    notificationStuckThreshold: numberString(values.get("notify.stuckThreshold")),
+    notificationTemplateOverridesJson: typeof values.get("notify.templates") === "string" ? values.get("notify.templates") as string : "{}",
   };
 }
 
@@ -92,6 +102,21 @@ export async function saveCmsSettings(data: CmsSettingsData, actorId: string) {
     { key: "booking.checkOutTime", value: data.checkOutTime },
     { key: "booking.policyText", value: data.bookingPolicyText },
     { key: "notify.recipients", value: data.notificationRecipients },
+    { key: "notify.toggles", value: {
+      email: data.notificationEmailEnabled,
+      inApp: data.notificationInAppEnabled,
+      LEAD_ALERT: data.notificationLeadAlertsEnabled,
+      ENQUIRY_ACKNOWLEDGEMENT: data.notificationLeadAlertsEnabled,
+      BOOKING_RECEIVED: data.notificationBookingUpdatesEnabled,
+      BOOKING_CONFIRMED: data.notificationBookingUpdatesEnabled,
+      BOOKING_CANCELLED: data.notificationBookingUpdatesEnabled,
+      POINTS_EARNED: data.notificationRewardUpdatesEnabled,
+      COUPON_ISSUED: data.notificationRewardUpdatesEnabled,
+      COUPON_EXPIRING: data.notificationRewardUpdatesEnabled,
+      PRE_ARRIVAL_REMINDER: data.notificationReminderEmailsEnabled,
+    } },
+    { key: "notify.stuckThreshold", value: data.notificationStuckThreshold },
+    { key: "notify.templates", value: data.notificationTemplateOverridesJson },
   ];
   await db.$transaction(settings.map(({ key, value }) => db.setting.upsert({
     where: { key },

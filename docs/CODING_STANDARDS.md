@@ -66,6 +66,7 @@ components/<domain>/<ComponentName>/
 - Typed error codes (`UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `VALIDATION`, `RATE_LIMITED`, `CONFLICT`, `UNAVAILABLE`, `INTERNAL`). User-facing messages friendly and non-technical; no internals leaked.
 - Catch at boundaries; unexpected errors → Sentry + generic message + request id shown to user.
 - Logging via a small `logger` (structured JSON); never log secrets, tokens, passwords, full phone/email; use ids.
+- Email integrations must use the `EmailTransport` interface, lazy server-side transport creation, Zod recipient validation, escaped template variables, plain-text alternatives, and non-throwing typed send results. Never log message bodies, links, passwords or SMTP credentials; log only message type, recipient domain, result and message id.
 
 ## 9. Loading, empty & error UX
 Every async view has: skeleton (`loading.tsx`/Suspense), empty state with next action, error state with retry. Buttons show pending state and are disabled during submit; optimistic UI only where safe (never for points/prices). Toasts via one system (sonner) with accessible live region.
@@ -97,7 +98,7 @@ Add only with justification (size, maintenance, license, install scripts). Prefe
 | Component | Testing Library | forms, stepper, upload UI states, a11y (jest-axe) |
 | E2E | Playwright (mobile + desktop) | signup→verify→login, enquiry submit, booking request, video upload→admin approve→points→coupon→apply, admin CMS publish→public update |
 | Visual/perf | Lighthouse CI, Playwright screenshots (optional) | CWV budgets |
-- Test names describe behaviour. Arrange-Act-Assert. Deterministic (fake timers/clock), no network (MSW; Cloudinary/Resend mocked behind interfaces). Each bug fix adds a regression test.
+- Test names describe behaviour. Arrange-Act-Assert. Deterministic (fake timers/clock), no network (MSW; Cloudinary/SMTP mocked behind interfaces). Each bug fix adds a regression test.
 - Coverage targets: policies/services ≥ 90% branches; overall ≥ 70%; **no merging code touching money/points/auth without tests**.
 - Definition of done per task: lint ✔ typecheck ✔ tests ✔ build ✔ manual verification steps documented.
 
@@ -106,3 +107,4 @@ Reviewer checks: (1) matches PRD/ARCHITECTURE/DATABASE/SECURITY; (2) authN/authZ
 
 ## 16. Documentation duties
 Update docs when behaviour changes: `docs/ADR-xxx.md` for decisions (auth library, id strategy, caching approach), `docs/RUNBOOK.md` (deploy, rollback, restore, rotate secrets, cron), `docs/CONTENT_CONFLICTS.md`, `README.md` (setup in <15 min), admin user guide for client handover.
+- Notification jobs must be post-commit, idempotent and server-authorised. Outbox processors may log event type and delivery result, but never message bodies, tokens or credentials; temporary delivery/quota failures remain pending for retry.

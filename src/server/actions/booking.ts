@@ -165,6 +165,12 @@ export async function submitBookingAction(
   let userId: string | null = null;
   try {
     const session = await getSession();
+    if (session && !session.user.emailVerified) {
+      return {
+        ok: false,
+        error: { message: "Please verify your email before submitting a booking request." },
+      };
+    }
     userId = session?.user?.id ?? null;
   } catch {
     // Guest submission

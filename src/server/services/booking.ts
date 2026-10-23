@@ -2,16 +2,11 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
+import { env } from "@/config/env";
 import { Prisma, type BookingStatus } from "@/generated/prisma/client";
 import { normalizeLeadPhone } from "@/lib/lead-phone";
 import { type BookingSubmissionInput } from "@/lib/schemas/booking";
 import { db } from "@/server/db";
-import {
-  sendBookingAcknowledgementEmail,
-  sendBookingAdminAlertEmail,
-  sendBookingCancelledEmail,
-  sendBookingConfirmedEmail,
-} from "@/server/integrations/email";
 import {
   validateBookingStatusTransition,
 } from "@/server/policies/bookingStatus";
@@ -30,6 +25,7 @@ import {
   releaseCouponOnCancellation,
   validateCoupon,
 } from "@/server/services/coupons";
+import { getAdminNotificationRecipients, notify } from "@/server/services/notifications";
 
 export type BookingResult = {
   id: string;
@@ -404,38 +400,11 @@ export async function submitBookingRequest(
 
   // 5. Send emails AFTER transaction commit
   try {
-    if (email) {
-      await sendBookingAcknowledgementEmail({
-        to: email,
-        name: input.contactName,
-        reference: created.reference,
-        totalPaise: created.totalPaise,
-        checkIn: input.checkIn,
-        checkOut: input.checkOut,
-        status: created.status,
-      });
-    }
-
-    // Admin alert email
-    const adminEmailSetting = await db.setting.findUnique({
-      where: { key: "business.email" },
-      select: { value: true },
-    });
-    const adminEmail =
-      adminEmailSetting?.value && typeof adminEmailSetting.value === "string"
-        ? adminEmailSetting.value
-        : "reservations@chawanfarms.com";
-
-    await sendBookingAdminAlertEmail({
-      to: adminEmail,
-      name: input.contactName,
-      phone,
-      reference: created.reference,
-      totalPaise: created.totalPaise,
-      checkIn: input.checkIn,
-      checkOut: input.checkOut,
-      status: created.status,
-    });
+    const adminRecipients = [...new Set([...(await getAdminNotificationRecipients()), ...(env.ADMIN_NOTIFY_EMAIL ? [env.ADMIN_NOTIFY_EMAIL] : [])])];
+    await notify("BOOKING_RECEIVED", [
+      ...adminRecipients.map((recipient) => ({ email: recipient })),
+      ...(email ? [{ email, userId: options.userId ?? undefined }] : []),
+    ], { bookingId: created.id, name: input.contactName, reference: created.reference, totalPaise: created.totalPaise, checkIn: input.checkIn, checkOut: input.checkOut, status: created.status });
   } catch (emailErr) {
     // Do not fail the booking if email delivery encounters a network error
     console.warn("Failed to dispatch booking notification emails:", emailErr);
@@ -655,24 +624,13 @@ export async function transitionBookingStatus(input: {
     // Send emails post-commit (errors logged, never blocking)
     if (updated.status === "CONFIRMED" && current.contactEmail) {
       try {
-        await sendBookingConfirmedEmail({
-          to: current.contactEmail,
-          name: current.contactName,
-          reference: current.reference,
-          checkIn: current.checkIn.toISOString().slice(0, 10),
-          checkOut: current.checkOut.toISOString().slice(0, 10),
-        });
+        await notify("BOOKING_CONFIRMED", [{ email: current.contactEmail, userId: current.userId ?? undefined }], { bookingId: current.id, name: current.contactName, reference: current.reference, checkIn: current.checkIn.toISOString().slice(0, 10), checkOut: current.checkOut.toISOString().slice(0, 10) });
       } catch (err) {
         console.warn("Failed to dispatch booking confirmed email:", err);
       }
     } else if (updated.status === "CANCELLED" && current.contactEmail) {
       try {
-        await sendBookingCancelledEmail({
-          to: current.contactEmail,
-          name: current.contactName,
-          reference: current.reference,
-          reason: input.cancelReason || "Cancelled by staff",
-        });
+        await notify("BOOKING_CANCELLED", [{ email: current.contactEmail, userId: current.userId ?? undefined }], { bookingId: current.id, name: current.contactName, reference: current.reference, reason: input.cancelReason || "Cancelled by staff" });
       } catch (err) {
         console.warn("Failed to dispatch booking cancelled email:", err);
       }

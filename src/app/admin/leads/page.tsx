@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { leadFilterSchema, leadListQuerySchema } from "@/lib/schemas/leads-crm";
 import { getSession } from "@/server/auth";
 import { can, getStaffPrincipal, requirePermission } from "@/server/authz";
-import { AuthorizationError } from "@/server/authz/errors";
 import { getSavedLeadFilter, listLeads, listSavedLeadFilters } from "@/server/services/leads-crm";
 
 function queryString(filters: { status: string[]; source: string[]; assigneeId?: string; dateFrom?: string; dateTo?: string; followUpDue: boolean; search: string }, view: string, includeView = true) {

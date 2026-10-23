@@ -5,6 +5,11 @@ export const CUSTOMER_UPLOAD_RATE_LIMIT = {
   windowSeconds: 60 * 60,
 } as const;
 
+/** Provisional abuse-control limit; see OPEN_QUESTIONS.md decision D-9. */
+export const VIDEO_DAILY_SUBMISSION_LIMIT = 3;
+export const VIDEO_PENDING_SUBMISSION_LIMIT = 20;
+export const VIDEO_UPLOAD_INTENT_TTL_SECONDS = 60 * 60;
+
 export const CLOUDINARY_WEBHOOK_TIMESTAMP_WINDOW_SECONDS = 5 * 60;
 export const CLOUDINARY_WEBHOOK_MAX_BODY_BYTES = 256_000;
 export const MEDIA_API_MAX_REQUEST_BYTES = 4_096;

@@ -28,6 +28,8 @@ Status: all questions below remain open unless the client records a written answ
 
 ## New questions found during analysis
 
+| D-41 | Gmail mailbox sending limits and sender verification | The transactional SMTP mailbox has a provisional 400-recipient/day application quota, below the roughly 500-recipient/day limit commonly associated with normal Gmail accounts. Confirm the production mailbox, verified sender identity and operational alert owner. Bulk marketing email is out of scope for this application. | Phase 14 — Notifications/jobs; Phase 20 — Deployment |
+
 | ID | Question requiring a client answer | Evidence/why it matters | Blocks phase |
 |---|---|---|---|
 | D-20 | Approve a canonical PDF transcription and a source-slide map. Should editorial corrections be displayed, and should original typo text be retained only in audit metadata? | Appendix A has wrong slide references for multiple sections, and the PDF contains source typos. | Phase 0 — Requirements/content analysis; Phase 7 — CMS |
@@ -65,7 +67,8 @@ Attribution persistence is disabled unless a valid `cf_consent` cookie grants an
 These values were supplied for implementation, are **provisional**, and do not resolve D-7 or D-9. Reconfirm them with the client before production use.
 
 - D-7 locales: `en` required; `mr` and `hi` optional. Default locale: `en`.
-- D-9 `customer_video`: `mp4`, `mov`, `webm`; maximum 100 MB; maximum duration 90 seconds.
+- D-9 `customer_video`: `mp4`, `mov`, `webm`; maximum 100 MB; maximum duration 90 seconds. **Provisional upload quota:** 3 new submissions per customer in a rolling 24-hour window, including rejected and withdrawn submissions; pending cap 20; signature rate limit 5/hour. Client confirmation remains pending.
+- D-9/D-17 **Provisional review SLA:** customer video review is targeted for 48 hours; the admin indicator is green under 24 hours, amber from 24 through 48 hours, and red over 48 hours. This is an operational implementation parameter pending client confirmation and does not change RewardRule values.
 - Admin media: images `jpg`, `png`, `webp`, `avif`; maximum 10 MB. Videos `mp4`, `webm`; maximum 100 MB; maximum duration 120 seconds. Admin video use is in scope for hero loops and brand film.
 - Customer videos should receive eager H.264/MP4 and first-frame JPEG poster transformations. These limits and transformations are centralized in `src/config/media.ts` pending client confirmation.
 ### Lead CRM decisions (2026-10-08)

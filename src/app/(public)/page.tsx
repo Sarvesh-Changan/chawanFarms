@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
 import { HomeSections } from "@/components/marketing/HomeSections";
+import { LegacyHashRedirect } from "@/components/marketing/LegacyHashRedirect";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getPublicSeoWithImage, metadataFromSeo } from "@/server/services/cms/seo";
@@ -24,6 +25,7 @@ export default async function HomePage() {
   const data = await getPublicHomeData();
   const seo = data.page ? await getPublicSeoWithImage("page", data.page.id) : null;
   return <>
+    <LegacyHashRedirect />
     <JsonLd data={seo?.jsonLd}/>
     <Header />
     <HomeSections data={data}/>

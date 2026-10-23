@@ -24,6 +24,8 @@ type RewardRulesManagerProps = {
   latestRule: RewardRuleWithTiers | null;
   editableDraft: RewardRuleWithTiers | null;
   canWrite: boolean;
+  availablePackages?: Array<{ id: string; name: string }>;
+  availableAccommodations?: Array<{ id: string; name: string }>;
 };
 
 export function RewardRulesManager({
@@ -32,6 +34,8 @@ export function RewardRulesManager({
   latestRule: initialLatestRule,
   editableDraft: initialEditableDraft,
   canWrite,
+  availablePackages = [],
+  availableAccommodations = [],
 }: RewardRulesManagerProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -88,8 +92,8 @@ export function RewardRulesManager({
         allPackages: t.allPackages,
         allAccommodation: t.allAccommodation,
         isActive: t.isActive,
-        packageIds: [],
-        accommodationIds: [],
+        packageIds: t.packages?.map((p) => p.packageId) ?? [],
+        accommodationIds: t.accommodations?.map((a) => a.accommodationId) ?? [],
       })),
     };
   });
@@ -126,8 +130,8 @@ export function RewardRulesManager({
         allPackages: t.allPackages,
         allAccommodation: t.allAccommodation,
         isActive: t.isActive,
-        packageIds: [],
-        accommodationIds: [],
+        packageIds: t.packages?.map((p) => p.packageId) ?? [],
+        accommodationIds: t.accommodations?.map((a) => a.accommodationId) ?? [],
       })),
     });
     setImpactSummary(null);
@@ -632,8 +636,8 @@ export function RewardRulesManager({
                       />
                     </div>
 
-                    <div className="sm:col-span-2 flex items-center gap-4 pt-4">
-                      <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                    <div className="sm:col-span-4 flex flex-wrap items-center gap-6 pt-2">
+                      <label className="flex items-center gap-1.5 text-xs cursor-pointer font-medium">
                         <input
                           type="checkbox"
                           checked={tier.allPackages}
@@ -641,7 +645,7 @@ export function RewardRulesManager({
                         />
                         <span>All Packages</span>
                       </label>
-                      <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-xs cursor-pointer font-medium">
                         <input
                           type="checkbox"
                           checked={tier.allAccommodation}
@@ -650,6 +654,86 @@ export function RewardRulesManager({
                         <span>All Accommodations</span>
                       </label>
                     </div>
+
+                    {!tier.allPackages && (
+                      <div className="sm:col-span-4 rounded-lg border border-border/80 bg-muted/20 p-3 space-y-2">
+                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                          Eligible Packages:
+                        </span>
+                        {availablePackages.length === 0 ? (
+                          <p className="text-xs text-muted-foreground italic">No packages found.</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {availablePackages.map((pkg) => {
+                              const checked = tier.packageIds?.includes(pkg.id);
+                              return (
+                                <label
+                                  key={pkg.id}
+                                  className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs cursor-pointer transition-colors ${
+                                    checked
+                                      ? "border-forest-700 bg-forest-50 text-forest-900 font-medium"
+                                      : "border-border/70 bg-background text-muted-foreground hover:bg-muted"
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className="sr-only"
+                                    checked={checked}
+                                    onChange={(e) => {
+                                      const next = e.target.checked
+                                        ? [...(tier.packageIds || []), pkg.id]
+                                        : (tier.packageIds || []).filter((id) => id !== pkg.id);
+                                      updateTier(idx, { packageIds: next });
+                                    }}
+                                  />
+                                  <span>{pkg.name}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {!tier.allAccommodation && (
+                      <div className="sm:col-span-4 rounded-lg border border-border/80 bg-muted/20 p-3 space-y-2">
+                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                          Eligible Accommodations:
+                        </span>
+                        {availableAccommodations.length === 0 ? (
+                          <p className="text-xs text-muted-foreground italic">No accommodations found.</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {availableAccommodations.map((acc) => {
+                              const checked = tier.accommodationIds?.includes(acc.id);
+                              return (
+                                <label
+                                  key={acc.id}
+                                  className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs cursor-pointer transition-colors ${
+                                    checked
+                                      ? "border-forest-700 bg-forest-50 text-forest-900 font-medium"
+                                      : "border-border/70 bg-background text-muted-foreground hover:bg-muted"
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className="sr-only"
+                                    checked={checked}
+                                    onChange={(e) => {
+                                      const next = e.target.checked
+                                        ? [...(tier.accommodationIds || []), acc.id]
+                                        : (tier.accommodationIds || []).filter((id) => id !== acc.id);
+                                      updateTier(idx, { accommodationIds: next });
+                                    }}
+                                  />
+                                  <span>{acc.name}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

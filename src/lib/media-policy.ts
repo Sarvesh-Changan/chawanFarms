@@ -64,6 +64,7 @@ export function identifyMediaPurpose(publicId: string): { purpose: MediaPurpose;
 export type CloudinaryAssetMetadata = {
   publicId: string;
   resourceType: string;
+  deliveryType: string;
   format: string;
   bytes: number;
   duration?: number;
@@ -87,6 +88,9 @@ export function validateCloudinaryAssetMetadata(
   }
   if (asset.resourceType !== policy.resourceType) {
     return { valid: false, reason: "Cloudinary resource type does not match the upload purpose." };
+  }
+  if (asset.deliveryType !== policy.deliveryType) {
+    return { valid: false, reason: "Cloudinary delivery type does not match the upload purpose." };
   }
   if (!policy.formats.includes(asset.format.toLowerCase())) {
     return { valid: false, reason: "Cloudinary detected a disallowed format." };

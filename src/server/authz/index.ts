@@ -173,6 +173,7 @@ export async function requirePermission(
 }
 
 export function requiresTwoFactor(_roleNames?: readonly string[]): boolean {
+  void _roleNames;
   return false;
 }
 

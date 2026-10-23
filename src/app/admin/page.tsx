@@ -1,5 +1,6 @@
 import { NoAccess } from "@/components/admin/NoAccess";
 import { PageHeader } from "@/components/admin/PageHeader";
+import { RewardDashboardWidgets } from "@/components/admin/rewards/RewardDashboardWidgets";
 import { StatCard } from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,7 @@ export default async function AdminPage() {
       <Card><CardHeader><CardTitle>Lead sources</CardTitle><CardDescription>All active leads by recorded source.</CardDescription></CardHeader><CardContent>{leadWidgets.sources.length ? <ul className="divide-y divide-border/70">{leadWidgets.sources.slice(0, 10).map(({ source, count }) => <li key={source} className="flex justify-between py-2 text-sm"><span>{source}</span><span className="font-semibold tabular-nums">{count}</span></li>)}</ul> : <p className="text-sm text-muted-foreground">No lead sources recorded.</p>}</CardContent></Card>
       <Card><CardHeader><CardTitle>Conversion funnel</CardTitle><CardDescription>Current lead pipeline counts.</CardDescription></CardHeader><CardContent><ul className="divide-y divide-border/70">{leadWidgets.funnel.map(({ status, count }) => <li key={status} className="flex items-center justify-between py-2"><StatusBadge status={status} /><span className="font-semibold tabular-nums">{count}</span></li>)}</ul></CardContent></Card>
     </section> : null}
+    <RewardDashboardWidgets initialMetrics={data.rewards} />
     <section className="grid gap-5 xl:grid-cols-2">
       <Card><CardHeader><CardTitle>Enquiries by lead pipeline</CardTitle><CardDescription>Grouped by each enquiry’s linked lead status.</CardDescription></CardHeader><CardContent>{data.enquiriesByLeadStatus.length ? <ul className="divide-y divide-border/70">{data.enquiriesByLeadStatus.map(({ status, count }) => <li key={status} className="flex items-center justify-between py-3"><StatusBadge status={status} /><span className="font-semibold tabular-nums">{count}</span></li>)}</ul> : <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">No enquiries have been recorded yet.</p>}</CardContent></Card>
       <Card><CardHeader><CardTitle>Bookings by status</CardTitle><CardDescription>Current totals from the booking register.</CardDescription></CardHeader><CardContent>{data.bookingsByStatus.length ? <ul className="divide-y divide-border/70">{data.bookingsByStatus.map(({ status, count }) => <li key={status} className="flex items-center justify-between py-3"><StatusBadge status={status} /><span className="font-semibold tabular-nums">{count}</span></li>)}</ul> : <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">No bookings have been recorded yet.</p>}</CardContent></Card>

@@ -2,13 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { env } from "@/config/env";
-import { CUSTOMER_UPLOAD_RATE_LIMIT, MEDIA_API_MAX_REQUEST_BYTES, MEDIA_PURPOSE_KEYS } from "@/config/media";
+import { MEDIA_API_MAX_REQUEST_BYTES, MEDIA_PURPOSE_KEYS } from "@/config/media";
 import { getSession } from "@/server/auth";
 import { requirePermission } from "@/server/authz";
 import { AuthorizationError } from "@/server/authz/errors";
 import { db } from "@/server/db";
 import { createUploadSignature } from "@/server/integrations/cloudinary";
-import { limit } from "@/server/integrations/ratelimit";
 
 const requestSchema = z.object({ purpose: z.enum(MEDIA_PURPOSE_KEYS) }).strict();
 function sameOrigin(request: Request): boolean {
@@ -41,15 +40,10 @@ export async function POST(request: Request) {
   if (!account || account.status !== "ACTIVE" || account.deletedAt) return NextResponse.json({ error: "Account unavailable." }, { status: 403 });
 
   if (account.type === "CUSTOMER") {
-    if (parsed.data.purpose !== "customer_video" || !account.emailVerified) {
-      return NextResponse.json({ error: "This upload is not available for this account." }, { status: 403 });
+    if (parsed.data.purpose === "customer_video") {
+      return NextResponse.json({ error: "Customer videos must start through the upload-intent flow." }, { status: 410 });
     }
-    try {
-      const rate = await limit(`media:signature:user:${session.user.id}`, CUSTOMER_UPLOAD_RATE_LIMIT.max, CUSTOMER_UPLOAD_RATE_LIMIT.windowSeconds);
-      if (!rate.allowed) return NextResponse.json({ error: "Upload limit reached. Try again later." }, { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } });
-    } catch {
-      return NextResponse.json({ error: "Upload service is temporarily unavailable." }, { status: 503 });
-    }
+    return NextResponse.json({ error: "This upload is not available for this account." }, { status: 403 });
   } else {
     if (parsed.data.purpose === "customer_video") return NextResponse.json({ error: "This upload is not available for staff." }, { status: 403 });
     try {

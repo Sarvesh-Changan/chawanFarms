@@ -27,6 +27,7 @@ export const PERMISSIONS = [
   "rewards.rules.read",
   "rewards.rules.write",
   "rewards.ledger.read",
+  "rewards.ledger.export",
   "rewards.adjust",
   "rewards.adjust.approve",
   "rewards.reverse",

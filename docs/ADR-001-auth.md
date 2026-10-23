@@ -34,9 +34,9 @@ Use Better Auth and its Prisma adapter. Configure it in the implementation phase
 - hashed verification-token storage (`verification.storeIdentifier: "hashed"`) and single-use consumption;
 - database sessions, secure/httpOnly/SameSite=Lax cookies, and no long-lived cookie cache for privileged actions;
 - the `twoFactor` plugin for staff TOTP, with backup-code protection and server-side enforcement;
-- application-level per-IP and per-account rate limits, progressive lockout, Turnstile escalation, invitation-only staff creation, and the existing database RBAC/audit rules.
+- application-level per-IP and per-account rate limits, progressive lockout, invitation-only staff creation, and the existing database RBAC/audit rules. Turnstile remains limited to public abuse-prone forms and staff invitation acceptance, not customer authentication.
 
-The library cannot by itself implement every project policy. Session idle/absolute limits that differ for customers and admins, authorization, admin invitation rules, audit events, Turnstile, and the exact rate-limit policy remain application responsibilities and must be enforced on the server.
+The library cannot by itself implement every project policy. Session idle/absolute limits that differ for customers and admins, authorization, admin invitation rules, audit events, and the exact rate-limit policy remain application responsibilities and must be enforced on the server.
 
 ## Required Prisma models/tables
 

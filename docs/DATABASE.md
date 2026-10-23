@@ -441,6 +441,7 @@ model Media {
   deletedAt DateTime?
   createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
   usages MediaUsage[]
+  videoSubmission VideoSubmission?
   @@index([kind, category]) @@index([contentHash]) @@index([origin, createdAt])
 }
 model MediaUsage { id String @id @default(cuid()) mediaId String entityType String entityId String field String?
@@ -451,7 +452,9 @@ model MediaUsage { id String @id @default(cuid()) mediaId String entityType Stri
 model VideoSubmission {
   id String @id @default(cuid())
   userId String
-  mediaId String @unique                // one submission per uploaded asset
+  mediaId String? @unique               // one submission per uploaded asset; null during upload intent
+  uploadPublicId String? @unique        // server-generated Cloudinary public_id for the upload intent
+  uploadExpiresAt DateTime?             // upload intent expiry
   title String? description String?
   visitDate DateTime? @db.Date          // claimed visit date; admin may verify against booking
   bookingId String?                     // optional verification link
@@ -466,6 +469,7 @@ model VideoSubmission {
   submittedAt DateTime?
   createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
   user User @relation(fields:[userId], references:[id], onDelete: Restrict)
+  media Media? @relation(fields:[mediaId], references:[id], onDelete: Restrict)
   ledger PointsLedger[]
   @@index([status, submittedAt]) @@index([userId, createdAt]) @@index([contentHash])
 }
@@ -640,6 +644,16 @@ repeatable seed upserts. The Prisma v7 datasource URL is configured in
 `prisma7.config.ts`; `DIRECT_URL` is used for migrations and the pooled
 `DATABASE_URL` is used at runtime.
 
+Notification delivery uses the existing `NotificationOutbox` columns without a
+schema migration. A processor leases a `PENDING` row by moving `sendAfter`
+briefly into the future, increments `attempts`, and then either marks it
+`SENT`, returns it to `PENDING` with exponential backoff/next-day quota delay,
+or marks permanent validation failures `FAILED`. A crashed lease is retried
+after it expires. `Setting` keys `notify.toggles`, `notify.recipients`,
+`notify.stuckThreshold`, and `notify.templates` hold operational notification
+configuration; template bodies are plain text and variables are escaped before
+HTML rendering.
+
 Gallery uses first-class ordered entries, per client decision D-38 (2026-10-08):
 
 ```prisma
@@ -678,7 +692,7 @@ published, non-deleted GalleryItem and public, non-deleted media.
 
 ## 5. Roles & permissions (seed)
 
-Permission keys: `dashboard.read`, `cms.read|write|publish|delete`, `media.read|write|delete`, `bookings.read|write|confirm|cancel`, `payments.record`, `availability.write`, `enquiries.read|write`, `leads.read|write|assign|export`, `customers.read|write|export`, `rewards.videos.read|review`, `rewards.rules.read|write`, `rewards.ledger.read`, `rewards.adjust`, `rewards.adjust.approve`, `rewards.reverse`, `coupons.read|revoke`, `seo.write`, `settings.read|write`, `staff.read|write`, `roles.write`, `audit.read`.
+Permission keys: `dashboard.read`, `cms.read|write|publish|delete`, `media.read|write|delete`, `bookings.read|write|confirm|cancel`, `payments.record`, `availability.write`, `enquiries.read|write`, `leads.read|write|assign|export`, `customers.read|write|export`, `rewards.videos.read|review`, `rewards.rules.read|write`, `rewards.ledger.read|export`, `rewards.adjust`, `rewards.adjust.approve`, `rewards.reverse`, `coupons.read|revoke`, `seo.write`, `settings.read|write`, `staff.read|write`, `roles.write`, `audit.read`.
 
 | Role | Intent |
 |---|---|
@@ -733,4 +747,8 @@ Isolation: default Read Committed + explicit row locks; use Serializable only wh
 ### Reward tier eligibility flags migration
 
 `20261011120000_reward_tier_eligibility_flags` adds `allPackages` (boolean, default true) and `allAccommodation` (boolean, default true) to `RewardTier`. When these flags are true, the tier applies to all packages and accommodations without requiring join table rows. When false, explicit eligibility is restricted to linked `RewardTierPackage` and `RewardTierAccommodation` rows. Never edit applied migrations; never db push.
+
+### Account deletion request migration
+
+`20261021150000_account_deletion_request` adds the approval-workflow-only `AccountDeletionRequest` model with status values `PENDING`, `CANCELLED`, `APPROVED`, `REJECTED`, and `COMPLETED`. It stores the requesting customer, optional reason and decision metadata, and uses a partial unique index to allow one pending request per user. This phase only creates and cancels requests; it does not delete, disable, or anonymise customer data. Never edit applied migrations; never db push.
 

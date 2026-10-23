@@ -219,6 +219,20 @@ export async function createRewardRuleVersion(
               allPackages: tier.allPackages,
               allAccommodation: tier.allAccommodation,
               isActive: tier.isActive,
+              ...(!tier.allPackages && tier.packageIds?.length
+                ? {
+                    packages: {
+                      create: tier.packageIds.map((packageId) => ({ packageId })),
+                    },
+                  }
+                : {}),
+              ...(!tier.allAccommodation && tier.accommodationIds?.length
+                ? {
+                    accommodations: {
+                      create: tier.accommodationIds.map((accommodationId) => ({ accommodationId })),
+                    },
+                  }
+                : {}),
             },
           });
         }
@@ -325,6 +339,8 @@ export async function activateRewardRuleTransaction(options: {
         minBookingPaise: t.minBookingPaise,
         allPackages: t.allPackages,
         allAccommodation: t.allAccommodation,
+        packageIds: t.packages.map((p) => p.packageId),
+        accommodationIds: t.accommodations.map((a) => a.accommodationId),
         isActive: t.isActive,
       })),
     });

@@ -10,7 +10,6 @@ import { forgotPasswordSchema, loginSchema, resetPasswordSchema, signupSchema } 
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
 import { limit } from "@/server/integrations/ratelimit";
-import { verifyTurnstileToken } from "@/server/integrations/turnstile";
 
 export type AuthActionResult = {
   ok: boolean;
@@ -100,11 +99,6 @@ export async function loginAction(rawInput: unknown): Promise<AuthActionResult> 
     return { ok: false, message: "This account has been temporarily locked due to failed attempts. Please try again later." };
   }
 
-  const needsTurnstile = (user?.failedLoginCount ?? 0) >= 3 || ipLimit.remaining <= 16;
-  if (needsTurnstile && !(await verifyTurnstileToken(parsed.data.turnstileToken, ip))) {
-    return { ok: false, message: "Security check failed. Please refresh and try again." };
-  }
-
   const redirectTo = safeCallbackUrl(parsed.data.callbackUrl, "/account");
   try {
     const signInResult = await auth.api.signInEmail({
@@ -134,9 +128,6 @@ export async function signupAction(rawInput: unknown): Promise<AuthActionResult>
 
   const parsed = signupSchema.safeParse(rawInput);
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
-  if (!(await verifyTurnstileToken(parsed.data.turnstileToken, ip))) {
-    return { ok: false, message: "Please complete the security check." };
-  }
 
   try {
     await auth.api.signUpEmail({
@@ -164,9 +155,6 @@ export async function forgotPasswordAction(rawInput: unknown): Promise<AuthActio
 
   const parsed = forgotPasswordSchema.safeParse(rawInput);
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
-  if (!(await verifyTurnstileToken(parsed.data.turnstileToken, ip))) {
-    return { ok: false, message: genericResetError };
-  }
 
   try {
     await auth.api.requestPasswordReset({
@@ -188,9 +176,6 @@ export async function resetPasswordAction(rawInput: unknown): Promise<AuthAction
 
   const parsed = resetPasswordSchema.safeParse(rawInput);
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
-  if (!(await verifyTurnstileToken(parsed.data.turnstileToken, ip))) {
-    return { ok: false, message: "Please complete the security check." };
-  }
 
   try {
     await auth.api.resetPassword({

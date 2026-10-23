@@ -12,6 +12,15 @@ const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).or(z.literal(""
 const optionalPositiveIntSchema = z.string().trim().regex(/^\d*$/).max(6)
   .transform((value) => value === "" ? undefined : Number(value))
   .pipe(z.number().int().positive().max(100_000).optional());
+const notificationTemplateOverridesSchema = z.string().max(100_000).refine((value) => {
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
+    return Object.entries(parsed).every(([key, entry]) => /^[A-Z_]+$/.test(key) && entry && typeof entry === "object" && !Array.isArray(entry) && Object.entries(entry).every(([field, fieldValue]) => (field === "subject" || field === "body") && typeof fieldValue === "string" && fieldValue.length <= 10_000));
+  } catch {
+    return false;
+  }
+}, "Enter valid notification template JSON with subject/body strings.").default("{}");
 
 export const settingsFormSchema = z.object({
   businessName: localizedTextSchema,
@@ -30,6 +39,14 @@ export const settingsFormSchema = z.object({
   checkOutTime: timeSchema,
   bookingPolicyText: optionalLocalizedTextSchema,
   notificationRecipients: emailListSchema,
+  notificationEmailEnabled: z.boolean().default(true),
+  notificationInAppEnabled: z.boolean().default(true),
+  notificationLeadAlertsEnabled: z.boolean().default(true),
+  notificationBookingUpdatesEnabled: z.boolean().default(true),
+  notificationRewardUpdatesEnabled: z.boolean().default(true),
+  notificationReminderEmailsEnabled: z.boolean().default(true),
+  notificationStuckThreshold: z.preprocess((value) => value === undefined ? "" : value, optionalPositiveIntSchema),
+  notificationTemplateOverridesJson: notificationTemplateOverridesSchema,
 }).strict();
 
 export type SettingsFormValues = z.input<typeof settingsFormSchema>;

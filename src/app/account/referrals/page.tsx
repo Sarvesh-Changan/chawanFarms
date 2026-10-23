@@ -1,3 +1,4 @@
-export default function AccountReferralsPage() {
-  return <div>Referrals placeholder</div>;
-}
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
+export default function ReferralsRedirect() { redirect("/account/profile"); }

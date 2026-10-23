@@ -7,8 +7,12 @@ import { z } from "zod";
 import { PROVISIONAL_REWARD_DEFAULTS } from "@/config/reward-defaults";
 import { err, ok, type Result } from "@/lib/result";
 import { rewardRuleInputSchema } from "@/lib/schemas/reward-rules";
-import { requirePermission } from "@/server/authz";
+import { can, requirePermission, requireStaff } from "@/server/authz";
 import { AuthorizationError } from "@/server/authz/errors";
+import {
+  getRewardDashboardMetrics,
+  type RewardDashboardMetrics,
+} from "@/server/services/admin-dashboard";
 import {
   activateRewardRuleTransaction,
   computeRuleImpactSummary,
@@ -287,3 +291,27 @@ export async function getRewardRulesAdminDataAction(): Promise<
     editableDraft,
   });
 }
+
+/**
+ * Fetch reward aggregate metrics for admin dashboard over selectable day range.
+ * Requires staff with dashboard.read, rewards.rules.read, or rewards.ledger.read.
+ */
+export async function getRewardDashboardMetricsAction(
+  rawDays: unknown = 30,
+): Promise<Result<RewardDashboardMetrics>> {
+  const staff = await requireStaff();
+  const allowed =
+    (await can(staff, "dashboard.read")) ||
+    (await can(staff, "rewards.rules.read")) ||
+    (await can(staff, "rewards.ledger.read"));
+
+  if (!allowed) {
+    return err("FORBIDDEN", "You do not have permission to view reward metrics.");
+  }
+
+  const daysNum = typeof rawDays === "number" ? rawDays : Number(rawDays) || 30;
+  const days = Math.min(Math.max(daysNum, 1), 365);
+  const metrics = await getRewardDashboardMetrics(days);
+  return ok(metrics);
+}
+

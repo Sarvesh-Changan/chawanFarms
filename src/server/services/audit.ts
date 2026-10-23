@@ -2,7 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import { err, ok, type Result } from "@/lib/result";
 import { db } from "@/server/db";
 
@@ -25,6 +25,8 @@ export type AuditInput = {
   requestId?: string;
 };
 
+type AuditClient = PrismaClient | Prisma.TransactionClient;
+
 const auditInputSchema = z
   .object({
     actor: z
@@ -46,14 +48,14 @@ function nullableJson(value: unknown): Prisma.InputJsonValue | Prisma.NullableJs
   return safeValue === null ? Prisma.JsonNull : (safeValue as Prisma.InputJsonValue);
 }
 
-export async function audit(input: AuditInput): Promise<Result<{ id: string }>> {
+export async function audit(input: AuditInput, client: AuditClient = db): Promise<Result<{ id: string }>> {
   const parsed = auditInputSchema.safeParse(input);
   if (!parsed.success) {
     return err("VALIDATION", "Invalid audit event.");
   }
 
   try {
-    const row = await db.auditLog.create({
+    const row = await client.auditLog.create({
       data: {
         actorId: parsed.data.actor?.id ?? null,
         actorType: parsed.data.actor?.type ?? "SYSTEM",

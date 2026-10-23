@@ -2,11 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useCallback, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useForm, type FieldErrors, type Resolver } from "react-hook-form";
 import { z } from "zod";
 
-import { TurnstileField } from "@/components/auth/TurnstileField";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,10 +15,10 @@ type AuthFormValues = Record<string, string>;
 type AuthMode = "login" | "signup" | "forgot" | "reset";
 
 function schemaFor(mode: AuthMode): z.ZodType {
-  if (mode === "login") return z.object({ email: z.string().email(), password: z.string(), callbackUrl: z.string().optional(), turnstileToken: z.string().optional() });
-  if (mode === "signup") return z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(10), confirmPassword: z.string(), turnstileToken: z.string().optional() });
-  if (mode === "forgot") return z.object({ email: z.string().email(), turnstileToken: z.string().optional() });
-  return z.object({ token: z.string().min(1), password: z.string().min(10), confirmPassword: z.string(), turnstileToken: z.string().optional() });
+  if (mode === "login") return z.object({ email: z.string().email(), password: z.string(), callbackUrl: z.string().optional() });
+  if (mode === "signup") return z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(10), confirmPassword: z.string() });
+  if (mode === "forgot") return z.object({ email: z.string().email() });
+  return z.object({ token: z.string().min(1), password: z.string().min(10), confirmPassword: z.string() });
 }
 
 function copyFor(mode: AuthMode): { title: string; description: string; submit: string } {
@@ -39,13 +38,10 @@ export function AuthForm({ mode, action, defaultValues = {} }: { mode: AuthMode;
   const [serverMessage, setServerMessage] = useState<string>();
   const [success, setSuccess] = useState(false);
   const schema = schemaFor(mode);
-  const { register, handleSubmit, setError, setValue, formState: { errors } } = useForm<AuthFormValues>({
+  const { register, handleSubmit, setError, formState: { errors } } = useForm<AuthFormValues>({
     resolver: (zodResolver as unknown as (schema: z.ZodType<AuthFormValues>) => Resolver<AuthFormValues>)(schema as unknown as z.ZodType<AuthFormValues>),
     defaultValues,
   });
-  const onToken = useCallback((token: string | undefined) => {
-    setValue("turnstileToken", token ?? "", { shouldValidate: true });
-  }, [setValue]);
 
   const onSubmit = handleSubmit((values) => {
     setServerMessage(undefined);
@@ -88,7 +84,6 @@ export function AuthForm({ mode, action, defaultValues = {} }: { mode: AuthMode;
             {mode === "login" || mode === "signup" || mode === "reset" ? <label className="grid gap-2 text-sm font-semibold">Password<Input type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} aria-invalid={Boolean(errors.password)} {...register("password")} />{errorMessage(errors, "password") ? <span className="text-laterite-600 text-xs">{errorMessage(errors, "password")}</span> : null}</label> : null}
             {mode === "signup" || mode === "reset" ? <label className="grid gap-2 text-sm font-semibold">Confirm password<Input type="password" autoComplete="new-password" aria-invalid={Boolean(errors.confirmPassword)} {...register("confirmPassword")} />{errorMessage(errors, "confirmPassword") ? <span className="text-laterite-600 text-xs">{errorMessage(errors, "confirmPassword")}</span> : null}</label> : null}
             {mode === "login" && defaultValues.callbackUrl ? <input type="hidden" {...register("callbackUrl")} /> : null}
-            <TurnstileField onToken={onToken} />
             <Button type="submit" disabled={pending} className="mt-2 w-full">{pending ? "Please wait…" : text.submit}</Button>
           </form>
           <div className="text-muted-foreground mt-6 flex flex-wrap justify-between gap-3 text-sm">

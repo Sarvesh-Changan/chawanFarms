@@ -38,19 +38,16 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid Cloudinary asset." }, { status: 422 });
   const identity = identifyMediaPurpose(parsed.data.publicId);
   if (!identity || identity.userId !== session.user.id) return NextResponse.json({ error: "Asset is not available to this account." }, { status: 404 });
+  if (identity.purpose === "customer_video") return NextResponse.json({ error: "Customer videos must complete through the upload-intent flow." }, { status: 410 });
 
   const account = await db.user.findUnique({ where: { id: session.user.id }, select: { type: true, status: true, emailVerified: true, deletedAt: true } });
   if (!account || account.status !== "ACTIVE" || account.deletedAt) return NextResponse.json({ error: "Account unavailable." }, { status: 403 });
-  if (identity.purpose === "customer_video") {
-    if (account.type !== "CUSTOMER" || !account.emailVerified) return NextResponse.json({ error: "Verified customer access required." }, { status: 403 });
-  } else {
-    if (account.type !== "STAFF") return NextResponse.json({ error: "Staff access required." }, { status: 403 });
-    try {
-      await requirePermission("media.write");
-    } catch (error) {
-      const status = error instanceof AuthorizationError && error.code === "UNAUTHENTICATED" ? 401 : 403;
-      return NextResponse.json({ error: "Media permission required." }, { status });
-    }
+  if (account.type !== "STAFF") return NextResponse.json({ error: "Staff access required." }, { status: 403 });
+  try {
+    await requirePermission("media.write");
+  } catch (error) {
+    const status = error instanceof AuthorizationError && error.code === "UNAUTHENTICATED" ? 401 : 403;
+    return NextResponse.json({ error: "Media permission required." }, { status });
   }
 
   const verification = await verifyCloudinaryAsset({ ...identity, publicId: parsed.data.publicId });

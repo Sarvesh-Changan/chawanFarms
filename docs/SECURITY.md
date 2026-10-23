@@ -52,7 +52,7 @@
 - **CSP** via nonce-based policy: `default-src 'self'`; `img-src 'self' data: https://res.cloudinary.com`; `media-src 'self' https://res.cloudinary.com`; `script-src 'self' 'nonce-…'` (+ GA/Turnstile origins as needed); `connect-src` allow-list (Cloudinary upload API, Sentry, GA); `frame-ancestors 'none'`; start in report-only, then enforce.
 - Cookies prefixed `__Host-`/`__Secure-` where supported.
 
-## 7. Rate limiting & anti-abuse (Upstash + DB fallback)
+## 7. Rate limiting & anti-abuse (PostgreSQL limiter + Turnstile)
 
 | Endpoint/action | Limit (starting values; tune) |
 |---|---|
@@ -65,7 +65,7 @@
 | Coupon apply attempts | 10/hour per user (anti-guessing) |
 | Admin actions | generous but logged; export 5/hour |
 
-Return generic `429` with `Retry-After`. Log aggregate abuse metrics; block repeat offenders (temporary IP/phone denylist managed in admin).
+Implementation: a `RateLimitBucket` table updated with a single atomic `INSERT … ON CONFLICT DO UPDATE SET count = count + 1 RETURNING count` (no Redis); key = `<action>:<ip|userId|email|phone>`; expired buckets deleted by cron. Do not use it on hot read paths. Return generic `429` with `Retry-After`. Log aggregate abuse metrics; block repeat offenders (temporary IP/phone denylist managed in admin).
 
 ## 8. Cloudinary & video upload security
 1. **Signed uploads only.** Never expose the API secret; never use unsigned presets for customer content. Signature generated per upload with: folder (`customers/{userId}/videos`), `upload_preset`, `timestamp`, allowed formats, max file size, `resource_type`, public_id generated server-side (not client-chosen).
@@ -105,6 +105,7 @@ Return generic `429` with `Retry-After`. Log aggregate abuse metrics; block repe
 ## 11. Secrets & environment
 - No secrets in Git, client bundles, logs or error messages. `.env*` in `.gitignore`; `.env.example` has placeholders only. Secret scanning (GitHub push protection / gitleaks) in CI.
 - Zod-validated env at boot; separate secrets per environment; least-privilege DB roles (app role cannot DROP/ALTER; migration role separate); Neon IP allow-listing/`sslmode=require`.
+- Email uses Nodemailer over TLS with an app password. `SMTP_PASS` is server-only, never logged or returned to the client; connection, greeting and socket timeouts are bounded; certificate verification is never disabled. Subjects, names and addresses are stripped of CR/LF and recipients are validated and capped. Email logs contain only message type, recipient domain, result and message id. The PostgreSQL daily quota reserves capacity for verification, reset and booking messages; bulk marketing email is out of scope.
 - Rotate on exposure or staff change; document owners in `docs/RUNBOOK.md`.
 - Dependency hygiene: lockfile committed, `npm audit`/Dependabot/Renovate, review new dependencies (maintenance, downloads, install scripts), pin exact versions, no `postinstall` surprises.
 
@@ -116,7 +117,7 @@ Return generic `429` with `Retry-After`. Log aggregate abuse metrics; block repe
 ## 13. Logging, audit & monitoring
 - **Audit log** (append-only) for: admin login/failed login/2FA, CRUD on CMS publish state, rate/price changes, booking status & payment changes, reward rule changes, video decisions, ledger adjustments/reversals, coupon revocations, role/permission changes, exports, settings changes, data-deletion actions. Fields: actor, action, entity, before/after (redacted), IP, UA, request id, time.
 - Application logs: structured, request-id correlated, **no PII/secrets/tokens/passwords**; PII masked (phone `+91******56`).
-- Sentry with PII scrubbing (`beforeSend`), alerts for auth anomalies, 5xx spikes, cron failure, webhook failures, ledger drift.
+- Sentry with PII scrubbing, alerts for auth anomalies, 5xx spikes, cron failure, webhook failures, ledger drift.
 - Uptime monitoring + status page link for staff.
 
 ## 14. Privacy & data protection (India DPDP Act 2023 aligned — client to obtain legal review)
@@ -126,10 +127,11 @@ Return generic `429` with `Retry-After`. Log aggregate abuse metrics; block repe
 - Video & minors: upload form requires confirmation that the uploader owns the content and has permission of people shown; special guidance for children (parent/guardian consent); **public reuse requires separate explicit consent** (`consentPublish`); easy takedown path; admin can blur/skip faces or reject videos showing identifiable minors without guardian consent.
 - Photo-ID: PDF requires showing original photo ID at check-in — **do not collect or store ID images/numbers online** unless the client explicitly decides (D-new) and then encrypt, restrict, and retain minimally.
 - Exports (CSV): permission-gated, rate-limited, audited, watermarked with exporter + timestamp in file name; avoid exporting more fields than needed.
-- Data retention per `DATABASE.md §8`; scheduled purge job; backups encrypted; processors list (Vercel, Neon, Cloudinary, Resend, Upstash, Sentry, Google) documented in Privacy Policy.
+- Data retention per `DATABASE.md §8`; scheduled purge job; backups encrypted; processors list (Vercel, Neon, Cloudinary, Google (SMTP mailbox), Cloudflare Turnstile, Sentry, Google) documented in Privacy Policy.
 - Breach response runbook: detect → contain → assess → notify (regulator/users as required) → postmortem.
 
 ## 15. Secure development workflow
+- Notification delivery is post-commit only. The outbox uses a short lease, keeps temporary SMTP and quota failures `PENDING`, and protects every cron route with a bearer `CRON_SECRET`.
 - PRs require review; security-sensitive paths (`server/authz`, `server/services/rewards`, `services/booking`, `prisma/migrations`, `api/webhooks`, upload code) require **CODEOWNERS** review.
 - Branch protection, signed commits recommended, CI must pass (lint, typecheck, tests, build, secret scan, audit).
 - Feature flags for risky features (referral, social login).

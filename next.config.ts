@@ -38,6 +38,13 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      { source: "/experience", destination: "/experiences", permanent: true },
+      { source: "/find-us", destination: "/contact#find-us", permanent: true },
+      { source: "/location", destination: "/contact#find-us", permanent: true },
+    ];
+  },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
   },

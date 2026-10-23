@@ -63,7 +63,15 @@ integrationDescribe("Better Auth customer flow", () => {
     const token = new URL(capturedResetUrl ?? "http://localhost").pathname.split("/").at(-1);
     expect(token).toBeTruthy();
 
+    await db.user.update({
+      where: { email },
+      data: { failedLoginCount: 5, lockedUntil: new Date(Date.now() + 15 * 60 * 1000) },
+    });
+
     await auth.api.resetPassword({ body: { newPassword: "another correct password", token }, headers });
+    const recoveredUser = await db.user.findUniqueOrThrow({ where: { email } });
+    expect(recoveredUser.failedLoginCount).toBe(0);
+    expect(recoveredUser.lockedUntil).toBeNull();
     await expect(auth.api.resetPassword({ body: { newPassword: "third correct password", token }, headers })).rejects.toThrow();
   });
 });

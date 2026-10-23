@@ -212,8 +212,8 @@ export async function earnPointsForApprovedVideo(
     });
 
     // Update video submission status and reward snapshot
-    await tx.videoSubmission.update({
-      where: { id: video.id },
+    const updatedVideo = await tx.videoSubmission.updateMany({
+      where: { id: video.id, status: "PENDING" },
       data: {
         status: "APPROVED",
         pointsAwarded: pointsToAward,
@@ -222,6 +222,10 @@ export async function earnPointsForApprovedVideo(
         reviewedAt: new Date(),
       },
     });
+
+    if (updatedVideo.count !== 1) {
+      return err("CONFLICT", "This video has already been reviewed.");
+    }
 
     return ok({ ledgerEntry, pointsAwarded: pointsToAward });
   };
@@ -470,6 +474,7 @@ export async function approveAdjustment(
   input: {
     requestId: string;
     decidedById: string;
+    idempotencyKey?: string;
   },
   client: DbOrTx = db,
 ): Promise<Result<{ status: "APPROVED"; ledgerEntry: PointsLedger }>> {
@@ -490,6 +495,9 @@ export async function approveAdjustment(
     }
 
     const rule = await getActiveRewardRuleWithTiers(tx);
+    if (!rule) {
+      return err("UNAVAILABLE", "Rewards program is currently disabled. An active rule is required to approve adjustments.");
+    }
 
     // Lock CustomerProfile first
     const profile = await lockCustomerProfile(tx, request.userId);
@@ -498,8 +506,21 @@ export async function approveAdjustment(
       return err("VALIDATION", "Approved adjustment would cause customer balance to drop below zero.");
     }
 
+    if (rule.maxPointsPerCustomer && request.points > 0) {
+      if (profile.lifetimePointsEarned + request.points > rule.maxPointsPerCustomer) {
+        return err("VALIDATION", "Approved adjustment would exceed customer lifetime points cap.");
+      }
+    }
+
     const balanceAfter = profile.pointsBalance + request.points;
-    const ledgerKey = `adjust_approved:${request.id}`;
+    const ledgerKey = input.idempotencyKey ?? `adjust_approved:${request.id}`;
+
+    const existingLedger = await tx.pointsLedger.findUnique({
+      where: { idempotencyKey: ledgerKey },
+    });
+    if (existingLedger) {
+      return ok({ status: "APPROVED", ledgerEntry: existingLedger });
+    }
 
     const ledgerEntry = await tx.pointsLedger.create({
       data: {
@@ -508,7 +529,7 @@ export async function approveAdjustment(
         points: request.points,
         balanceAfter,
         idempotencyKey: ledgerKey,
-        ruleId: rule?.id ?? null,
+        ruleId: rule.id,
         reason: request.reason,
         actorId: request.requestedById,
         secondApproverId: input.decidedById,
@@ -517,7 +538,13 @@ export async function approveAdjustment(
 
     await tx.customerProfile.update({
       where: { userId: request.userId },
-      data: { pointsBalance: balanceAfter },
+      data: {
+        pointsBalance: balanceAfter,
+        lifetimePointsEarned:
+          request.points > 0
+            ? profile.lifetimePointsEarned + request.points
+            : profile.lifetimePointsEarned,
+      },
     });
 
     await tx.pointsAdjustmentRequest.update({
@@ -541,6 +568,7 @@ export async function rejectAdjustment(
   input: {
     requestId: string;
     decidedById: string;
+    reason?: string;
   },
   client: DbOrTx = db,
 ): Promise<Result<{ status: "REJECTED" }>> {
@@ -556,12 +584,17 @@ export async function rejectAdjustment(
       return err("CONFLICT", "Adjustment request has already been decided.");
     }
 
+    if (request.requestedById === input.decidedById) {
+      return err("FORBIDDEN", "Staff member cannot reject their own adjustment request.");
+    }
+
     await tx.pointsAdjustmentRequest.update({
       where: { id: request.id },
       data: {
         status: "REJECTED",
         decidedById: input.decidedById,
         decidedAt: new Date(),
+        reason: input.reason ? `${request.reason} [Rejected: ${input.reason.trim()}]` : request.reason,
       },
     });
 

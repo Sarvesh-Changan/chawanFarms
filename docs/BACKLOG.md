@@ -213,7 +213,7 @@ Tasks:
 Blockers:
 
 - D-11/D-13/D-15.
-- Resend/cron/monitoring credentials and final policy copy.
+- SMTP/cron/monitoring credentials and final policy copy.
 
 ## Phase 15 — SEO
 
@@ -284,7 +284,7 @@ Blockers:
 Tasks:
 
 - Create runbook/deployment checklist, environment separation, backup/restore and rollback documentation.
-- Configure Vercel/Neon/Cloudinary/Resend/Upstash/Turnstile/Sentry/analytics without touching production automatically.
+- Configure Vercel/Neon/Cloudinary/SMTP mailbox/Upstash/Turnstile/Sentry/analytics without touching production automatically.
 - Prepare first Super Admin creation and cron protection.
 
 Blockers:
@@ -318,8 +318,18 @@ Blockers:
 
 ## Current safe next step
 
+## Phase 14 completion note
+
+- Notifications, SMTP-backed outbox processing, React Email templates, protected cron routes and Vercel schedules are implemented. Retention remains configuration-gated and media-orphans is report-only until a client-approved deletion policy exists.
+
 ## Lead CRM follow-up
 
 - TODO: When the booking phase lands, automatically transition a lead to `CONVERTED` when an associated booking reaches the approved conversion point; the CRM permits manual conversion before that integration.
 
 Obtain written answers to the rows in `OPEN_QUESTIONS.md`, beginning with D-20/D-21 for content, D-1–D-5/D-16/D-18 for booking, and D-8/D-9 for rewards/media. Then review this backlog and explicitly approve the next phase. No code or infrastructure should be started by this analysis step.
+
+## Account privacy follow-ups
+
+- Add the admin review screen and approval workflow for `AccountDeletionRequest` records.
+- Add the approved account anonymisation job and its retention-safe operational runbook.
+- Connect the customer-owned coupon picker to the logged-in booking flow once coupon selection is supported end-to-end; the account Coupons page intentionally hides “Apply on next booking” until then.

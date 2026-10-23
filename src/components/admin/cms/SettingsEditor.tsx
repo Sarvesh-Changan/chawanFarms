@@ -43,6 +43,7 @@ export function SettingsEditor({ initial, canWrite }: { initial: CmsSettings; ca
         if (fieldErrors.checkOutTime?.[0]) form.setError("checkOutTime", { type: "server", message: fieldErrors.checkOutTime[0] });
         if (fieldErrors.bookingPolicyText?.[0]) form.setError("bookingPolicyText", { type: "server", message: fieldErrors.bookingPolicyText[0] });
         if (fieldErrors.notificationRecipients?.[0]) form.setError("notificationRecipients", { type: "server", message: fieldErrors.notificationRecipients[0] });
+        if (fieldErrors.notificationTemplateOverridesJson?.[0]) form.setError("notificationTemplateOverridesJson", { type: "server", message: fieldErrors.notificationTemplateOverridesJson[0] });
       }
     });
   }
@@ -67,8 +68,18 @@ export function SettingsEditor({ initial, canWrite }: { initial: CmsSettings; ca
       <LocalizedFieldset title="Booking policy text (optional)" path="bookingPolicyText" form={form} multiline />
     </section>
     <section className="grid gap-4 rounded-2xl border border-border/70 bg-card p-5 sm:p-7">
-      <div><h2 className="font-heading text-2xl text-forest-900">Notification recipients</h2><p className="mt-1 text-sm text-muted-foreground">Enter one email per line. Recipients are optional until configured.</p></div>
+      <div><h2 className="font-heading text-2xl text-forest-900">Notifications</h2><p className="mt-1 text-sm text-muted-foreground">Control in-app and email delivery. Optional reward and reminder email is consent-gated for customers.</p></div>
       <label className="grid gap-1 text-xs font-medium">Email recipients<Textarea rows={4} {...form.register("notificationRecipients")} aria-invalid={Boolean(form.formState.errors.notificationRecipients)} /><span className="text-destructive">{form.formState.errors.notificationRecipients?.message}</span></label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationEmailEnabled")} /> Email delivery enabled</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationInAppEnabled")} /> In-app delivery enabled</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationLeadAlertsEnabled")} /> Enquiry and lead alerts</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationBookingUpdatesEnabled")} /> Booking updates</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationRewardUpdatesEnabled")} /> Reward and coupon updates</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationReminderEmailsEnabled")} /> Pre-arrival reminders</label>
+      </div>
+      <label className="grid gap-1 text-xs font-medium">Stuck outbox alert threshold<Input inputMode="numeric" {...form.register("notificationStuckThreshold")} /><span className="text-destructive">{form.formState.errors.notificationStuckThreshold?.message}</span></label>
+      <label className="grid gap-1 text-xs font-medium">Template overrides (JSON)<Textarea rows={8} {...form.register("notificationTemplateOverridesJson")} aria-invalid={Boolean(form.formState.errors.notificationTemplateOverridesJson)} /><span className="text-destructive">{form.formState.errors.notificationTemplateOverridesJson?.message}</span><span className="text-xs font-normal text-muted-foreground">Use event keys such as BOOKING_CONFIRMED with optional subject and body fields. Variables use double braces, for example {'{{reference}}'}; values are escaped.</span></label>
     </section>
     {message ? <p role="status" className="text-sm text-muted-foreground">{message}</p> : null}
     <div className="flex flex-wrap items-center gap-3"><Button type="submit" disabled={!canWrite || pending}>{pending ? "Saving settings…" : "Save settings"}</Button>{!canWrite ? <span className="text-xs text-muted-foreground">Settings write permission is required.</span> : null}</div>

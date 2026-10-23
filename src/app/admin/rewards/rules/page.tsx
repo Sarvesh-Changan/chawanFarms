@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/admin/PageHeader";
 import { RewardRulesManager } from "@/components/admin/rewards/RewardRulesManager";
 import { getSession } from "@/server/auth";
 import { can, getStaffPrincipal, requirePermission } from "@/server/authz";
-import { AuthorizationError } from "@/server/authz/errors";
+import { db } from "@/server/db";
 import {
   getActiveRewardRule,
   getEditableDraftRule,
@@ -44,12 +44,37 @@ export default async function RewardRulesPage() {
 
   const canWrite = await can(staff, "rewards.rules.write");
 
-  const [versions, activeRule, latestRule, editableDraft] = await Promise.all([
-    getRewardRuleVersions(),
-    getActiveRewardRule(),
-    getLatestRewardRule(),
-    getEditableDraftRule(),
-  ]);
+  const [versions, activeRule, latestRule, editableDraft, packagesRaw, accommodationsRaw] =
+    await Promise.all([
+      getRewardRuleVersions(),
+      getActiveRewardRule(),
+      getLatestRewardRule(),
+      getEditableDraftRule(),
+      db.package.findMany({
+        where: { deletedAt: null },
+        select: { id: true, name: true, slug: true },
+        orderBy: { sortOrder: "asc" },
+      }),
+      db.accommodation.findMany({
+        where: { deletedAt: null },
+        select: { id: true, name: true, slug: true },
+        orderBy: { sortOrder: "asc" },
+      }),
+    ]);
+
+  const packages = packagesRaw.map((p) => ({
+    id: p.id,
+    name:
+      (p.name as { en?: string } | null)?.en ??
+      (typeof p.name === "string" ? p.name : p.slug),
+  }));
+
+  const accommodations = accommodationsRaw.map((a) => ({
+    id: a.id,
+    name:
+      (a.name as { en?: string } | null)?.en ??
+      (typeof a.name === "string" ? a.name : a.slug),
+  }));
 
   return (
     <div className="space-y-6">
@@ -65,6 +90,8 @@ export default async function RewardRulesPage() {
         latestRule={latestRule}
         editableDraft={editableDraft}
         canWrite={canWrite}
+        availablePackages={packages}
+        availableAccommodations={accommodations}
       />
     </div>
   );

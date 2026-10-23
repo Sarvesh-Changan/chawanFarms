@@ -1,96 +1,29 @@
 import Link from "next/link";
 
+import { AccountFrame } from "@/components/account/AccountFrame";
+import { Button } from "@/components/ui/button";
 import { requireUser } from "@/server/auth";
-import { getPublicActiveRewardRule } from "@/server/services/public-content";
+import { getAccountOverview } from "@/server/services/account";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+function displayDate(value: Date): string {
+  return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" }).format(value);
+}
 
 export default async function AccountPage() {
-  const [session, activeRule] = await Promise.all([
-    requireUser(),
-    getPublicActiveRewardRule(),
-  ]);
-
-  const hasActiveRule = Boolean(activeRule && activeRule.isActive);
-
-  return (
-    <main className="bg-cream-50 min-h-screen px-6 py-12">
-      <div className="mx-auto max-w-4xl space-y-8">
-        <div>
-          <p className="text-laterite-600 text-xs font-semibold tracking-[0.18em] uppercase">Account</p>
-          <h1 className="font-heading text-forest-900 mt-2 text-4xl">Welcome, {session.user.name}</h1>
-          <p className="text-muted-foreground mt-2">{session.user.email}</p>
-        </div>
-
-        {/* Rewards Section */}
-        <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm">
-          <div className="flex items-center justify-between border-b border-border/70 pb-4">
-            <div>
-              <h2 className="font-heading text-xl text-forest-900">Your Farm Rewards</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Share authentic videos of your farm stay to earn reward points.
-              </p>
-            </div>
-            <Link
-              href="/rewards"
-              className="text-xs font-semibold text-forest-700 hover:text-forest-900 underline underline-offset-4"
-            >
-              How rewards work →
-            </Link>
-          </div>
-
-          <div className="mt-4">
-            {hasActiveRule && activeRule ? (
-              <div className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl border border-border/60 bg-background/60 p-4">
-                    <p className="text-xs text-muted-foreground">Earning Rate</p>
-                    <p className="font-heading text-2xl text-forest-900 mt-1">
-                      {activeRule.pointsPerApprovedVideo} Points
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">per approved video submission</p>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-background/60 p-4">
-                    <p className="text-xs text-muted-foreground">Min Redemption</p>
-                    <p className="font-heading text-2xl text-forest-900 mt-1">
-                      {activeRule.minPointsToRedeem} Points
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Coupon valid for {activeRule.couponValidityDays} days
-                    </p>
-                  </div>
-                </div>
-
-                {activeRule.tiers.length > 0 ? (
-                  <div className="pt-2">
-                    <p className="text-xs font-semibold text-foreground mb-2">Available Redemption Tiers:</p>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {activeRule.tiers.map((tier) => (
-                        <div key={tier.id} className="rounded-lg border border-border/60 p-3 text-xs flex justify-between items-center">
-                          <span className="font-medium text-forest-900">{tier.name}</span>
-                          <span className="font-semibold text-forest-700">
-                            {tier.pointsCost} pts (
-                            {tier.discountType === "PERCENTAGE"
-                              ? `${tier.discountValue}% OFF`
-                              : `₹${Math.round(tier.discountValue / 100)} OFF`}
-                            )
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <div className="py-4 text-center">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Rewards program details and earning options will be displayed here once active rules are published. Check back soon for earning and redemption opportunities.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </main>
-  );
+  const session = await requireUser();
+  const overview = await getAccountOverview(session.user.id);
+  if (!overview) return <AccountFrame title="Overview"><div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center"><h2 className="font-heading text-xl text-forest-900">Account unavailable</h2><p className="mt-2 text-sm text-muted-foreground">We could not find your customer profile.</p></div></AccountFrame>;
+  const progress = overview.pointsBalance > 0 ? Math.min(100, Math.round((overview.pointsBalance / Math.max(overview.pointsBalance, 1_000)) * 100)) : 0;
+  return <AccountFrame title={`Welcome back, ${overview.identity.name}`} description="A simple view of your stays, rewards and account activity.">
+    <div className="grid gap-4 md:grid-cols-3">
+      <section className="rounded-2xl bg-forest-900 p-5 text-cream-50" aria-labelledby="points-heading"><div className="flex items-center gap-5"><div className="grid size-24 place-items-center rounded-full" style={{ background: `conic-gradient(var(--turmeric-500) ${progress}%, rgba(255,255,255,.18) ${progress}% 100%)` }}><div className="grid size-16 place-items-center rounded-full bg-forest-900 text-center"><span className="text-xl font-semibold">{overview.pointsBalance}</span><span className="text-[0.6rem] uppercase">points</span></div></div><div><h2 id="points-heading" className="font-heading text-xl">Your points</h2><Link href="/account/rewards" className="mt-1 inline-block text-sm text-paddy-300 underline underline-offset-4">View rewards</Link></div></div></section>
+      <section className="rounded-2xl border border-border/70 bg-card p-5"><p className="text-sm text-muted-foreground">Active coupons</p><p className="font-heading mt-2 text-4xl text-forest-900">{overview.activeCoupons}</p><Link href="/account/coupons" className="mt-3 inline-block text-sm font-medium text-forest-700 underline underline-offset-4">View coupons</Link></section>
+      <section className="rounded-2xl border border-border/70 bg-card p-5"><p className="text-sm text-muted-foreground">Pending videos</p><p className="font-heading mt-2 text-4xl text-forest-900">{overview.pendingVideos}</p><Link href="/account/videos" className="mt-3 inline-block text-sm font-medium text-forest-700 underline underline-offset-4">View submissions</Link></section>
+    </div>
+    <section className="mt-6 rounded-2xl border border-border/70 bg-card p-5 sm:p-7"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold tracking-[0.16em] text-laterite-600 uppercase">Next stay</p><h2 className="font-heading mt-2 text-2xl text-forest-900">{overview.nextStay ? displayDate(overview.nextStay.checkIn) : "No confirmed stay yet"}</h2>{overview.nextStay ? <p className="mt-1 text-sm text-muted-foreground">{overview.nextStay.reference}{overview.nextStay.packageSlug ? ` · ${overview.nextStay.packageSlug}` : ""} · Until {displayDate(overview.nextStay.checkOut)}</p> : <p className="mt-1 text-sm text-muted-foreground">When a booking is confirmed, it will appear here.</p>}</div><div className="flex flex-wrap gap-3"><Button asChild><Link href={overview.lastPackageSlug ? `/book?package=${encodeURIComponent(overview.lastPackageSlug)}` : "/book"}>Book again</Link></Button><Button asChild variant="outline"><Link href="/account/videos/new">Upload video</Link></Button></div></div></section>
+    <section className="mt-6 grid gap-4 sm:grid-cols-2"><Link href="/account/bookings" className="rounded-2xl border border-border/70 bg-card p-5 transition hover:border-forest-700"><p className="text-sm text-muted-foreground">Bookings &amp; enquiries</p><p className="font-heading mt-2 text-xl text-forest-900">See your requests</p></Link><Link href="/account/favourites" className="rounded-2xl border border-border/70 bg-card p-5 transition hover:border-forest-700"><p className="text-sm text-muted-foreground">Saved for later</p><p className="font-heading mt-2 text-xl text-forest-900">Open favourites</p></Link></section>
+  </AccountFrame>;
 }

@@ -3,13 +3,11 @@ import { z } from "zod";
 const email = z.string().trim().toLowerCase().email("Enter a valid email address.");
 const password = z.string().min(10, "Use at least 10 characters.").max(128, "Use 128 characters or fewer.");
 const callbackUrl = z.string().trim().max(2048).optional();
-const turnstileToken = z.string().trim().max(2048).optional();
 
 export const loginSchema = z.object({
   email,
   password,
   callbackUrl,
-  turnstileToken,
 }).strict();
 
 export const signupSchema = z.object({
@@ -17,7 +15,6 @@ export const signupSchema = z.object({
   email,
   password,
   confirmPassword: z.string(),
-  turnstileToken,
 }).strict().superRefine((value, context) => {
   if (value.password !== value.confirmPassword) {
     context.addIssue({ code: "custom", path: ["confirmPassword"], message: "Passwords do not match." });
@@ -26,14 +23,12 @@ export const signupSchema = z.object({
 
 export const forgotPasswordSchema = z.object({
   email,
-  turnstileToken,
 }).strict();
 
 export const resetPasswordSchema = z.object({
   token: z.string().trim().min(1, "This reset link is invalid or expired."),
   password,
   confirmPassword: z.string(),
-  turnstileToken,
 }).strict().superRefine((value, context) => {
   if (value.password !== value.confirmPassword) {
     context.addIssue({ code: "custom", path: ["confirmPassword"], message: "Passwords do not match." });

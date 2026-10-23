@@ -81,10 +81,10 @@ export async function getPublicSettings() {
       };
     } catch {
       return {
-        phones: ["9821502956", "9821089375", "9359895322"],
-        address: "Baitwadi, Kolad, Tal. Roha, Dist. Raigad, Maharashtra, India",
-        whatsappNumber: "9821502956",
-        whatsappMessage: "Hello Chawan Farms, I would like to enquire about a visit.",
+        phones: [],
+        address: "",
+        whatsappNumber: "",
+        whatsappMessage: "",
       };
     }
   }, ["public-content:settings"], { tags: ["cms:settings", "cms:all"], revalidate: cacheRevalidateSeconds })();
@@ -105,6 +105,22 @@ export async function getPublicHomePage() {
     const images = await mediaMap(imageIds);
     return { ...page, images: [...images.values()] };
   }, ["public-content:home-page"], { tags: ["cms:page:home", "cms:pages", "cms:all"], revalidate: cacheRevalidateSeconds })();
+}
+
+export async function getPublicPageBySlug(slug: string) {
+  return unstable_cache(async () => {
+    const page = await db.page.findFirst({
+      where: { slug, status: "PUBLISHED", deletedAt: null },
+      include: { sections: { where: { isVisible: true }, orderBy: { sortOrder: "asc" } } },
+    });
+    if (!page) return null;
+    const imageIds = page.sections.flatMap((section) => {
+      const content = jsonRecord(section.content);
+      return typeof content.imageMediaId === "string" ? [content.imageMediaId] : [];
+    });
+    const images = await mediaMap(imageIds);
+    return { ...page, images: [...images.values()] };
+  }, ["public-content:page", slug], { tags: ["cms:pages", `cms:page:${slug}`, "cms:all"], revalidate: cacheRevalidateSeconds })();
 }
 
 export async function getPublicExperiences() {

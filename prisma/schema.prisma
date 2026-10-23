@@ -18,6 +18,14 @@ enum UserStatus {
   PENDING_DELETION
 }
 
+enum AccountDeletionRequestStatus {
+  PENDING
+  CANCELLED
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
 enum PublishStatus {
   DRAFT
   SCHEDULED
@@ -207,6 +215,8 @@ model User {
   reviews          Review[]
   notifications    Notification[]
   consents         ConsentRecord[]
+  deletionRequests AccountDeletionRequest[]
+  decidedDeletionRequests AccountDeletionRequest[] @relation("DeletionRequestDecider")
 
   @@index([type, status])
   @@map("user")
@@ -311,6 +321,23 @@ model ConsentRecord {
   user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, purpose])
+}
+
+model AccountDeletionRequest {
+  id           String                       @id @default(uuid())
+  userId       String
+  status       AccountDeletionRequestStatus @default(PENDING)
+  reasonText   String?
+  requestedAt  DateTime                     @default(now())
+  decidedById  String?
+  decidedAt    DateTime?
+  decisionNote String?
+  completedAt  DateTime?
+  user         User                        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  decidedBy    User?                       @relation("DeletionRequestDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([status, requestedAt])
 }
 
 model Role {
@@ -814,6 +841,7 @@ model Media {
   updatedAt    DateTime      @updatedAt
   usages       MediaUsage[]
   galleryItems GalleryItem[]
+  videoSubmission VideoSubmission?
 
   @@index([kind, category])
   @@index([contentHash])
@@ -853,7 +881,9 @@ model GalleryItem {
 model VideoSubmission {
   id               String         @id @default(uuid())
   userId           String
-  mediaId          String         @unique
+  mediaId          String?        @unique
+  uploadPublicId   String?        @unique
+  uploadExpiresAt  DateTime?
   title            String?
   description      String?
   visitDate        DateTime?      @db.Date
@@ -872,6 +902,7 @@ model VideoSubmission {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   user             User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  media            Media?         @relation(fields: [mediaId], references: [id], onDelete: Restrict)
   ledger           PointsLedger[]
 
   @@index([status, submittedAt])

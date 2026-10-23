@@ -38,7 +38,7 @@ describe("media policy", () => {
   });
 
   it("rejects oversize, wrong-format and out-of-folder assets server-side", () => {
-    const base = { publicId: `customers/${userId}/videos/${assetId}`, resourceType: "video", format: "mp4", bytes: 1_000, duration: 40, folder: `customers/${userId}/videos` };
+    const base = { publicId: `customers/${userId}/videos/${assetId}`, resourceType: "video", deliveryType: "authenticated", format: "mp4", bytes: 1_000, duration: 40, folder: `customers/${userId}/videos` };
     expect(validateCloudinaryAssetMetadata("customer_video", userId, { ...base, bytes: MEDIA_PURPOSES.customer_video.maxBytes + 1 }).valid).toBe(false);
     expect(validateCloudinaryAssetMetadata("customer_video", userId, { ...base, format: "avi" }).valid).toBe(false);
     expect(validateCloudinaryAssetMetadata("customer_video", userId, { ...base, publicId: `admin/media/videos/${userId}/${assetId}` }).valid).toBe(false);

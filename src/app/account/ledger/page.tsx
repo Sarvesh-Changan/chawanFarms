@@ -1,3 +1,4 @@
-export default function AccountLedgerPage() {
-  return <div>Ledger placeholder</div>;
-}
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
+export default function LedgerRedirect() { redirect("/account/rewards"); }

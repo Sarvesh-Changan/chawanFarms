@@ -23,10 +23,10 @@
 | Auth | **Better Auth** (recommended) — email+password, email verification, reset, DB sessions, optional 2FA/Google; **alternative Auth.js** | ADR-001: pick one in Phase 5 after reading current docs; never hand-roll password/session logic. Use Argon2id/scrypt as library supports |
 | Authorization | Custom RBAC (roles→permissions) enforced in a single `authz` module | Customers ≠ staff; staff permissions from DB |
 | Media | **Cloudinary** | Signed uploads, upload presets per purpose, eager transformations, webhook verification |
-| Email | **Resend** + React Email | Alternative: Postmark/SES |
+| Email | **SMTP via Nodemailer** (mailbox + app password) + React Email rendering | Transactional volume only (about 500/day on a normal Gmail account); this application defaults to a 400-recipient daily quota with a reserved transactional portion |
 | Validation | **Zod** (shared client/server schemas) | |
 | Forms | React Hook Form + Zod resolver | Progressive enhancement via server actions |
-| Rate limiting | **Upstash Redis** + `@upstash/ratelimit` | Fallback DB-based limiter for low-risk routes |
+| Rate limiting | **PostgreSQL (Neon) limiter** — `RateLimitBucket(key, windowStart, count)` with atomic `INSERT … ON CONFLICT DO UPDATE` | No Redis. Optional coarse layer: Vercel Firewall rate-limit rules. Upgrade path: Redis only if traffic demands |
 | Bot protection | Cloudflare Turnstile + honeypot | |
 | Jobs | **Vercel Cron** → protected route handlers (idempotent) | Upgrade path: Inngest/QStash if workflows grow |
 | Analytics | GA4 (consent-gated) + first-party `LeadEvent` | Optional Plausible/PostHog |
@@ -48,7 +48,7 @@ Next.js App (Vercel)
  ├─ Server Actions / Route Handlers   ──► authz + zod + ratelimit + audit
  ├─ Webhooks: /api/webhooks/cloudinary, (future) /api/webhooks/payments
  ├─ Cron: /api/cron/* (secret-protected)
- └─ Integrations: Cloudinary • Resend • Upstash • Turnstile • Sentry • GA4
+ └─ Integrations: Cloudinary • SMTP mailbox • Turnstile • Sentry • GA4
 ```
 
 ## 4. Repository structure
@@ -153,7 +153,7 @@ Created from redemption; single-use; bound to the owner; `eligiblePackages/Accom
 Upload flow: client requests **signed params** from `/api/upload-signature` (auth + rate limit + purpose: `customer_video` | `admin_media`) → direct browser upload to Cloudinary into a purpose-specific folder & preset (size/format limits, `resource_type`, moderation add-on optional) → Cloudinary webhook (signature verified) and/or server confirmation call records `Media` row with `publicId`, bytes, duration, format, hash. Customer videos are `private`/`authenticated` delivery until approved; public gallery uses only admin-published assets.
 
 ### 8.7 Notifications
-`notify(event, recipients, data)` writes `Notification` (in-app) and sends email through a queue-like outbox table (`NotificationOutbox`: pending/sent/failed, retries) processed inline then by cron. Templates are admin-editable subject/body fragments with safe variables.
+`notify(event, recipients, data)` validates the event payload, writes user-scoped `Notification` rows and creates `NotificationOutbox` email rows in its own post-commit service call. The outbox processor claims pending rows with a two-minute lease, renders React Email templates, and sends through the SMTP integration. Temporary SMTP failures use exponential backoff; quota failures move to the next day; permanent failures become `FAILED`. No email is sent inside a database transaction. Optional messages use the non-reserved email quota and require marketing consent; transactional messages use the reserved share. Admins control recipients, event toggles, stuck-row threshold and safe plain-text template overrides in Settings.
 
 ### 8.8 Audit
 `audit({actorId, action, entityType, entityId, before, after, ip, ua})` — called from services for all admin writes, role changes, reward/coupon actions, exports, logins to admin, failed permission checks. Append-only (DB trigger), PII-minimised.
@@ -166,8 +166,8 @@ Upload flow: client requests **signed params** from `/api/upload-signature` (aut
 | `POST /api/webhooks/cloudinary` | Upload/moderation notifications | signature |
 | `GET /api/availability?from&to&accommodationId` | Public availability summary | public, rate-limited |
 | `POST /api/quote` | Price estimate (server-computed) | public, rate-limited |
-| `GET /api/admin/export/leads` | CSV export | `leads.export`, rate-limited and audited |
-| `GET /api/cron/*` | expire points/coupons, reminders, reconcile, outbox | `CRON_SECRET` bearer |
+| `GET /api/admin/export/leads.csv` | CSV export | `leads.export`, audited |
+| `GET /api/cron/*` | expire points/coupons, reminders, reconcile, outbox, retention, orphan reporting and limiter cleanup | `CRON_SECRET` bearer |
 | `GET /api/health` | Uptime | public minimal |
 
 Everything else is server actions + server-rendered pages.
@@ -190,16 +190,19 @@ CLOUDINARY_CLOUD_NAME= CLOUDINARY_API_KEY= CLOUDINARY_API_SECRET=
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_UPLOAD_PRESET_ADMIN= CLOUDINARY_UPLOAD_PRESET_VIDEO=
 # Email
-RESEND_API_KEY= EMAIL_FROM= ADMIN_NOTIFY_EMAIL=
+SMTP_HOST= SMTP_PORT= SMTP_SECURE= SMTP_USER= SMTP_PASS=   # app password, secret
+EMAIL_FROM= EMAIL_FROM_NAME= EMAIL_REPLY_TO= ADMIN_NOTIFY_EMAIL=
+EMAIL_DAILY_LIMIT=400 EMAIL_TRANSACTIONAL_RESERVE_PERCENT=25
 # Anti-abuse
 NEXT_PUBLIC_TURNSTILE_SITE_KEY= TURNSTILE_SECRET_KEY=
-UPSTASH_REDIS_REST_URL= UPSTASH_REDIS_REST_TOKEN=
 # Jobs
 CRON_SECRET=
 # Observability
 SENTRY_DSN= SENTRY_AUTH_TOKEN= NEXT_PUBLIC_GA_ID=
 ```
 `src/config/env.ts` validates with Zod at boot and **fails fast**. Only `NEXT_PUBLIC_*` may reach the client. Secrets differ per environment (dev/preview/prod). Business phone/WhatsApp/email live in the **Settings table**, not env.
+
+SMTP is configured with an app password and TLS: port 465 requires `SMTP_SECURE=true`; port 587 uses STARTTLS with `SMTP_SECURE=false`. In development, an incomplete SMTP configuration uses a safe console transport. Production requires the SMTP settings, sender identity and admin notification address. Email sends reserve the configured transactional share of the PostgreSQL-backed daily bucket `email:daily:<YYYY-MM-DD>`; optional sends stop at the non-reserved portion and return a typed quota result. Bulk marketing email is out of scope.
 
 ## 11. Background jobs (Vercel Cron)
 
@@ -213,8 +216,9 @@ SENTRY_DSN= SENTRY_AUTH_TOKEN= NEXT_PUBLIC_GA_ID=
 | `reconcile-balances` | nightly | Compare cache vs ledger; alert on drift |
 | `purge-retention` | weekly | Apply retention policy (SECURITY.md) |
 | `media-orphans` | weekly | Report unused Cloudinary assets |
+| `cleanup-rate-limits` | hourly | Delete expired `RateLimitBucket` rows |
 
-All jobs idempotent, logged, and protected by `CRON_SECRET`.
+All jobs are idempotent, logged without secrets or message bodies, and protected by `CRON_SECRET`. Retention only runs when an explicit `retention.auditDays` Setting exists; media-orphans reports candidates and does not delete external assets.
 
 ## 12. Performance architecture
 - Route-level JS budget: marketing pages ≤ ~150 KB gz JS initially; admin may be larger.

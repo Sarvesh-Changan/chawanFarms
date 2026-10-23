@@ -19,7 +19,7 @@ export async function getAdminDashboardData(now = new Date(), includeAudit = tru
   const sevenDaysAgo = new Date(today.getTime() - 6 * 86_400_000);
   const thirtyDaysAgo = new Date(today.getTime() - 29 * 86_400_000);
 
-  const [leadsToday, leadsSevenDays, leadsThirtyDays, enquiriesByLeadStatus, bookingsByStatus, pendingVideos, recentAudit] = await Promise.all([
+  const [leadsToday, leadsSevenDays, leadsThirtyDays, enquiriesByLeadStatus, bookingsByStatus, pendingVideos, recentAudit, rewards] = await Promise.all([
     includeLeads ? db.lead.count({ where: { deletedAt: null, createdAt: { gte: today } } }) : Promise.resolve(0),
     includeLeads ? db.lead.count({ where: { deletedAt: null, createdAt: { gte: sevenDaysAgo } } }) : Promise.resolve(0),
     includeLeads ? db.lead.count({ where: { deletedAt: null, createdAt: { gte: thirtyDaysAgo } } }) : Promise.resolve(0),
@@ -38,6 +38,7 @@ export async function getAdminDashboardData(now = new Date(), includeAudit = tru
       orderBy: { createdAt: "desc" },
       select: { id: true, action: true, entityType: true, entityId: true, actorId: true, createdAt: true },
     }) : Promise.resolve([]),
+    getRewardDashboardMetrics(30, now),
   ]);
 
   return {
@@ -46,7 +47,106 @@ export async function getAdminDashboardData(now = new Date(), includeAudit = tru
     bookingsByStatus: bookingsByStatus.map(({ status, _count }) => ({ status, count: _count._all })),
     pendingVideos,
     recentAudit,
+    rewards,
     generatedAt: now.toISOString(),
+  };
+}
+
+export type RewardDashboardMetrics = {
+  rangeDays: number;
+  pointsIssued: number;
+  pointsRedeemed: number;
+  pointsExpired: number;
+  pointsReversed: number;
+  activeCoupons: number;
+  couponsIssuedInRange: number;
+  couponsRedeemedInRange: number;
+  redemptionRate: number;
+};
+
+export async function getRewardDashboardMetrics(
+  days = 30,
+  now = new Date(),
+): Promise<RewardDashboardMetrics> {
+  const rangeStart = new Date(now.getTime() - days * 86_400_000);
+
+  const pointsAgg = await db.$queryRaw<
+    Array<{
+      type: string;
+      total_positive: bigint;
+      total_negative: bigint;
+      total_abs: bigint;
+    }>
+  >`
+    SELECT
+      "type"::text AS "type",
+      COALESCE(SUM(CASE WHEN "points" > 0 THEN "points" ELSE 0 END), 0)::bigint AS "total_positive",
+      COALESCE(SUM(CASE WHEN "points" < 0 THEN "points" ELSE 0 END), 0)::bigint AS "total_negative",
+      COALESCE(SUM(ABS("points")), 0)::bigint AS "total_abs"
+    FROM "PointsLedger"
+    WHERE "createdAt" >= ${rangeStart}
+    GROUP BY "type"
+  `;
+
+  let pointsIssued = 0;
+  let pointsRedeemed = 0;
+  let pointsExpired = 0;
+  let pointsReversed = 0;
+
+  for (const row of pointsAgg) {
+    if (row.type === "EARN" || row.type === "ADJUST") {
+      pointsIssued += Number(row.total_positive);
+    }
+    if (row.type === "REDEEM") {
+      pointsRedeemed += Number(row.total_abs);
+    }
+    if (row.type === "EXPIRE") {
+      pointsExpired += Number(row.total_abs);
+    }
+    if (row.type === "REVERSE") {
+      pointsReversed += Number(row.total_abs);
+    }
+  }
+
+  const [activeCoupons, couponsIssuedInRange, couponsRedeemedInRange] = await Promise.all([
+    db.coupon.count({
+      where: {
+        status: "ACTIVE",
+        expiresAt: { gt: now },
+      },
+    }),
+    db.coupon.count({
+      where: {
+        issuedAt: { gte: rangeStart },
+      },
+    }),
+    db.coupon.count({
+      where: {
+        issuedAt: { gte: rangeStart },
+        redemptions: {
+          some: {
+            releasedAt: null,
+          },
+        },
+      },
+    }),
+  ]);
+
+  const redemptionRate =
+    couponsIssuedInRange > 0
+      ? Math.round((couponsRedeemedInRange / couponsIssuedInRange) * 1000) / 10
+      : 0;
+
+  return {
+    rangeDays: days,
+    pointsIssued,
+    pointsRedeemed,
+    pointsExpired,
+    pointsReversed,
+    activeCoupons,
+    couponsIssuedInRange,
+    couponsRedeemedInRange,
+    redemptionRate,
   };
 }
 

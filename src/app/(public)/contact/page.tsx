@@ -10,32 +10,25 @@ import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getPublicSettings } from "@/server/services/public-content";
+import { getPublicHomePage, getPublicSettings, localizedString } from "@/server/services/public-content";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Contact Us & Farm Location · Chawan Farms",
-  description:
-    "Get in touch with the Chawan Farms team for stay enquiries, camp organizer bookings, and school trips in Baitwadi, Kolad.",
+  description: "Contact the Chawan Farms team for stay and group enquiries.",
 };
 
 export default async function ContactPage() {
-  const settings = await getPublicSettings();
-
-  const phones = settings.phones.length
-    ? settings.phones
-    : ["9821502956", "9821089375", "9359895322"];
-  const address =
-    settings.address ||
-    "Baitwadi, Kolad, Tal. Roha, Dist. Raigad, Maharashtra, India";
-  const whatsappNumber = settings.whatsappNumber || "9821502956";
-  const whatsappMessage =
-    settings.whatsappMessage || "Hello Chawan Farms, I would like to enquire about a visit.";
-
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `Chawan Farms, ${address}`,
-  )}`;
+  const [settings, home] = await Promise.all([getPublicSettings(), getPublicHomePage()]);
+  const locationSection = home?.sections.find((section) => section.type === "location");
+  const sectionContent = locationSection?.content && typeof locationSection.content === "object" && !Array.isArray(locationSection.content) ? locationSection.content as Record<string, unknown> : {};
+  const howToReach = localizedString(sectionContent.body as never);
+  const phones = settings.phones;
+  const address = settings.address;
+  const whatsappNumber = settings.whatsappNumber;
+  const whatsappMessage = settings.whatsappMessage;
+  const googleMapsUrl = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : "";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -45,14 +38,8 @@ export default async function ContactPage() {
     mainEntity: {
       "@type": "TouristAttraction",
       name: "Chawan Farms",
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: "Baitwadi",
-        addressLocality: "Kolad, Roha",
-        addressRegion: "Raigad, Maharashtra",
-        addressCountry: "IN",
-      },
-      telephone: phones[0],
+      ...(address ? { address: { "@type": "PostalAddress", streetAddress: address } } : {}),
+      ...(phones[0] ? { telephone: phones[0] } : {}),
     },
   };
 
@@ -75,20 +62,21 @@ export default async function ContactPage() {
               group camp reservations. Our farm team personally handles all
               inquiries.
             </p>
+            <a href="#find-us" className="text-forest-700 mt-4 inline-flex min-h-11 items-center font-semibold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-turmeric-500">Find the farm</a>
           </div>
 
           <div className="grid gap-12 lg:grid-cols-12">
             {/* Contact Info & Map Column (Settings-driven) */}
-            <div className="space-y-8 lg:col-span-5">
+            <div id="find-us" aria-labelledby="find-us-heading" className="scroll-mt-24 space-y-8 lg:col-span-5">
               {/* Contact Details Card */}
               <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
-                <h2 className="font-heading text-2xl text-forest-900">
+                <h2 id="find-us-heading" className="font-heading text-2xl text-forest-900">
                   Farm Contacts
                 </h2>
 
                 <div className="mt-6 space-y-6">
                   {/* Phone Numbers from Settings */}
-                  <div className="flex items-start gap-4">
+                  {phones.length ? <div className="flex items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-900/10 text-forest-900">
                       <Phone className="h-5 w-5" />
                     </div>
@@ -108,7 +96,7 @@ export default async function ContactPage() {
                         ))}
                       </div>
                     </div>
-                  </div>
+                  </div> : null}
 
                   {/* WhatsApp */}
                   {whatsappNumber && (
@@ -136,7 +124,7 @@ export default async function ContactPage() {
                   )}
 
                   {/* Address from Settings */}
-                  <div className="flex items-start gap-4">
+                  {address ? <div className="flex items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-900/10 text-forest-900">
                       <MapPin className="h-5 w-5" />
                     </div>
@@ -156,7 +144,7 @@ export default async function ContactPage() {
                         Open in Google Maps <ExternalLink className="h-3 w-3" />
                       </a>
                     </div>
-                  </div>
+                  </div> : null}
 
                   {/* Timings from PDF */}
                   <div className="flex items-start gap-4">
@@ -177,7 +165,7 @@ export default async function ContactPage() {
               </div>
 
               {/* Map Embed Card */}
-              <div className="overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
+              {address ? <div className="overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h3 className="font-heading text-lg text-forest-900">
                     Location &amp; Directions
@@ -196,10 +184,7 @@ export default async function ContactPage() {
                 <div className="mt-4 flex h-48 w-full flex-col items-center justify-center rounded-xl border border-border/80 bg-gradient-to-br from-forest-900/5 via-clay-100/40 to-laterite-600/10 p-6 text-center">
                   <MapPin className="h-8 w-8 text-laterite-600" />
                   <p className="mt-2 font-heading text-base text-forest-900">
-                    Baitwadi, Kolad
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Taluka Roha, Dist. Raigad, Maharashtra
+                    {address}
                   </p>
                   <a
                     href={googleMapsUrl}
@@ -210,7 +195,8 @@ export default async function ContactPage() {
                     Get Driving Directions
                   </a>
                 </div>
-              </div>
+              </div> : null}
+              {howToReach ? <section className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm"><h2 className="font-heading text-2xl text-forest-900">How to reach us</h2><p className="mt-4 whitespace-pre-line text-sm leading-7 text-muted-foreground">{howToReach}</p></section> : null}
             </div>
 
             {/* Forms Column */}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CallButton, WhatsAppButton } from "@/components/marketing/ContactButtons";
+import { publicNavGroups, publicNavHome, publicNavTopLevel } from "@/config/public-nav";
 import { getPublicSettings } from "@/server/services/public-content";
 
 export async function Footer() {
@@ -13,10 +14,11 @@ export async function Footer() {
           <p className="text-cream-50/70 mt-3 max-w-sm text-sm leading-6">Come live, experience & rediscover yourself & nature at its best.</p>
         </div>
         <div>
-          <p className="text-turmeric-500 text-xs font-semibold tracking-[0.18em] uppercase">Explore</p>
+          <p className="text-turmeric-500 text-xs font-semibold tracking-[0.18em] uppercase">Navigate</p>
           <div className="mt-3 grid gap-2 text-sm text-cream-50/80">
-            <Link className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href="/#experiences">Experiences</Link>
-            <Link className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href="/packages">Packages</Link>
+            <Link className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href={publicNavHome.href}>{publicNavHome.label}</Link>
+            {publicNavGroups.flatMap((group) => group.items).map((item) => <Link key={item.href} className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href={item.href}>{item.label}</Link>)}
+            {publicNavTopLevel.map((item) => <Link key={item.href} className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href={item.href}>{item.label}</Link>)}
             <Link className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href="/book">Book / Enquire</Link>
           </div>
         </div>

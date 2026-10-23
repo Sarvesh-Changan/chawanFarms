@@ -29,7 +29,7 @@ export function AdminInactivityTracker({
 }: AdminInactivityTrackerProps) {
   const isLoggingOutRef = useRef(false);
   const warningShownRef = useRef(false);
-  const lastActivityRef = useRef<number>(Date.now());
+  const lastActivityRef = useRef<number>(0);
   const lastRecordedEventRef = useRef<number>(0);
 
   useEffect(() => {

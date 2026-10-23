@@ -56,7 +56,7 @@
 
   1. Create an empty folder `chawan-farms` and run `git init`. Create a private GitHub repo and push.
   2. Inside it create `/docs` and `/docs/source`. Copy the 8 documents into `/docs` and the client PDF (`CHAWAN_FARM_PRESENTATION_01_10_2026.pdf`) into `/docs/source`.
-  3. Create accounts (ideally owned by the client from day one): Vercel, Neon, Cloudinary, Resend, Upstash, Cloudflare (Turnstile), Sentry, Google Analytics.
+  3. Create accounts (ideally owned by the client from day one): Vercel, Neon, Cloudinary, an SMTP mailbox with app-password support, Upstash, Cloudflare (Turnstile), Sentry, Google Analytics.
   4. Send PRD.md §9 (decisions D-1 … D-19) to the client. Resolve at least D-1…D-5 and D-16/D-18 before Phase 10, D-8/D-9 before Phase 11, D-6/D-14 before Phase 9.
 
 * Expected Output: Repo with `/docs` populated, accounts created, decision list sent to client.
@@ -357,7 +357,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 * Documents to Attach: —
 * What you do (no AI):
 
-  1. Resend: create an API key; for now use the sandbox sender or verify your domain later.
+  1. SMTP mailbox: create an app password, enable TLS on the chosen submission port, and verify the sender address or alias.
   2. Upstash: create a Redis database; copy REST URL and token.
   3. Cloudflare Turnstile: create a widget; copy site key and secret.
   4. Generate `AUTH_SECRET` with `openssl rand -base64 32`.
@@ -377,8 +377,8 @@ Act as a senior security engineer and Next.js developer. Using the attached docu
 
 1. Read the installed version's official docs of the chosen auth library first and follow its current App Router + Prisma setup.
 2. Install and configure: email+password, email verification required before booking/reward actions, forgot/reset password, database-backed sessions, secure cookie settings, trusted origins from env.
-3. Add Upstash rate limiting (`src/server/integrations/ratelimit.ts`) per SECURITY.md section 7 for login, signup and reset, and Cloudflare Turnstile verification (`src/server/integrations/turnstile.ts`). Add the new env vars to `src/config/env.ts` and `.env.example`.
-4. Add Resend + React Email integration (`src/server/integrations/email.ts`) with templates for verify email and reset password; fall back to console logging in development.
+3. Add Upstash rate limiting (`src/server/integrations/ratelimit.ts`) per SECURITY.md section 7 for login, signup and reset. Keep Cloudflare Turnstile verification (`src/server/integrations/turnstile.ts`) for public forms and staff invitation acceptance, not customer authentication.
+4. Add the SMTP + React Email integration (`src/server/integrations/email.ts`) with templates for verify email and reset password; fall back to console logging in development.
 5. Build pages `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email` using the design system, React Hook Form + Zod (`src/lib/schemas/auth.ts`), server actions following the pipeline in ARCHITECTURE.md section 6, with field-level errors and loading states.
 6. On signup, create `User` (type CUSTOMER) and `CustomerProfile` with a unique referral code in one transaction/hook.
 7. Anti-enumeration: forgot-password and login errors must be generic. `callbackUrl` must only allow relative paths.
@@ -1036,7 +1036,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 ```
 Act as a senior backend engineer. Implement notifications and cron jobs.
 
-1. Create `notify(event, recipients, data)` writing in-app Notification rows and NotificationOutbox rows; a processor sends via Resend with retries/backoff; emails are sent only AFTER database commit, never inside a transaction.
+1. Create `notify(event, recipients, data)` writing in-app Notification rows and NotificationOutbox rows; a processor sends through the SMTP integration with retries/backoff; emails are sent only AFTER database commit, never inside a transaction.
 2. Create React Email templates for: verify email, reset password, lead alert (admin), enquiry acknowledgement, booking received/confirmed/cancelled, video received/approved/rejected, points earned, coupon issued/expiring, pre-arrival reminder (stay rules and 'bring original photo ID' from policy data). Subjects/bodies are admin-editable via Settings with safe variables (escaped).
 3. Create Vercel cron route handlers under `src/app/api/cron/` protected by `CRON_SECRET`: expire-points, expire-coupons, outbox-send (every 5 min), lead-reminders, pre-arrival-reminder, reconcile-balances, purge-retention, media-orphans. All idempotent and logged. Add `vercel.json` schedules.
 4. Add admin notification settings (recipients, toggles) and respect marketing consent for non-transactional emails.
@@ -1109,7 +1109,7 @@ Act as a senior full-stack engineer with privacy expertise. Implement analytics 
 1. Build a consent banner (necessary / analytics / marketing) storing choices in a cookie and `ConsentRecord` for logged-in users; nothing non-essential loads before consent.
 2. Add GA4 with consent mode via `next/script` (afterInteractive, only after consent); create `src/lib/analytics.ts` with a typed `track()` helper and events: `click_whatsapp`, `click_call`, `generate_lead`, `begin_booking`, `submit_booking`, `signup`, `video_upload_start`, `video_upload_complete`, `coupon_redeem`. Never send phone/email/names.
 3. Mirror key conversion events into first-party LeadEvents for the admin dashboard funnel widget.
-4. Integrate Sentry (client + server) with PII scrubbing in `beforeSend`, source maps and release tagging; add Vercel Speed Insights.
+4. Integrate Sentry (client + server) with PII scrubbing, source maps and release tagging; add Vercel Speed Insights.
 5. Write tests: no analytics scripts before consent; events fire after consent; PII scrubbed.
 6. Before writing code, inspect the existing repository (structure, package.json, prisma/, git log, /docs) and briefly explain your plan and the files you will touch. If something is ambiguous or needs a client decision, ask instead of guessing.
 7. Implement ONLY what is described in this step. Do not start later phases. Never invent client information (prices, facilities, policies, contacts) — the client PDF and PRD.md Appendix A are the source of truth.
@@ -1245,7 +1245,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 Act as a senior DevOps/platform engineer. Prepare the project for production deployment. Do NOT run anything against production; output commands for me to run where credentials are needed.
 
 1. Create `docs/RUNBOOK.md` covering: environments, release process, `prisma migrate deploy` step, rollback (Vercel instant rollback, forward-fix migrations, Neon point-in-time restore), secret rotation, cron monitoring, on-call contacts, incident and breach response.
-2. Create `docs/DEPLOYMENT_CHECKLIST.md`: Neon production branch and least-privilege roles, Vercel env vars separated for Production/Preview, Cloudinary production presets, Resend domain SPF/DKIM/DMARC, domain/DNS and old-domain redirects, Sentry release, staging noindex, cron enabled.
+2. Create `docs/DEPLOYMENT_CHECKLIST.md`: Neon production branch and least-privilege roles, Vercel env vars separated for Production/Preview, Cloudinary production presets, SMTP sender SPF/DKIM/DMARC, domain/DNS and old-domain redirects, Sentry release, staging noindex, cron enabled.
 3. Add `vercel.json`/config needed for crons, headers and redirects; add a production seed script path that only loads reference data (permissions, roles, catalogue) with no dev fixtures.
 4. Write a script `scripts/create-super-admin.ts` that securely creates the first Super Admin from CLI prompts (no secrets in code or env), forcing 2FA enrolment on first login.
 5. Document backup and restore: Neon PITR, monthly `pg_dump` to client-owned storage, Cloudinary asset manifest export, and a quarterly restore drill.
@@ -1270,7 +1270,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
   1. In Neon use the production branch; run `npx prisma migrate deploy` with the production `DIRECT_URL`; run the production seed.
   2. Set Production env vars in Vercel; connect the domain; set DNS; verify HTTPS.
   3. Create the Super Admin with the script; enable 2FA; remove any bootstrap credentials.
-  4. Verify Resend domain, Sentry, GA, Turnstile production keys, Cloudinary production presets.
+  4. Verify SMTP sender SPF/DKIM/DMARC, Sentry, GA, Turnstile production keys, Cloudinary production presets.
   5. Smoke test: home, enquiry, signup, booking request, admin login, cron endpoints (with secret).
   6. Rehearse a rollback and a database restore once.
 
@@ -1343,7 +1343,7 @@ Act as a technical writer and solutions engineer. Produce the client handover do
 
 1. Write `docs/ADMIN_GUIDE.md`: step-by-step instructions with placeholder screenshot markers for every admin module (dashboard, CMS, bookings, enquiries, leads, availability, customers, rewards, media, SEO, settings, security).
 2. Write SOPs: `docs/SOP_VIDEO_MODERATION.md` (what to approve/reject, minors, consent, duplicates, takedowns), `docs/SOP_LEADS.md` (response times, statuses, follow-ups), `docs/SOP_BOOKINGS.md` (confirm, cancel, payment recording per the final policy).
-3. Write `docs/HANDOVER_CHECKLIST.md`: transfer ownership of Vercel, Neon, Cloudinary, Resend, Upstash, Cloudflare, Sentry, GA, domain; credential storage guidance; monthly maintenance tasks (dependency updates, backup verification, audit log review, ledger reconciliation).
+3. Write `docs/HANDOVER_CHECKLIST.md`: transfer ownership of Vercel, Neon, Cloudinary, the SMTP mailbox, Upstash, Cloudflare, Sentry, GA, domain; credential storage guidance; monthly maintenance tasks (dependency updates, backup verification, audit log review, ledger reconciliation).
 4. Write `docs/TRAINING_AGENDA.md` (2-hour session) and `docs/ROADMAP.md` (payments gateway, Marathi/Hindi, referrals, reviews, loyalty ideas) with effort notes.
 5. Before writing code, inspect the existing repository (structure, package.json, prisma/, git log, /docs) and briefly explain your plan and the files you will touch. If something is ambiguous or needs a client decision, ask instead of guessing.
 6. Implement ONLY what is described in this step. Do not start later phases. Never invent client information (prices, facilities, policies, contacts) — the client PDF and PRD.md Appendix A are the source of truth.
@@ -1372,6 +1372,6 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 | Balance differs from ledger | Cache not updated in same transaction | Update inside the locked transaction; run reconciliation job |
 | Login works locally, fails on preview | `AUTH_URL`/trusted origins mismatch | Configure per environment |
 | Date shows one day off | Timezone conversion on stay dates | Use `@db.Date` and `YYYY-MM-DD` strings (Asia/Kolkata display) |
-| Emails land in spam | Missing SPF/DKIM/DMARC | Verify domain in Resend |
+| Emails land in spam | Missing SPF/DKIM/DMARC | Verify the SMTP sender domain |
 | Hydration mismatch | Dates/random values in client render | Format on server; stable IDs |
 | AI wrote hard-coded prices/reward values | Prompt drift | Stop; paste MASTER_PROMPT §2 and ask it to move values to DB/CMS |

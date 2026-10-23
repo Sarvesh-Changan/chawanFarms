@@ -11,7 +11,7 @@ import { formatINR } from "@/lib/money";
 import { localizedString, type PublicHomeData, type PublicMedia } from "@/server/services/public-content";
 
 const sectionClass = "mx-auto max-w-7xl px-4 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-28";
-const sectionOrder = ["hero", "why-chawan", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "final-cta"] as const;
+const sectionOrder = ["hero", "why-chawan", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "final-cta"] as const;
 
 type PageSection = NonNullable<PublicHomeData["page"]>["sections"][number];
 type Content = Record<string, unknown>;
@@ -71,7 +71,7 @@ function HomeHero({ section, media, settings }: { section: PageSection; media: P
         </div>
       </div>
     </div>
-    <a href="#why" className="text-cream-50/75 absolute bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-semibold tracking-[0.18em] uppercase focus-visible:outline-2 focus-visible:outline-turmeric-500">Explore ↓</a>
+    <Link href="/experiences" className="text-cream-50/75 absolute bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-semibold tracking-[0.18em] uppercase focus-visible:outline-2 focus-visible:outline-turmeric-500">Explore →</Link>
   </section>;
 }
 
@@ -121,12 +121,6 @@ function StoriesSection({ section, testimonials, stories }: { section: PageSecti
   return <section id="stories" className="bg-clay-100"><div className={sectionClass}><CmsHeading content={content} eyebrow="Customer stories"/>{testimonials.length || stories.length ? <div className="mt-10 grid gap-4 md:grid-cols-2">{testimonials.map((item) => <article key={item.id} className="bg-cream-50 rounded-2xl p-6"><p className="text-forest-900 text-lg leading-8">“{text(item.quote)}”</p><p className="text-mist-500 mt-5 text-sm">{item.authorName}{item.authorMeta ? ` · ${item.authorMeta}` : ""}</p></article>)}{stories.map((item) => <article key={item.id} className="bg-cream-50 rounded-2xl p-6"><h3 className="font-heading text-forest-900 text-2xl">{text(item.title)}</h3>{text(item.excerpt) ? <p className="text-mist-500 mt-3 text-sm leading-6">{text(item.excerpt)}</p> : null}<Link href={`/stories/${item.slug}`} className="text-forest-700 mt-5 inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline">Read story →</Link></article>)}</div> : <EmptyPublished label="customer stories"/>}</div></section>;
 }
 
-function LocationSection({ section, settings, media }: { section: PageSection; settings: PublicHomeData["settings"]; media: PublicMedia | null }) {
-  const content = pageContent(section);
-  const mapHref = settings.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.address)}` : "";
-  return <section id="location" className={sectionClass}><CmsHeading content={content} eyebrow="Location"/>{settings.address || media ? <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_0.8fr] lg:items-center">{media && env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? <div className="bg-clay-100 relative aspect-[4/3] overflow-hidden rounded-[1.5rem]"><MediaImage media={media} sizes="(min-width: 1024px) 55vw, 100vw"/></div> : null}<div>{settings.address ? <address className="text-mist-500 max-w-sm text-base leading-7 not-italic">{settings.address}</address> : null}{mapHref ? <a href={mapHref} target="_blank" rel="noopener noreferrer" className="bg-forest-700 text-cream-50 mt-7 inline-flex min-h-12 items-center rounded-lg px-5 text-sm font-semibold hover:bg-forest-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500">Open in Google Maps</a> : null}</div></div> : <EmptyPublished label="location details"/>}</section>;
-}
-
 function FinalCtaSection({ section }: { section: PageSection }) {
   const content = pageContent(section);
   const heading = text(content.heading);
@@ -162,7 +156,7 @@ const defaultHomePage: NonNullable<PublicHomeData["page"]> = {
     { id: "s-act", pageId: "default-home", type: "activities", content: { heading: { en: "Optional activities" }, body: { en: "Arranged according to prevailing conditions and availability" } }, sortOrder: 6, isVisible: true },
     { id: "s-gal", pageId: "default-home", type: "gallery", content: {}, sortOrder: 7, isVisible: true },
     { id: "s-sto", pageId: "default-home", type: "stories", content: {}, sortOrder: 8, isVisible: true },
-    { id: "s-loc", pageId: "default-home", type: "location", content: { heading: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra, India" } }, sortOrder: 9, isVisible: true },
+    { id: "s-loc", pageId: "default-home", type: "location", content: {}, sortOrder: 9, isVisible: true },
     { id: "s-cta", pageId: "default-home", type: "final-cta", content: { heading: { en: "Come live, experience & rediscover yourself & nature at its best" } }, sortOrder: 10, isVisible: true },
   ],
 };
@@ -181,19 +175,18 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
     switch (type) {
       case "hero": return <HomeHero key={type} section={section} media={imageFor(section)} settings={data.settings}/>;
       case "why-chawan": return <WhySection key={type} section={section}/>;
-      case "experiences-grid": return <ExperiencesSection key={type} section={section} experiences={data.experiences}/>;
-      case "accommodation": return <AccommodationsSection key={type} section={section} accommodations={data.accommodations}/>;
-      case "packages": return <PackagesSection key={type} section={section} packages={data.packages}/>;
-      case "food": return <FoodSection key={type} section={section} food={data.food}/>;
-      case "activities": return <ActivitiesSection key={type} section={section} activities={data.activities}/>;
+      case "experiences-grid": return <ExperiencesSection key={type} section={section} experiences={data.experiences.slice(0, 3)}/>;
+      case "accommodation": return <AccommodationsSection key={type} section={section} accommodations={data.accommodations.slice(0, 2)}/>;
+      case "packages": return <PackagesSection key={type} section={section} packages={data.packages.slice(0, 4)}/>;
+      case "food": return <FoodSection key={type} section={section} food={data.food.slice(0, 2)}/>;
+      case "activities": return <ActivitiesSection key={type} section={section} activities={data.activities.slice(0, 4)}/>;
       case "gallery": {
-        const items: HomeGalleryItem[] = data.gallery.filter(() => Boolean(env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)).map((item) => ({ id: item.id, category: item.category, caption: text(item.caption), publicId: item.media.publicId, alt: mediaAlt(item.media) }));
+        const items: HomeGalleryItem[] = data.gallery.filter(() => Boolean(env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)).slice(0, 6).map((item) => ({ id: item.id, category: item.category, caption: text(item.caption), publicId: item.media.publicId, alt: mediaAlt(item.media) }));
         return <section key={type} id="gallery" className="bg-clay-100"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Gallery"/><div className="mt-10"><HomeGallery cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} items={items}/></div></div></section>;
       }
-      case "stories": return <StoriesSection key={type} section={section} testimonials={data.testimonials} stories={data.stories}/>;
+      case "stories": return <StoriesSection key={type} section={section} testimonials={data.testimonials.slice(0, 2)} stories={data.stories.slice(0, 2)}/>;
       case "rewards-teaser": return <section key={type} id="rewards" className="bg-forest-700 text-cream-50"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Rewards"/><Link href="/rewards" className="bg-turmeric-500 text-ink-900 mt-8 inline-flex min-h-11 items-center rounded-lg px-5 font-semibold">How rewards work</Link></div></section>;
-      case "location": return <LocationSection key={type} section={section} settings={data.settings} media={imageFor(section)}/>;
       case "final-cta": return <FinalCtaSection key={type} section={section}/>;
     }
-  })}</main>;
+  })}<nav aria-label="Explore all home sections" className="bg-cream-50 border-forest-900/10 border-t px-4 py-10 sm:px-8 lg:px-12"><div className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-3 text-sm font-semibold"><Link href="/experiences">All experiences</Link><Link href="/accommodation">All accommodation</Link><Link href="/packages">All packages</Link><Link href="/food">All food</Link><Link href="/activities">All activities</Link><Link href="/gallery">All gallery</Link><Link href="/stories">All stories</Link><Link href="/contact#find-us">Find us</Link></div></nav></main>;
 }

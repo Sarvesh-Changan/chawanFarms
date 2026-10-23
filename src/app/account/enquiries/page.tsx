@@ -1,3 +1,6 @@
-export default function AccountEnquiriesPage() {
-  return <div>Enquiries placeholder</div>;
-}
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export default function AccountEnquiriesPage() { redirect("/account/bookings"); }

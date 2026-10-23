@@ -29,7 +29,7 @@ You are the senior engineer responsible for building the Chawan Farms agri-touri
 ════════════ 3. PRODUCT REQUIREMENTS (summary — details in PRD.md) ════════════
 Vision: NOT a brochure site. A premium agri-tourism customer-engagement + lead-generation + booking + rewards platform: immersive, editorial, farm-first (rural Maharashtra, agriculture, adventure, food, family, eco-tourism), fast, SEO-friendly, accessible, conversion-focused, fully admin/CMS-managed.
 
-Stack: Next.js latest stable (App Router, TypeScript strict), Tailwind CSS (+shadcn/ui), PostgreSQL on Neon, Prisma, Cloudinary (images/videos), a secure established auth library (Better Auth recommended, or Auth.js — decide in ADR-001; never custom auth), Zod, Resend, Upstash rate limiting, Cloudflare Turnstile, Sentry, Vercel deployment.
+Stack: Next.js latest stable (App Router, TypeScript strict), Tailwind CSS (+shadcn/ui), PostgreSQL on Neon, Prisma, Cloudinary (images/videos), a secure established auth library (Better Auth recommended, or Auth.js — decide in ADR-001; never custom auth), Zod, SMTP via Nodemailer with an app password, PostgreSQL rate limiting, Cloudflare Turnstile, Sentry, Vercel deployment.
 
 Public site: Home, About, Experiences, Activities, Accommodation, Packages, Food, Gallery, Stories/Blog, Offers, Rewards explainer, FAQs, Contact, Book/Enquire, Login, Sign up, legal/policy pages. Homepage funnel: Hero → Why Chawan Farms → Experiences → Accommodation → Packages → Food → Activities → Gallery → Customer Stories → Rewards → Location → Booking/Enquiry CTA. Sticky mobile CTA (Call / WhatsApp / Enquire). Animations enhance UX, never hurt performance; respect prefers-reduced-motion.
 
@@ -56,6 +56,7 @@ Beyond the brief (already specified in PRD §7): spam protection, rate limiting,
 - Mutation pipeline for every server action/route: rate-limit → authenticate → authorise (permission + ownership) → validate (Zod strict) → bot check (public forms) → service (transaction) → audit log → revalidate → typed result.
 - Money in integer paise; dates as Date/`YYYY-MM-DD`, display in Asia/Kolkata; no floats for currency; no unbounded queries; paginate admin lists.
 - Env via zod-validated config only; secrets never client-side; business contact details come from Settings table, not env/code.
+- Notification emails are rendered through React Email and SMTP/Nodemailer after commit via `NotificationOutbox`; cron routes require `CRON_SECRET`, retry temporary/quota failures, and never log message bodies or credentials.
 - TypeScript strict, no `any`, ESLint/Prettier/commit hooks, CI must pass. Accessible (WCAG 2.2 AA), mobile-first, performance budget (LCP ≤ 2.5 s, CLS ≤ 0.1, INP ≤ 200 ms; JS budget per DESIGN §11).
 
 ════════════ 5. SECURITY RULES (see SECURITY.md — they override convenience) ════════════

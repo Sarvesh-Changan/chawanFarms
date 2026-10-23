@@ -29,7 +29,7 @@ function sectionHref(type: PageSectionType): string | null {
     case "activities": return "/activities";
     case "gallery": return "/gallery";
     case "stories": return "/stories";
-    case "location": return "/contact";
+    case "location": return "/contact#find-us";
     default: return null;
   }
 }

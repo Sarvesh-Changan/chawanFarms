@@ -8,7 +8,6 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { getSession } from "@/server/auth";
 import { can, getStaffPrincipal, requirePermission } from "@/server/authz";
-import { AuthorizationError } from "@/server/authz/errors";
 import { canEditLeadScope } from "@/server/policies/leadStatus";
 import { getLeadDetail } from "@/server/services/leads-crm";
 

@@ -1,0 +1,13 @@
+{
+  "crons": [
+    { "path": "/api/cron/outbox-send", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/cleanup-rate-limits", "schedule": "0 * * * *" },
+    { "path": "/api/cron/lead-reminders", "schedule": "5 * * * *" },
+    { "path": "/api/cron/expire-points", "schedule": "15 0 * * *" },
+    { "path": "/api/cron/expire-coupons", "schedule": "20 0 * * *" },
+    { "path": "/api/cron/pre-arrival-reminder", "schedule": "30 4 * * *" },
+    { "path": "/api/cron/reconcile-balances", "schedule": "0 2 * * *" },
+    { "path": "/api/cron/purge-retention", "schedule": "0 3 * * 0" },
+    { "path": "/api/cron/media-orphans", "schedule": "0 4 * * 0" }
+  ]
+}

@@ -29,8 +29,6 @@ const acceptInviteSchema = z.object({ token: tokenSchema, email: z.string().trim
   if (input.password && !input.email) context.addIssue({ code: "custom", message: "Email is required when creating an account." });
   if (input.password && !input.name) context.addIssue({ code: "custom", message: "Name is required when creating an account." });
 });
-const totpSetupSchema = z.object({ password: z.string().min(1).max(128) }).strict();
-const totpVerifySchema = z.object({ code: z.string().regex(/^\d{6,8}$/) }).strict();
 const revokeSessionSchema = z.object({ sessionId: uuidSchema }).strict();
 
 function validationError(): Result<never> {
@@ -286,11 +284,13 @@ export async function disableStaffAction(rawInput: unknown): Promise<Result<{ di
   }
 }
 
-export async function startTwoFactorSetupAction(_rawInput: unknown): Promise<Result<{ totpURI: string; backupCodes: string[] }>> {
+export async function startTwoFactorSetupAction(_rawInput?: unknown): Promise<Result<{ totpURI: string; backupCodes: string[] }>> {
+  void _rawInput;
   return err("CONFLICT", "Two-factor authentication is disabled for this workspace.");
 }
 
-export async function verifyTwoFactorSetupAction(_rawInput: unknown): Promise<Result<{ enabled: true }>> {
+export async function verifyTwoFactorSetupAction(_rawInput?: unknown): Promise<Result<{ enabled: true }>> {
+  void _rawInput;
   return err("CONFLICT", "Two-factor authentication is disabled for this workspace.");
 }
 

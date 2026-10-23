@@ -11,10 +11,10 @@ import { err, ok, type Result } from "@/lib/result";
 import { leadEventSchema, leadFormSchema } from "@/lib/schemas/leads";
 import { getValidatedAttribution } from "@/server/attribution";
 import { getSession } from "@/server/auth";
-import { sendLeadAcknowledgementEmail, sendLeadAdminAlertEmail } from "@/server/integrations/email";
 import { limit } from "@/server/integrations/ratelimit";
 import { verifyTurnstileToken } from "@/server/integrations/turnstile";
 import { getPublicLeadSettings, normalizeLeadPhone, recordLeadClick, upsertLead } from "@/server/services/leads";
+import { notify } from "@/server/services/notifications";
 
 type LeadActionResult = { reference: string };
 
@@ -62,8 +62,8 @@ export async function submitLeadAction(raw: unknown): Promise<Result<LeadActionR
         const settings = await getPublicLeadSettings();
         const recipients = [...new Set([...settings.notificationRecipients, ...(env.ADMIN_NOTIFY_EMAIL ? [env.ADMIN_NOTIFY_EMAIL] : [])])];
         await Promise.all([
-          ...recipients.map((to) => sendLeadAdminAlertEmail({ to, name: input.name, phone, email: input.email || "", reference: saved.reference, formType: input.formType, message: input.message || "" })),
-          ...(input.email ? [sendLeadAcknowledgementEmail({ to: input.email, name: input.name, reference: saved.reference })] : []),
+          notify("LEAD_ALERT", recipients.map((email) => ({ email })), { leadId: saved.leadId, name: input.name, phone, email: input.email || "", reference: saved.reference, formType: input.formType, message: input.message || "" }),
+          ...(input.email ? [notify("ENQUIRY_ACKNOWLEDGEMENT", [{ email: input.email }], { name: input.name, reference: saved.reference, leadId: saved.leadId })] : []),
         ]);
       } catch {
         console.error("Lead notification delivery failed.");

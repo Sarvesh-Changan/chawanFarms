@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-export function TurnstileField({ onToken }: { onToken: (token: string | undefined) => void }) {
+export function TurnstileField({ onToken, resetKey = 0 }: { onToken: (token: string | undefined) => void; resetKey?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | undefined>(undefined);
   const [scriptReady, setScriptReady] = useState(false);
@@ -27,6 +27,12 @@ export function TurnstileField({ onToken }: { onToken: (token: string | undefine
       "error-callback": () => onToken(undefined),
     });
   }, [onToken, scriptReady, siteKey]);
+
+  useEffect(() => {
+    if (!resetKey || !widgetIdRef.current || !window.turnstile) return;
+    window.turnstile.reset(widgetIdRef.current);
+    onToken(undefined);
+  }, [onToken, resetKey]);
 
   if (!siteKey) return null;
 

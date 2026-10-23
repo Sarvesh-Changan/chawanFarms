@@ -9,7 +9,7 @@ import "server-only";
  * 3. Booking
  */
 
-import { Prisma, type Coupon } from "@/generated/prisma/client";
+import { Prisma, PrismaClient, type Coupon } from "@/generated/prisma/client";
 import { err, ok, type Result } from "@/lib/result";
 import { db } from "@/server/db";
 import {
@@ -331,4 +331,61 @@ export async function releaseCouponOnCancellation(
   });
 
   return ok({ released: true, restoredToActive: shouldRestore });
+}
+
+/**
+ * Revokes an ACTIVE coupon.
+ * Invariants:
+ * 1. Coupon exists and is currently ACTIVE.
+ * 2. Coupon is NOT attached to an active or pending booking (Booking.couponId).
+ * 3. No automatic points refund (staff can use manual adjustment if required).
+ */
+export async function revokeCouponService(
+  input: {
+    couponId: string;
+    reason: string;
+    actorId: string;
+  },
+  client: Prisma.TransactionClient | PrismaClient = db,
+): Promise<Result<{ coupon: Coupon }>> {
+  const execute = async (tx: Prisma.TransactionClient) => {
+    const coupon = await tx.coupon.findUnique({
+      where: { id: input.couponId },
+    });
+    if (!coupon) {
+      return err("NOT_FOUND", "Coupon not found.");
+    }
+    if (coupon.status !== "ACTIVE") {
+      return err(
+        "CONFLICT",
+        `Cannot revoke coupon with status ${coupon.status}. Only ACTIVE coupons can be revoked.`,
+      );
+    }
+
+    const attachedBooking = await tx.booking.findFirst({
+      where: {
+        couponId: coupon.id,
+        status: { in: ["ENQUIRY", "PENDING_CONFIRMATION"] },
+        deletedAt: null,
+      },
+    });
+    if (attachedBooking) {
+      return err(
+        "CONFLICT",
+        "Cannot revoke coupon: it is currently attached to a pending booking.",
+      );
+    }
+
+    const updated = await tx.coupon.update({
+      where: { id: coupon.id },
+      data: { status: "REVOKED" },
+    });
+
+    return ok({ coupon: updated });
+  };
+
+  if ("$transaction" in client && typeof client.$transaction === "function") {
+    return client.$transaction(execute);
+  }
+  return execute(client as Prisma.TransactionClient);
 }
