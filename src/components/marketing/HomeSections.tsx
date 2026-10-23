@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Fragment } from "react";
 
 import { ClosingCta } from "@/components/marketing/ClosingCta";
 import { ExperienceCarousel } from "@/components/marketing/ExperienceCarousel";
@@ -133,17 +134,17 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
       case "why-chawan": return <WhySection key={type} section={section} gallery={data.gallery}/>;
       case "spotlight": return <SpotlightBand key={type} section={section}/>;
       case "experiences-grid": return <ExperiencesSection key={type} section={section} experiences={data.experiences.slice(0, 3)}/>;
-      case "accommodation": return <><AccommodationsSection key={type} section={section} accommodations={data.accommodations.slice(0, 2)}/><ViewAllLink href="/accommodation" label="View all accommodation"/></>;
+      case "accommodation": return <Fragment key={type}><AccommodationsSection section={section} accommodations={data.accommodations.slice(0, 2)}/><ViewAllLink href="/accommodation" label="View all accommodation"/></Fragment>;
       case "packages": return <PackagesSection key={type} section={section} packages={data.packages.slice(0, 4)}/>;
-      case "food": return <><FoodSection key={type} section={section} food={data.food.slice(0, 2)}/><ViewAllLink href="/food" label="View all food"/></>;
-      case "activities": return <><ActivitiesSection key={type} section={section} activities={data.activities.slice(0, 4)}/><ViewAllLink href="/activities" label="View all activities"/></>;
+      case "food": return <Fragment key={type}><FoodSection section={section} food={data.food.slice(0, 2)}/><ViewAllLink href="/food" label="View all food"/></Fragment>;
+      case "activities": return <Fragment key={type}><ActivitiesSection section={section} activities={data.activities.slice(0, 4)}/><ViewAllLink href="/activities" label="View all activities"/></Fragment>;
       case "gallery": {
         const items: HomeGalleryItem[] = data.gallery.filter(() => Boolean(env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)).slice(0, 6).map((item) => ({ id: item.id, category: item.category, caption: text(item.caption), publicId: item.media.publicId, alt: mediaAlt(item.media) }));
         return <section key={type} id="gallery" className="bg-clay-100"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Gallery"/><div className="mt-10"><HomeGallery cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} items={items}/></div><Link href="/gallery" className="text-forest-700 mt-8 inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-turmeric-500">View all gallery →</Link></div></section>;
       }
-      case "stories": return data.testimonials.some((item) => item.consentConfirmed) ? <><GuestStoriesCarousel key={type} testimonials={data.testimonials} heading={text(pageContent(section).heading)} description={text(pageContent(section).body)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/><ViewAllLink href="/stories" label="View all stories"/></> : null;
+      case "stories": return data.testimonials.some((item) => item.consentConfirmed) ? <Fragment key={type}><GuestStoriesCarousel testimonials={data.testimonials} heading={text(pageContent(section).heading)} description={text(pageContent(section).body)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/><ViewAllLink href="/stories" label="View all stories"/></Fragment> : null;
       case "rewards-teaser": return <section key={type} className="bg-cream-50"><div className={sectionClass}><RewardsTeaser rule={data.activeRewardRule}/></div></section>;
-      case "location": return <><WhereWeAre key={type} section={section} settings={data.settings} media={imageFor(section)}/><ViewAllLink href="/contact#find-us" label="View all location details"/></>;
+      case "location": return <Fragment key={type}><WhereWeAre section={section} settings={data.settings} media={imageFor(section)}/><ViewAllLink href="/contact#find-us" label="View all location details"/></Fragment>;
       case "stats": return <HomeStats key={type} section={section}/>;
       case "final-cta": return <ClosingCta key={type} heading={text(pageContent(section).heading)} body={text(pageContent(section).body)} settings={data.settings}/>;
     }
