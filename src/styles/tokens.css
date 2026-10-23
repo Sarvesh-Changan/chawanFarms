@@ -27,6 +27,8 @@
   --motion-duration-ui: 280ms;
   --motion-duration-reveal: 550ms;
   --motion-duration-slow: 700ms;
+  --motion-duration-counter: 800ms;
+  --motion-ease-counter: cubic-bezier(0.22, 0.61, 0.36, 1);
   --radius-card: 1.5rem;
   --radius-panel: 1rem;
   --radius-pill: 999px;

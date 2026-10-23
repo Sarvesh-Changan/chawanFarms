@@ -67,5 +67,5 @@ export function PageSectionsRenderer({ page, preview = false }: { page: PublicPa
 }
 
 function isPageSectionType(value: string): value is PageSectionType {
-  return ["hero", "why-chawan", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "final-cta", "rich-text", "image-text"].includes(value);
+  return ["hero", "why-chawan", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "stats", "final-cta", "rich-text", "image-text"].includes(value);
 }

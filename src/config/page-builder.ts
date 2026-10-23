@@ -10,6 +10,7 @@ export const PAGE_SECTION_TYPES = [
   "stories",
   "rewards-teaser",
   "location",
+  "stats",
   "final-cta",
   "rich-text",
   "image-text",
@@ -19,7 +20,7 @@ export type PageSectionType = (typeof PAGE_SECTION_TYPES)[number];
 
 export const PAGE_SEED_SECTIONS = [
   "hero", "why-chawan", "experiences-grid", "accommodation", "packages", "food",
-  "activities", "gallery", "stories", "rewards-teaser", "location", "final-cta",
+  "activities", "gallery", "stories", "rewards-teaser", "location", "stats", "final-cta",
 ] as const satisfies readonly PageSectionType[];
 
 export const POLICY_KEYS = ["stay-rules-and-cancellation", "cancellation", "privacy", "terms"] as const;

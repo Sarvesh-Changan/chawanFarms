@@ -56,6 +56,12 @@ Status: all questions below remain open unless the client records a written answ
 
 ## Decision recording rule
 
+### Where we are and stats data approval
+
+The public location block currently uses the Settings address and phone numbers, with the PDF wording as the location-copy fallback. Before publishing a map pin or directions link, the client should confirm the canonical address spelling, PIN, map pin, and Google Maps URL (see D-33).
+
+The `stats` CMS section must contain only client-approved, current figures. Potential facts the client may supply include the number of guest-house rooms, years of operation, number of activities offered, or another measurable offering. Each figure should be provided with its exact label, unit/suffix, source, and approval date. No counter should be entered for a fact that has not been approved; an empty section remains hidden.
+
 When the client answers a question, record the date, respondent/role, exact decision and any exceptions below the row or in an ADR. A decision is not considered resolved because an implementation assumption was made. Until recorded, keep the affected content nullable/draft and block the listed phase.
 
 ### Attribution privacy decision (2026-10-08)

@@ -45,7 +45,7 @@ function sectionName(type: PageSectionType): string {
     case "hero": return "Hero"; case "why-chawan": return "Why Chawan"; case "experiences-grid": return "Experiences grid";
     case "accommodation": return "Accommodation"; case "packages": return "Packages"; case "food": return "Food";
     case "activities": return "Activities"; case "gallery": return "Gallery"; case "stories": return "Stories";
-    case "rewards-teaser": return "Rewards teaser"; case "location": return "Location"; case "final-cta": return "Final CTA";
+    case "rewards-teaser": return "Rewards teaser"; case "location": return "Location"; case "stats": return "Stats"; case "final-cta": return "Final CTA";
     case "rich-text": return "Rich text"; case "image-text": return "Image + text";
   }
 }

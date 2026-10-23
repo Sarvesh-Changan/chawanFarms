@@ -23,11 +23,23 @@ const heroContent = z.object({
 
 const richTextContent = z.object({ heading: localized.optional(), body: nonemptyLocalized }).strict();
 const imageTextContent = z.object({ heading: localized.optional(), body: nonemptyLocalized, imageMediaId: optionalMediaId, imageSide: z.enum(["left", "right"]).default("right") }).strict();
+const statsContent = z.object({
+  ...sectionBase,
+  items: z.array(z.object({
+    label: nonemptyLocalized,
+    value: z.number().finite(),
+    decimals: z.number().int().min(0).max(3).optional(),
+    prefix: z.string().trim().max(20).optional(),
+    suffix: z.string().trim().max(40).optional(),
+    detail: localized.optional(),
+  }).strict()).max(6),
+}).strict();
 
 export const pageSectionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("hero"), content: heroContent, isVisible: z.boolean().default(true) }).strict(),
   z.object({ type: z.literal("why-chawan"), content: whyChawanContent, isVisible: z.boolean().default(true) }).strict(),
   ...(["experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "final-cta"] as const).map((type) => z.object({ type: z.literal(type), content: simpleSection, isVisible: z.boolean().default(true) }).strict()),
+  z.object({ type: z.literal("stats"), content: statsContent, isVisible: z.boolean().default(true) }).strict(),
   z.object({ type: z.literal("rich-text"), content: richTextContent, isVisible: z.boolean().default(true) }).strict(),
   z.object({ type: z.literal("image-text"), content: imageTextContent, isVisible: z.boolean().default(true) }).strict(),
 ]);

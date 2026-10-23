@@ -3,14 +3,16 @@ import Link from "next/link";
 import { SafeHtml } from "@/components/admin/SafeHtml";
 import { HomeGallery, type HomeGalleryItem } from "@/components/marketing/HomeGallery";
 import { HomeHero as CmsHomeHero } from "@/components/marketing/HomeHero";
+import { HomeStats } from "@/components/marketing/HomeStats";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
+import { WhereWeAre } from "@/components/marketing/WhereWeAre";
 import { CldImage } from "@/components/media/CldImage";
 import { env } from "@/config/env";
 import { formatINR } from "@/lib/money";
 import { localizedString, type PublicHomeData, type PublicMedia } from "@/server/services/public-content";
 
 const sectionClass = "mx-auto max-w-7xl px-4 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-28";
-const sectionOrder = ["hero", "why-chawan", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "final-cta"] as const;
+const sectionOrder = ["hero", "why-chawan", "experiences-grid", "accommodation", "packages", "food", "activities", "gallery", "stories", "rewards-teaser", "location", "stats", "final-cta"] as const;
 
 type PageSection = NonNullable<PublicHomeData["page"]>["sections"][number];
 type Content = Record<string, unknown>;
@@ -129,8 +131,9 @@ const defaultHomePage: NonNullable<PublicHomeData["page"]> = {
     { id: "s-act", pageId: "default-home", type: "activities", content: { heading: { en: "Optional activities" }, body: { en: "Arranged according to prevailing conditions and availability" } }, sortOrder: 6, isVisible: true },
     { id: "s-gal", pageId: "default-home", type: "gallery", content: {}, sortOrder: 7, isVisible: true },
     { id: "s-sto", pageId: "default-home", type: "stories", content: {}, sortOrder: 8, isVisible: true },
-    { id: "s-loc", pageId: "default-home", type: "location", content: {}, sortOrder: 9, isVisible: true },
-    { id: "s-cta", pageId: "default-home", type: "final-cta", content: { heading: { en: "Come live, experience & rediscover yourself & nature at its best" } }, sortOrder: 10, isVisible: true },
+    { id: "s-loc", pageId: "default-home", type: "location", content: { heading: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra" }, body: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra" } }, sortOrder: 9, isVisible: true },
+    { id: "s-stats", pageId: "default-home", type: "stats", content: { items: [] }, sortOrder: 10, isVisible: true },
+    { id: "s-cta", pageId: "default-home", type: "final-cta", content: { heading: { en: "Come live, experience & rediscover yourself & nature at its best" } }, sortOrder: 11, isVisible: true },
   ],
 };
 
@@ -159,6 +162,8 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
       }
       case "stories": return <StoriesSection key={type} section={section} testimonials={data.testimonials.slice(0, 2)} stories={data.stories.slice(0, 2)}/>;
       case "rewards-teaser": return <section key={type} id="rewards" className="bg-forest-700 text-cream-50"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Rewards"/><Link href="/rewards" className="bg-turmeric-500 text-ink-900 mt-8 inline-flex min-h-11 items-center rounded-lg px-5 font-semibold">How rewards work</Link></div></section>;
+      case "location": return <WhereWeAre key={type} section={section} settings={data.settings} media={imageFor(section)}/>;
+      case "stats": return <HomeStats key={type} section={section}/>;
       case "final-cta": return <FinalCtaSection key={type} section={section}/>;
     }
   })}<nav aria-label="Explore all home sections" className="bg-cream-50 border-forest-900/10 border-t px-4 py-10 sm:px-8 lg:px-12"><div className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-3 text-sm font-semibold"><Link href="/experiences">All experiences</Link><Link href="/accommodation">All accommodation</Link><Link href="/packages">All packages</Link><Link href="/food">All food</Link><Link href="/activities">All activities</Link><Link href="/gallery">All gallery</Link><Link href="/stories">All stories</Link><Link href="/contact#find-us">Find us</Link></div></nav></main>;
