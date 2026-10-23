@@ -6,11 +6,15 @@ import { getPublicSettings } from "@/server/services/public-content";
 
 export async function Footer() {
   const settings = await getPublicSettings();
+  return <FooterContent settings={settings}/>;
+}
+
+export function FooterContent({ settings }: { settings: Awaited<ReturnType<typeof getPublicSettings>> }) {
   return (
     <footer className="bg-forest-900 text-cream-50 px-4 py-12 pb-28 sm:px-8 lg:px-12 lg:pb-12">
-      <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.3fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
         <div>
-          <p className="font-heading text-3xl">Chawan Farms</p>
+          <p aria-label="Chawan Farms" className="font-heading text-[clamp(3.5rem,12vw,9rem)] leading-[0.8] tracking-[-0.06em]">Chawan Farms</p>
           <p className="text-cream-50/70 mt-3 max-w-sm text-sm leading-6">Come live, experience & rediscover yourself & nature at its best.</p>
         </div>
         <div>
@@ -33,8 +37,13 @@ export async function Footer() {
       </div>
       <div className="border-cream-50/15 text-cream-50/50 mx-auto mt-10 flex max-w-7xl flex-col gap-2 border-t pt-5 text-xs sm:flex-row sm:justify-between">
         <span>© {new Date().getFullYear()} Chawan Farms</span>
-        <span>Prototype content · client review pending</span>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <Link href="/policies" className="hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500">Policies</Link>
+          <Link href="/privacy" className="hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500">Privacy</Link>
+          <Link href="/terms" className="hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500">Terms</Link>
+        </div>
       </div>
+      {settings.socialLinks?.length ? <nav aria-label="Social links" className="mx-auto mt-5 flex max-w-7xl flex-wrap gap-x-4 gap-y-2 text-sm text-cream-50/70">{settings.socialLinks.map((item) => <a key={`${item.label}-${item.url}`} href={item.url} target="_blank" rel="noreferrer" className="hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500">{item.label}</a>)}</nav> : null}
     </footer>
   );
 }

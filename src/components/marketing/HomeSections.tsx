@@ -1,7 +1,8 @@
 import Link from "next/link";
 
-import { SafeHtml } from "@/components/admin/SafeHtml";
+import { ClosingCta } from "@/components/marketing/ClosingCta";
 import { ExperienceCarousel } from "@/components/marketing/ExperienceCarousel";
+import { GuestStoriesCarousel } from "@/components/marketing/GuestStoriesCarousel";
 import { HomeGallery, type HomeGalleryItem } from "@/components/marketing/HomeGallery";
 import { HomeHero as CmsHomeHero } from "@/components/marketing/HomeHero";
 import { HomeStats } from "@/components/marketing/HomeStats";
@@ -77,20 +78,6 @@ function ActivitiesSection({ section, activities }: { section: PageSection; acti
   return <section id="activities" className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Activities"/>{activities.length ? <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{activities.map((item) => <article key={item.id} className="bg-cream-50 border-forest-900/10 overflow-hidden rounded-2xl border"><div className="bg-clay-100 relative aspect-[4/3]">{item.heroMedia ? <MediaImage media={item.heroMedia} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"/> : null}{item.isExtraCost ? <span className="bg-turmeric-500 text-ink-900 absolute top-3 left-3 rounded-full px-2.5 py-1 text-[11px] font-semibold">Extra cost</span> : null}</div><div className="p-4"><h3 className="font-heading text-forest-900 text-xl">{text(item.name)}</h3>{text(item.conditionsNote) || text(item.priceNote) ? <p className="text-mist-500 mt-2 text-xs leading-5">{text(item.conditionsNote) || text(item.priceNote)}</p> : null}</div></article>)}</div> : <EmptyPublished label="activities"/>}</section>;
 }
 
-function StoriesSection({ section, testimonials, stories }: { section: PageSection; testimonials: PublicHomeData["testimonials"]; stories: PublicHomeData["stories"] }) {
-  const content = pageContent(section);
-  return <section id="stories" className="bg-clay-100"><div className={sectionClass}><CmsHeading content={content} eyebrow="Customer stories"/>{testimonials.length || stories.length ? <div className="mt-10 grid gap-4 md:grid-cols-2">{testimonials.map((item) => <article key={item.id} className="bg-cream-50 rounded-2xl p-6"><p className="text-forest-900 text-lg leading-8">“{text(item.quote)}”</p><p className="text-mist-500 mt-5 text-sm">{item.authorName}{item.authorMeta ? ` · ${item.authorMeta}` : ""}</p></article>)}{stories.map((item) => <article key={item.id} className="bg-cream-50 rounded-2xl p-6"><h3 className="font-heading text-forest-900 text-2xl">{text(item.title)}</h3>{text(item.excerpt) ? <p className="text-mist-500 mt-3 text-sm leading-6">{text(item.excerpt)}</p> : null}<Link href={`/stories/${item.slug}`} className="text-forest-700 mt-5 inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline">Read story →</Link></article>)}</div> : <EmptyPublished label="customer stories"/>}</div></section>;
-}
-
-function FinalCtaSection({ section }: { section: PageSection }) {
-  const content = pageContent(section);
-  const heading = text(content.heading);
-  const body = text(content.body);
-  const label = text(content.ctaLabel) || "Book / enquire";
-  const href = typeof content.ctaHref === "string" && content.ctaHref.startsWith("/") && !content.ctaHref.startsWith("//") ? content.ctaHref : "/book";
-  return <section id="booking" className="bg-laterite-600 text-cream-50"><div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-20 sm:px-8 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:py-28"><div className="max-w-2xl">{heading ? <h2 className="font-heading text-[clamp(2.5rem,7vw,5rem)] leading-[1]">{heading}</h2> : null}{body ? <SafeHtml html={body} className="text-cream-50/80 mt-4 max-w-xl leading-7"/> : null}</div><Link href={href} className="bg-turmeric-500 text-ink-900 inline-flex min-h-12 items-center justify-center rounded-lg px-5 font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500">{label}</Link></div></section>;
-}
-
 function EmptyPublished({ label }: { label: string }) {
   return <p className="bg-clay-100 text-mist-500 mt-10 rounded-2xl p-8 text-center text-sm">No published {label} are available yet.</p>;
 }
@@ -147,11 +134,11 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
         const items: HomeGalleryItem[] = data.gallery.filter(() => Boolean(env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)).slice(0, 6).map((item) => ({ id: item.id, category: item.category, caption: text(item.caption), publicId: item.media.publicId, alt: mediaAlt(item.media) }));
         return <section key={type} id="gallery" className="bg-clay-100"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Gallery"/><div className="mt-10"><HomeGallery cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} items={items}/></div></div></section>;
       }
-      case "stories": return <StoriesSection key={type} section={section} testimonials={data.testimonials.slice(0, 2)} stories={data.stories.slice(0, 2)}/>;
+      case "stories": return <GuestStoriesCarousel key={type} testimonials={data.testimonials} heading={text(pageContent(section).heading)} description={text(pageContent(section).body)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/>;
       case "rewards-teaser": return <section key={type} id="rewards" className="bg-forest-700 text-cream-50"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Rewards"/><Link href="/rewards" className="bg-turmeric-500 text-ink-900 mt-8 inline-flex min-h-11 items-center rounded-lg px-5 font-semibold">How rewards work</Link></div></section>;
       case "location": return <WhereWeAre key={type} section={section} settings={data.settings} media={imageFor(section)}/>;
       case "stats": return <HomeStats key={type} section={section}/>;
-      case "final-cta": return <FinalCtaSection key={type} section={section}/>;
+      case "final-cta": return <ClosingCta key={type} heading={text(pageContent(section).heading)} body={text(pageContent(section).body)} settings={data.settings}/>;
     }
   })}<nav aria-label="Explore all home sections" className="bg-cream-50 border-forest-900/10 border-t px-4 py-10 sm:px-8 lg:px-12"><div className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-3 text-sm font-semibold"><Link href="/experiences">All experiences</Link><Link href="/accommodation">All accommodation</Link><Link href="/packages">All packages</Link><Link href="/food">All food</Link><Link href="/activities">All activities</Link><Link href="/gallery">All gallery</Link><Link href="/stories">All stories</Link><Link href="/contact#find-us">Find us</Link></div></nav></main>;
 }

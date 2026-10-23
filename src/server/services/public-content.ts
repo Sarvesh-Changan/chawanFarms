@@ -35,6 +35,20 @@ function jsonRecord(value: Prisma.JsonValue | null | undefined): Record<string, 
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
 
+function socialLinkValues(value: Prisma.JsonValue | null | undefined): Array<{ label: string; url: string }> {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry) => {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
+    const record = entry as Record<string, unknown>;
+    if (typeof record.label !== "string" || typeof record.url !== "string") return [];
+    try {
+      return new URL(record.url).protocol === "https:" ? [{ label: record.label, url: record.url }] : [];
+    } catch {
+      return [];
+    }
+  });
+}
+
 async function mediaMap(ids: Array<string | null | undefined>): Promise<Map<string, PublicMedia>> {
   const mediaIds = [...new Set(ids.filter((id): id is string => Boolean(id)))];
   if (!mediaIds.length) return new Map();
@@ -45,11 +59,19 @@ async function mediaMap(ids: Array<string | null | undefined>): Promise<Map<stri
   return new Map(media.map((item) => [item.id, item]));
 }
 
-export async function getPublicSettings() {
+export type PublicSettings = {
+  phones: string[];
+  address: string;
+  socialLinks?: Array<{ label: string; url: string }>;
+  whatsappNumber: string;
+  whatsappMessage: string;
+};
+
+export async function getPublicSettings(): Promise<PublicSettings> {
   return unstable_cache(async () => {
     try {
       const rows = await db.setting.findMany({
-        where: { key: { in: ["business.phones", "business.address", "whatsapp.number", "whatsapp.defaultMessage"] } },
+        where: { key: { in: ["business.phones", "business.address", "business.socialLinks", "whatsapp.number", "whatsapp.defaultMessage"] } },
         select: { key: true, value: true },
       });
       const values = new Map(rows.map((row) => [row.key, row.value]));
@@ -64,6 +86,7 @@ export async function getPublicSettings() {
           }
         });
       const address = jsonRecord(values.get("business.address"));
+      const socialLinks = socialLinkValues(values.get("business.socialLinks"));
       const rawWhatsapp = values.get("whatsapp.number");
       const whatsapp = typeof rawWhatsapp === "string" ? rawWhatsapp : "";
       const whatsappMessage = jsonRecord(values.get("whatsapp.defaultMessage"));
@@ -76,6 +99,7 @@ export async function getPublicSettings() {
       return {
         phones: [...new Set(phones)],
         address: typeof address.en === "string" ? address.en : "",
+        socialLinks,
         whatsappNumber,
         whatsappMessage: typeof whatsappMessage.en === "string" ? whatsappMessage.en : "",
       };
@@ -83,6 +107,7 @@ export async function getPublicSettings() {
       return {
         phones: [],
         address: "",
+        socialLinks: [],
         whatsappNumber: "",
         whatsappMessage: "",
       };

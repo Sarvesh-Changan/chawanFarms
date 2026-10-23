@@ -166,6 +166,16 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes guest-story-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes closing-cta-drift {
+  from { transform: translate3d(-2%, 0, 0) scale(1); }
+  to { transform: translate3d(2%, 3%, 0) scale(1.06); }
+}
+
 .hero-line-in,
 .hero-copy-in {
   animation-timing-function: var(--motion-ease-standard);
@@ -200,8 +210,24 @@ body {
   animation: stay-card-in var(--motion-duration-reveal) var(--motion-ease-standard) both;
 }
 
+.guest-story-slide {
+  flex: 0 0 calc(100% - 1.5rem);
+}
+
+.guest-story-reveal {
+  animation: guest-story-in var(--motion-duration-reveal) var(--motion-ease-standard) both;
+}
+
+.closing-cta-effect {
+  animation: closing-cta-drift 9s var(--motion-ease-standard) alternate infinite;
+}
+
 @media (min-width: 1024px) {
   .experience-slide {
+    flex-basis: calc((100% - 1rem) / 2);
+  }
+
+  .guest-story-slide {
     flex-basis: calc((100% - 1rem) / 2);
   }
 }
@@ -220,7 +246,9 @@ body {
   .hero-copy-in,
   .experience-slide-reveal,
   .nature-mosaic-reveal,
-  .stay-card-reveal {
+  .stay-card-reveal,
+  .guest-story-reveal,
+  .closing-cta-effect {
     animation: none;
     opacity: 1;
     transform: none;
