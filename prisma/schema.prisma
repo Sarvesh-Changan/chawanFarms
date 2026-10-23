@@ -834,6 +834,7 @@ model Media {
   focalY       Float?
   tags         String[]
   category     String?
+  meta         Json?
   uploadedById String?
   isPublic     Boolean       @default(false)
   deletedAt    DateTime?
