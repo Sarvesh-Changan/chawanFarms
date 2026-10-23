@@ -17,7 +17,10 @@ export function ParallaxImageMotion({
 }: ParallaxImageProps) {
   const [offset, setOffset] = React.useState(0);
   const [isVisible, setIsVisible] = React.useState(false);
-  const [reducedMotion, setReducedMotion] = React.useState(false);
+  const [reducedMotion, setReducedMotion] = React.useState(() =>
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {

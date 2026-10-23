@@ -9,10 +9,14 @@ export function RevealMotion({
   children,
   delay = 0,
   distance = 18,
+  duration = 0.55,
   ...props
 }: RevealProps) {
   const [isVisible, setIsVisible] = React.useState(false);
-  const [reducedMotion, setReducedMotion] = React.useState(false);
+  const [reducedMotion, setReducedMotion] = React.useState(() =>
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -46,7 +50,7 @@ export function RevealMotion({
     };
   }, []);
 
-  const shouldAnimate = !reducedMotion && isVisible;
+  const shouldAnimate = reducedMotion || isVisible;
 
   return (
     <motion.div
@@ -59,7 +63,11 @@ export function RevealMotion({
         opacity: shouldAnimate ? 1 : 0,
         y: shouldAnimate ? 0 : distance,
       }}
-      transition={{ delay, duration: 0.45, ease: [0.22, 0.61, 0.36, 1] }}
+      transition={{
+        delay: reducedMotion ? 0 : delay,
+        duration: reducedMotion ? 0 : duration,
+        ease: [0.22, 0.61, 0.36, 1],
+      }}
       {...props}
     >
       {children}

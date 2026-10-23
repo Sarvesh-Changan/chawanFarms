@@ -11,6 +11,27 @@
   --ink-900: #1b1b18;
   --mist-500: #6b7a72;
   --night-900: #0c1620;
+
+  /* Editorial layout and motion foundations; values follow DESIGN.md. */
+  --space-section-sm: 3rem;
+  --space-section-md: 4.5rem;
+  --space-section-lg: 7rem;
+  --type-display-xl: clamp(2.5rem, 7vw, 5.25rem);
+  --type-display-lg: clamp(1.875rem, 5vw, 3.5rem);
+  --type-display-md: clamp(1.375rem, 3vw, 2rem);
+  --type-body: clamp(1rem, 1.2vw, 1.125rem);
+  --leading-display: 1.08;
+  --leading-body: 1.6;
+  --motion-ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --motion-duration-fast: 180ms;
+  --motion-duration-ui: 280ms;
+  --motion-duration-reveal: 550ms;
+  --motion-duration-slow: 700ms;
+  --radius-card: 1.5rem;
+  --radius-panel: 1rem;
+  --radius-pill: 999px;
+  --overlay-image-bottom: linear-gradient(180deg, transparent 20%, rgb(18 48 31 / 0.9) 100%);
+  --overlay-image-side: linear-gradient(90deg, rgb(18 48 31 / 0.92), rgb(18 48 31 / 0.16) 70%, transparent);
 }
 
 @theme inline {

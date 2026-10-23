@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { ParallaxImage } from "@/components/motion/ParallaxImage";
 import { Reveal } from "@/components/motion/Reveal";
 import {
@@ -301,29 +302,5 @@ export function DesignSystemShowcase() {
         </section>
       </div>
     </main>
-  );
-}
-
-function SectionHeading({
-  eyebrow,
-  id,
-  title,
-}: {
-  eyebrow: string;
-  id: string;
-  title: string;
-}) {
-  return (
-    <div>
-      <p className="text-laterite-600 text-xs font-semibold tracking-[0.18em] uppercase">
-        {eyebrow}
-      </p>
-      <h2
-        id={id}
-        className="font-heading text-forest-900 mt-2 text-3xl sm:text-4xl"
-      >
-        {title}
-      </h2>
-    </div>
   );
 }

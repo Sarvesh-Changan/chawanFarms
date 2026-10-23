@@ -8,6 +8,7 @@ export type RevealProps = {
   className?: string;
   delay?: number;
   distance?: number;
+  duration?: number;
   id?: string;
   style?: CSSProperties;
 };
