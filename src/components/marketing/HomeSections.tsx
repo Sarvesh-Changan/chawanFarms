@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { SafeHtml } from "@/components/admin/SafeHtml";
+import { ExperienceCarousel } from "@/components/marketing/ExperienceCarousel";
 import { HomeGallery, type HomeGalleryItem } from "@/components/marketing/HomeGallery";
 import { HomeHero as CmsHomeHero } from "@/components/marketing/HomeHero";
 import { HomeStats } from "@/components/marketing/HomeStats";
@@ -60,7 +61,7 @@ function WhySection({ section }: { section: PageSection }) {
 }
 
 function ExperiencesSection({ section, experiences }: { section: PageSection; experiences: PublicHomeData["experiences"] }) {
-  return <section id="experiences" className="bg-clay-100"><div className={sectionClass}><CmsHeading content={pageContent(section)} eyebrow="Experiences" />{experiences.length ? <div className="mt-10 grid gap-4 md:grid-cols-3">{experiences.map((item) => <article key={item.id} className="group bg-forest-900 text-cream-50 relative min-h-[25rem] overflow-hidden rounded-[1.5rem]">{item.heroMedia ? <MediaImage media={item.heroMedia} className="object-cover opacity-40 transition duration-500 group-hover:scale-105" sizes="(min-width: 768px) 33vw, 100vw" /> : null}<div className="from-forest-900/95 absolute inset-0 bg-gradient-to-t via-forest-900/20 to-transparent"/><div className="relative flex min-h-[25rem] flex-col justify-end p-6 sm:p-7"><h3 className="font-heading text-3xl leading-tight">{text(item.title)}</h3>{text(item.summary) ? <p className="text-cream-50/80 mt-3 max-w-sm text-sm leading-6">{text(item.summary)}</p> : null}<Link href={`/experiences/${item.slug}`} className="text-turmeric-500 mt-5 inline-flex min-h-11 w-fit items-center rounded-md font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-turmeric-500">Explore experience →</Link></div></article>)}</div> : <EmptyPublished label="experiences"/>}</div></section>;
+  return <ExperienceCarousel experiences={experiences.slice(0, 6)} heading={text(pageContent(section).heading)} description={text(pageContent(section).body)} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/>;
 }
 
 function AccommodationsSection({ section, accommodations }: { section: PageSection; accommodations: PublicHomeData["accommodations"] }) {
