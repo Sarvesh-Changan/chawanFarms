@@ -1,0 +1,86 @@
+{
+  "baseUrl": "https://archigreendesigns.com/",
+  "startedAt": "2026-10-23T09:32:25.054Z",
+  "pages": [
+    {
+      "viewport": "desktop",
+      "url": "https://archigreendesigns.com/projects/",
+      "status": "captured"
+    },
+    {
+      "viewport": "desktop",
+      "url": "https://archigreendesigns.com/healthcare/",
+      "status": "captured"
+    },
+    {
+      "viewport": "desktop",
+      "url": "https://archigreendesigns.com/team/",
+      "status": "captured"
+    },
+    {
+      "viewport": "desktop",
+      "url": "https://archigreendesigns.com/contact/",
+      "status": "captured"
+    },
+    {
+      "viewport": "desktop",
+      "url": "https://archigreendesigns.com/careers/",
+      "status": "captured"
+    },
+    {
+      "viewport": "mobile",
+      "url": "https://archigreendesigns.com/projects/",
+      "status": "captured"
+    },
+    {
+      "viewport": "mobile",
+      "url": "https://archigreendesigns.com/healthcare/",
+      "status": "captured"
+    },
+    {
+      "viewport": "mobile",
+      "url": "https://archigreendesigns.com/team/",
+      "status": "captured"
+    },
+    {
+      "viewport": "mobile",
+      "url": "https://archigreendesigns.com/contact/",
+      "status": "captured"
+    },
+    {
+      "viewport": "mobile",
+      "url": "https://archigreendesigns.com/careers/",
+      "status": "captured"
+    }
+  ],
+  "failures": [
+    "Network idle timeout at https://archigreendesigns.com/; continuing after DOM readiness.",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\desktop\\sections\\header.png): page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\desktop\\sections\\stats.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\desktop\\sections\\services.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\desktop\\sections\\feature.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\desktop\\sections\\spotlight.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\desktop\\sections\\projects.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\desktop\\sections\\testimonials.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\desktop\\sections\\closing-statement.png): section marker missing",
+    "Network idle timeout at https://archigreendesigns.com/; continuing after DOM readiness.",
+    "Network idle timeout at https://archigreendesigns.com/; continuing after DOM readiness.",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\mobile\\sections\\header.png): page.screenshot: Clipped area is either empty or outside the resulting image\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\mobile\\sections\\stats.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\mobile\\sections\\services.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\mobile\\sections\\feature.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\mobile\\sections\\spotlight.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\mobile\\sections\\projects.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\mobile\\sections\\testimonials.png): section marker missing",
+    "Element screenshot failed (C:\\Vivo Y50\\ChawanFarms\\docs\\reference\\archigreen\\mobile\\sections\\closing-statement.png): section marker missing",
+    "Network idle timeout at https://archigreendesigns.com/; continuing after DOM readiness."
+  ],
+  "linkedPages": [
+    "https://archigreendesigns.com/projects/",
+    "https://archigreendesigns.com/healthcare/",
+    "https://archigreendesigns.com/team/",
+    "https://archigreendesigns.com/contact/",
+    "https://archigreendesigns.com/careers/"
+  ],
+  "finishedAt": "2026-10-23T09:40:09.542Z"
+}

@@ -1,0 +1,5042 @@
+{
+  "elements": [
+    {
+      "tag": "div",
+      "className": "transitionWrapper",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "transitionContainer1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "transitionContainer2",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "style",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "script",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "link",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "link",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "link",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "meta",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "style",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "script",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "nav",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "ea11y-skip-to-content-link",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "svg",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "path",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "ea11y-skip-to-content-backdrop",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "screen-reader-text skip-link",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "header",
+      "className": "elementor elementor-200 elementor-location-header",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-fb9e2ef offcanvasWrapper e-flex e-con-boxed e-con e-parent",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "e-con-inner",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-dbbd6a8 offWrap e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-617606f e-con-full offInnerWrap e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-3efb348 e-con-full offTextCont e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-5acbf23 e-con-full offText e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-68fa1d6 elementor-widget__width-initial elementor-widget elementor-widget-html",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "svg",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "path",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-3405b48 elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h2",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-0f4e920 e-con-full offText e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-9b74ad9 elementor-widget__width-initial elementor-widget elementor-widget-html",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "svg",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "path",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-905ce73 elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h2",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-c1d9813 e-con-full offText e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-8ca95a4 elementor-widget__width-initial elementor-widget elementor-widget-html",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "svg",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "path",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-2cc8abb elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h2",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-1ad3457 e-con-full offText e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-75cb059 elementor-widget__width-initial elementor-widget elementor-widget-html",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "svg",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "path",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-9b55155 elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h2",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-80115cc e-con-full offText e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-c9bfb09 elementor-widget__width-initial elementor-widget elementor-widget-html",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "svg",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "path",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-65265f4 elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h2",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-c9bc7d6 e-con-full offText e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-af012a2 elementor-widget__width-initial elementor-widget elementor-widget-html",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "svg",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "path",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-310d7ef elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h2",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-4bdf660 e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-1ec1b53 e-con-full elementor-hidden-tablet elementor-hidden-mobile e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-cf231e5 offImages elementor-widget-widescreen__width-inherit elementor-widget-tablet__width-initial elementor-absolute elementor-widget elemento",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-11934",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-f6125eb offImages elementor-absolute elementor-widget-widescreen__width-inherit elementor-widget-tablet__width-initial elementor-widget elemento",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-69",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-f77a551 offImages elementor-absolute elementor-widget-widescreen__width-inherit elementor-widget-tablet__width-initial elementor-widget elemento",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-9431",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-3445e26 offImages elementor-absolute elementor-widget-widescreen__width-inherit elementor-widget-tablet__width-initial elementor-widget elemento",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-9702",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-9f8e344 offImages elementor-absolute elementor-widget-widescreen__width-inherit elementor-widget-tablet__width-initial elementor-widget elemento",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-12505",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-42d58fd elementor-widget-tablet__width-initial elementor-widget-widescreen__width-inherit elementor-absolute offImages elementor-widget elemento",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-4195",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-9b477ef elementor-absolute elementor-widget-widescreen__width-inherit elementor-widget-tablet__width-initial elementor-hidden-widescreen element",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-8568",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-1cbb5b1 elementor-absolute closeOff hoverLink elementor-widget__width-initial elementor-widget elementor-widget-html",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "svg",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "path",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "path",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-30e33921 headerTop e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "e-con-inner",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-7152065b e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-7b5bccfa e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-24eac218 elementor-widget elementor-widget-theme-site-logo elementor-widget-image",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-10805",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-5258c1a9 e-con-full elementor-hidden-tablet elementor-hidden-mobile e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-80020e1 textUnderline headerMenu elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-5d2c1d3 textUnderline headerMenu elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-57c3aae textUnderline headerMenu elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "",
+      "transition": "color, background-color 0s 0s, 0s ease-in-out, ease-in-out",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-1cd198db e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "elementor-element elementor-element-2a98406b e-con-full btn01 elementor-hidden-mobile elementor-hidden-tablet e-flex e-con e-child",
+      "transition": "background-color, color 0.3s, 1.3s 0s, 0s ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-5cde3ca btn01Text elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "background-color 0.3s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-555fa0e elementor-view-stacked offIcon hoverLink elementor-shape-circle elementor-widget elementor-widget-icon",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-icon-wrapper",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-icon elementor-animation-buzz-out",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "i",
+      "className": "fas fa-bars",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-549cf20 cursorWrapper elementor-hidden-tablet elementor-hidden-mobile e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "e-con-inner",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-1281038 e-con-full cursorOuter e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(0.2, 0, 0, 0.2, 654, 561)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-30bc07b e-con-full cursorInner e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(0.2, 0, 0, 0.2, 714, 621)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 0, -4838)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "site grid-container container hfeed",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "site-content",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor elementor-9995",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-3b78e1c e-con-full getId HeroWrapper e-flex e-con e-parent e-lazyloaded",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "transform",
+      "transform": "matrix(1, 0, 0, 1, 0, 225)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-6c4bc34 e-con-full heroImageCont e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-52ac410 elementor-widget__width-inherit elementor-widget elementor-widget-image",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-large size-large wp-image-10897",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-36b9559 elementor-widget__width-inherit elementor-absolute homeHeroHTML elementor-widget elementor-widget-html",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "video",
+      "className": "heroVideo",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "source",
+      "className": "",
+      "transition": "   ",
+      "animation": "   ",
+      "willChange": "",
+      "transform": "",
+      "scrollSnapType": "",
+      "animationTimeline": ""
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-711e10d e-con-full heroInner e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-bdd32bb e-con-full textWrap e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-b0f93e1 heroText elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "heroLines",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h1",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "transform, opacity",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "transform, opacity",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h1",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "transform, opacity",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "transform, opacity",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-912e1bf e-con-full heroInfoCont e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-7e59357 e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-6836d04 heroTextP elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-b76d40d heroTextP elementor-widget__width-initial elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-4544a5f e-con-full heroButtons elementor-hidden-desktop e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "elementor-element elementor-element-f787831 e-con-full btn01 e-flex e-con e-child",
+      "transition": "background-color, color 0.3s, 1.3s 0s, 0s ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-bfbd70a btn01Text elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "background-color 0.3s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "a",
+      "className": "elementor-element elementor-element-54d2f7a e-con-full btn02 e-flex e-con e-child",
+      "transition": "background-color, color 0.3s, 1.3s 0s, 0s ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-5ddd95f btn02Text elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "background-color 0.3s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-4903547a e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "e-con-inner",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-655d80c0 e-con-full textWrapper e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-4a9e97 e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-732094fa e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-23836e71 textAnim elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h3",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-3465c0b elementor-widget-tablet__width-initial elementor-widget__width-initial elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-42821c2f e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-66cde703 e-grid e-con-full e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-23625b45 elementor-widget elementor-widget-counter",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-counter",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h4",
+      "className": "elementor-counter-title",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-counter-number-wrapper",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number-prefix",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number-suffix",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-c8e7da4 elementor-widget elementor-widget-counter",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-counter",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h4",
+      "className": "elementor-counter-title",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-counter-number-wrapper",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number-prefix",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number-suffix",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-3dc49883 elementor-widget elementor-widget-counter",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-counter",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h4",
+      "className": "elementor-counter-title",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-counter-number-wrapper",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number-prefix",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number-suffix",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-3f546eac elementor-widget elementor-widget-counter",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-counter",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h4",
+      "className": "elementor-counter-title",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-counter-number-wrapper",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number-prefix",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-counter-number-suffix",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-a9df00a e-con e-atomic-element e-div-block-base e-default-div e-a9df00a-133117b ",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-95ad2b3 elementor-widget elementor-widget-html",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -38.8203, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -60.9766, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -44.9922, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -38.6562, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -54.4844, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -34.9922, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -49.6562, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -46.9922, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 44.3203, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 70.2422, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -37.9922, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -44.4922, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -47.1562, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "br",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -38.6562, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__cities",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pin",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -5, -5)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__dot",
+      "transition": "transform, box-shadow 0s 0s, 0s cubic-bezier(0.25, 0.46, 0.45, 0.94), cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__pulse",
+      "transition": "all 0s 0s ease",
+      "animation": "agdsPulse 2.5s 0s ease-out",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, -10.2109, -10.2109)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__tooltip",
+      "transition": "opacity, visibility, transform 0s 0s, 0s, 0s ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 94.6641, 6)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "agdsMap__label",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-1f796f46 getId servicesOutterCont e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "e-con-inner",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-321ba926 e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-2307a0b0 e-con-full clrHeading1 e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-54f42537 elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h2",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-14e94cea textAnim elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h3",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-6a15fee1 e-con-full services e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "pin-spacer",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-2870deae e-con-full services1 e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 0, 1750)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-6070523d e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-1e256e1e e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "pin-spacer",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-5d7b9ab7 e-con-full servicesImageCont contClr e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 0, 1750)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-1e89cd9a elementor-widget__width-inherit elementor-widget elementor-widget-image",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-9702",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-7998a2cc elementor-widget__width-inherit servicesImages elementor-absolute elementor-widget elementor-widget-image",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-11465",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-1b1c4b3a elementor-widget__width-inherit elementor-absolute servicesImages elementor-widget elementor-widget-image",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-12621",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-76ca2dc elementor-widget__width-inherit elementor-absolute servicesImages elementor-widget elementor-widget-image",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-11503",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-70364580 elementor-widget__width-inherit elementor-absolute servicesImages elementor-widget elementor-widget-image",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-12214",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-570a2935 elementor-widget__width-inherit elementor-absolute servicesImages elementor-widget elementor-widget-image",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "img",
+      "className": "attachment-full size-full wp-image-9219",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-18420bbc e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "pin-spacer",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-67063166 e-con-full servicesH2Cont e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 0, 1750)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-7b47b538 servicesHeading elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-c074706 e-con-full elementor-hidden-mobile e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-410a7ae1 servicesNumber elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-52d937c9 elementor-absolute servicesNumber elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-3e54f3ec elementor-absolute servicesNumber elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-6c686284 elementor-absolute servicesNumber elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-47c2737b elementor-absolute servicesNumber elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-18adb7ba e-con-full servicesHeight e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "pin-spacer",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-723709e5 e-con-full servicesGradient elementor-hidden-mobile e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "matrix(1, 0, 0, 1, 0, 1750)",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-302ff0b4 e-con-full servicesContM elementor-hidden-widescreen elementor-hidden-desktop elementor-hidden-tablet e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-8421e9c elementor-view-default elementor-widget elementor-widget-icon",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-icon-wrapper",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-icon",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "i",
+      "className": "fas fa-arrow-right",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-617cba48 elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "span",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-74cebb8b e-con-full servicesCont e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-7df56da0 e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-4a234c77 servicesHeading elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h4",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-bb292ba servicesText elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "HcOXKn c9GqVL QxJLC3 lq2cno YQcXTT comp-k0gpvxp0 wixui-rich-text",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-4ce68692 e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-7bd10e1b serviceQuote elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "i",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-3d397923 e-con-full servicesCont e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-2a571dca e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-3f2f14a9 servicesHeading elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h4",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-520b3a02 servicesText elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "HcOXKn c9GqVL QxJLC3 lq2cno YQcXTT comp-k0gpvxp0 wixui-rich-text",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-15df7e8c e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-4f206de8 serviceQuote elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "em",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-48f7237 e-con-full servicesCont e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-513f7615 e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-b0e99f4 servicesHeading elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h4",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-5cbcf6a0 servicesText elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-6243d343 e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-42d74fd4 serviceQuote elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "em",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-60b578d e-con-full servicesCont e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-8a9baa e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-26289d47 servicesHeading elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h4",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-e07852a servicesText elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-cb75ba9 e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-7a98f6f6 serviceQuote elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "em",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-5a220b56 e-con-full servicesCont contLast e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-27a484e1 e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-64870f0e servicesHeading elementor-widget elementor-widget-heading",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "h4",
+      "className": "elementor-heading-title elementor-size-default",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-79cafbbc servicesText elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-701e3cca e-con-full e-flex e-con e-child",
+      "transition": "background, border, box-shadow, transform 0s 0s, 0s, 0s, 0s ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-element elementor-element-65ee64ff serviceQuote elementor-widget elementor-widget-text-editor",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "div",
+      "className": "elementor-widget-container",
+      "transition": "background, border, border-radius, box-shadow, transform 0s 0s, 0s, 0s, 0s, 0s ease, ease, ease, ease, ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "p",
+      "className": "p1",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    },
+    {
+      "tag": "em",
+      "className": "",
+      "transition": "all 0s 0s ease",
+      "animation": "none 0s 0s ease",
+      "willChange": "auto",
+      "transform": "none",
+      "scrollSnapType": "none",
+      "animationTimeline": "auto"
+    }
+  ],
+  "keyframes": [
+    {
+      "name": "eicon-spin",
+      "cssText": "@keyframes eicon-spin { \n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(359deg); }\n}"
+    },
+    {
+      "name": "elementor-animation-buzz-out",
+      "cssText": "@keyframes elementor-animation-buzz-out { \n  10% { transform: translateX(3px) rotate(2deg); }\n  20% { transform: translateX(-3px) rotate(-2deg); }\n  30% { transform: translateX(3px) rotate(2deg); }\n  40% { transform: translateX(-3px) rotate(-2deg); }\n  50% { transform: translateX(2px) rotate(1deg); }\n  60% { transform: translateX(-2px) rotate(-1deg); }\n  70% { transform: translateX(2px) rotate(1deg); }\n  80% { transform: translateX(-2px) rotate(-1deg); }\n  90% { transform: translateX(1px) rotate(0deg); }\n  100% { transform: translateX(-1px) rotate(0deg); }\n}"
+    },
+    {
+      "name": "a",
+      "cssText": "@keyframes a { \n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(359deg); }\n}"
+    },
+    {
+      "name": "swiper-preloader-spin",
+      "cssText": "@keyframes swiper-preloader-spin { \n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(360deg); }\n}"
+    },
+    {
+      "name": "agdsPulse",
+      "cssText": "@keyframes agdsPulse { \n  0% { width: 10px; height: 10px; opacity: 1; }\n  100% { width: 30px; height: 30px; opacity: 0; }\n}"
+    },
+    {
+      "name": "fa-spin",
+      "cssText": "@-webkit-keyframes fa-spin { \n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(1turn); }\n}"
+    },
+    {
+      "name": "fa-spin",
+      "cssText": "@keyframes fa-spin { \n  0% { transform: rotate(0deg); }\n  100% { transform: rotate(1turn); }\n}"
+    },
+    {
+      "name": "fadeIn",
+      "cssText": "@keyframes fadeIn { \n  0% { opacity: 0; }\n  100% { opacity: 1; }\n}"
+    },
+    {
+      "name": "fadeOut",
+      "cssText": "@keyframes fadeOut { \n  0% { opacity: 1; }\n  100% { opacity: 0; }\n}"
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+[
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "elementor-element elementor-element-4844fb2c homeCarousal elementor-arrows-position-inside elementor-widget elementor-widget-n-carousel e-widget-swiper",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 1074,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "e-n-carousel swiper swiper-initialized swiper-horizontal swiper-backface-hidden",
+    "childCount": 2,
+    "visibleChildren": 1,
+    "scrollWidth": 1074,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "swiper-wrapper",
+    "childCount": 9,
+    "visibleChildren": 9,
+    "scrollWidth": 3246,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "swiper-slide swiper-slide-duplicate swiper-slide-duplicate-next",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 350,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "swiper-slide",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 350,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "swiper-slide",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 350,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "swiper-slide",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 350,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "swiper-slide",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 350,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "swiper-slide swiper-slide-prev",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 350,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "swiper-slide swiper-slide-active",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 350,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "swiper-slide swiper-slide-next",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 350,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='swiper' i]",
+    "className": "swiper-slide swiper-slide-duplicate",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 350,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='carousel' i]",
+    "className": "elementor-element elementor-element-4844fb2c homeCarousal elementor-arrows-position-inside elementor-widget elementor-widget-n-carousel e-widget-swiper",
+    "childCount": 1,
+    "visibleChildren": 1,
+    "scrollWidth": 1074,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  },
+  {
+    "selector": "[class*='carousel' i]",
+    "className": "e-n-carousel swiper swiper-initialized swiper-horizontal swiper-backface-hidden",
+    "childCount": 2,
+    "visibleChildren": 1,
+    "scrollWidth": 1074,
+    "clientWidth": 350,
+    "scrollSnapType": "none",
+    "scrollSnapAlign": "none",
+    "overflowX": "visible",
+    "autoplayAttributes": {
+      "autoplay": null,
+      "dataAutoplay": null
+    }
+  }
+]

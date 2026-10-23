@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "reference:capture": "tsx scripts/reference/capture.ts",
     "format": "prettier --write .",
     "prepare": "husky"
   },
