@@ -1,18 +1,16 @@
 import Link from "next/link";
 
-import { CmsContentListPage } from "@/components/admin/cms/CmsContentAdminPage";
+import { NoAccess } from "@/components/admin/NoAccess";
+import { PageHeader } from "@/components/admin/PageHeader";
+import { MenuManager, type MenuCategoryRow } from "@/components/admin/menu/MenuManager";
+import { Button } from "@/components/ui/button";
+import { getCmsPageStaff } from "@/server/services/cms/page-access";
+import { getMenuAdmin } from "@/server/services/cms/menu";
 
 export default async function MenuPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const raw = await searchParams;
-  const tabValue = Array.isArray(raw.tab) ? raw.tab[0] : raw.tab;
-  const tab = tabValue === "items" ? "items" : "categories";
-  const entityType = tab === "items" ? "menu-item" : "menu-category";
-  const title = tab === "items" ? "Menu items" : "Menu categories";
-  return <section className="space-y-6">
-    <nav aria-label="Menu editor" className="flex flex-wrap gap-2 border-b pb-3">
-      <Link className={tab === "categories" ? "rounded-md bg-forest-800 px-3 py-2 text-sm text-white" : "rounded-md border px-3 py-2 text-sm"} href="/admin/menu?tab=categories">Categories</Link>
-      <Link className={tab === "items" ? "rounded-md bg-forest-800 px-3 py-2 text-sm text-white" : "rounded-md border px-3 py-2 text-sm"} href="/admin/menu?tab=items">Items</Link>
-    </nav>
-    <CmsContentListPage entityType={entityType} title={title} basePath="/admin/menu" editorPath={`/admin/menu/menu-${tab === "items" ? "item" : "category"}`} tab={tab} searchParams={searchParams} />
-  </section>;
+  const staff = await getCmsPageStaff("cms.read"); if (!staff) return <NoAccess />;
+  const raw = await searchParams; const trash = raw.trash === "1" || (Array.isArray(raw.trash) && raw.trash.includes("1"));
+  const data = await getMenuAdmin({ q: "", trash });
+  const categories: MenuCategoryRow[] = data.categories.map((category) => ({ id: category.id, name: category.name, status: category.status, sortOrder: category.sortOrder, deletedAt: category.deletedAt?.toISOString() ?? null, items: category.items.map((item) => ({ id: item.id, categoryId: item.categoryId, name: item.name, description: item.description, foodPreference: item.foodPreference, isExtraCharge: item.isExtraCharge, extraPricePaise: item.extraPricePaise, isPublished: item.isPublished, status: item.status, sortOrder: item.sortOrder, deletedAt: item.deletedAt?.toISOString() ?? null })) }));
+  return <section className="space-y-6"><PageHeader title={trash ? "Menu trash" : "Menu"} description="Maintain the seeded catalogue without inventing dishes or prices." actions={<Button asChild variant="outline"><Link href={trash ? "/admin/menu" : "/admin/menu?trash=1"}>{trash ? "Active menu" : "Trash"}</Link></Button>}/><MenuManager initialCategories={categories} initialOptions={data.options} trash={trash}/></section>;
 }

@@ -8,7 +8,6 @@ import { Header } from "@/components/marketing/Header";
 import { PublicClosing } from "@/components/marketing/PublicClosing";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { CldImage } from "@/components/media/CldImage";
-import { JsonLd } from "@/components/seo/JsonLd";
 import { env } from "@/config/env";
 import { getPublicStories, localizedString } from "@/server/services/public-content";
 
@@ -33,22 +32,8 @@ export default async function StoriesPage() {
   const stories = await getPublicStories();
   const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Blog",
-    name: "Chawan Farms Stories & Chronicles",
-    description: "Chronicles and stories from Chawan Farms agri-tourism centre.",
-    blogPost: stories.map((s) => ({
-      "@type": "BlogPosting",
-      headline: localizedString(s.title),
-      datePublished: s.publishAt ? new Date(s.publishAt).toISOString() : undefined,
-      url: `${env.NEXT_PUBLIC_SITE_URL}/stories/${s.slug}`,
-    })),
-  };
-
   return (
     <>
-      <JsonLd data={jsonLd} />
       <Header />
       <Breadcrumbs items={[{ label: "Stories" }]} />
       <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
@@ -79,7 +64,7 @@ export default async function StoriesPage() {
               </p>
               <div className="mt-6">
                 <Link
-                  href="/experiences"
+                  href="/stories"
                   className="inline-flex items-center gap-2 rounded-full bg-forest-900 px-6 py-2.5 text-sm font-medium text-cream-50 transition hover:bg-forest-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
                 >
                   Explore Experiences <ArrowRight className="h-4 w-4" />
@@ -91,7 +76,6 @@ export default async function StoriesPage() {
               {stories.map((story) => {
                 const title = localizedString(story.title);
                 const excerpt = localizedString(story.excerpt);
-                const categoryName = story.category ? localizedString(story.category.name) : null;
                 const formattedDate = formatDate(story.publishAt ?? story.createdAt);
 
                 return (
@@ -122,11 +106,9 @@ export default async function StoriesPage() {
                         </div>
                       )}
 
-                      {categoryName && (
-                        <span className="absolute left-4 top-4 rounded-full bg-forest-900/85 px-3 py-1 text-xs font-semibold text-cream-50 backdrop-blur-sm">
-                          {categoryName}
-                        </span>
-                      )}
+                      <span className="absolute left-4 top-4 rounded-full bg-forest-900/85 px-3 py-1 text-xs font-semibold text-cream-50 backdrop-blur-sm">
+                        {story.kind === "GUEST" ? "Guest story" : story.kind === "EXPERIENCE" ? "Farm experience" : "Story"}
+                      </span>
                     </Link>
 
                     {/* Card Content */}

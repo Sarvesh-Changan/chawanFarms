@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { err } from "@/lib/result";
@@ -58,12 +59,16 @@ export async function removeVideoAction(rawInput: unknown) {
 export async function featureVideoAction(rawInput: unknown) {
   const staff = await reviewActor();
   await requirePermission("cms.publish");
-  return featureOnWebsite(staff.id, rawInput);
+  const result = await featureOnWebsite(staff.id, rawInput);
+  if (result.ok) { revalidateTag("cms:post", "max"); revalidateTag("cms:all", "max"); revalidatePath("/"); revalidatePath("/stories"); revalidatePath("/sitemap.xml"); }
+  return result;
 }
 
 export async function unfeatureVideoAction(rawInput: unknown) {
   const staff = await reviewActor();
   await requirePermission("cms.publish");
-  return unfeatureOnWebsite(staff.id, rawInput);
+  const result = await unfeatureOnWebsite(staff.id, rawInput);
+  if (result.ok) { revalidateTag("cms:post", "max"); revalidateTag("cms:all", "max"); revalidatePath("/"); revalidatePath("/stories"); revalidatePath("/sitemap.xml"); }
+  return result;
 }
 

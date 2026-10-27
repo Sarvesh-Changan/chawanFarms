@@ -612,8 +612,11 @@ model PageSection { id String @id @default(cuid()) pageId String type String   /
   sortOrder Int isVisible Boolean @default(true)
   page Page @relation(fields:[pageId], references:[id], onDelete: Cascade) @@index([pageId, sortOrder]) }
 model PostCategory { id String @id @default(cuid()) slug String @unique name Json posts Post[] }
-model Post { id String @id @default(cuid()) slug String @unique title Json excerpt Json? body Json categoryId String? authorName String? coverMediaId String? status PublishStatus @default(DRAFT) publishAt DateTime? deletedAt DateTime? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
-  category PostCategory? @relation(fields:[categoryId], references:[id], onDelete: SetNull) @@index([status, publishAt]) }
+enum StoryKind { EXPERIENCE STORY GUEST }
+model Post { id String @id @default(uuid()) slug String @unique title Json excerpt Json? body Json categoryId String? authorName String? coverMediaId String? kind StoryKind @default(STORY) videoMediaId String? sourceSubmissionId String? @unique sourceExperienceId String? @unique photoMediaIds Json? sortOrder Int @default(0) featured Boolean @default(false) status PublishStatus @default(DRAFT) publishAt DateTime? deletedAt DateTime? createdAt DateTime @default(now()) updatedAt DateTime @updatedAt
+  category PostCategory? @relation(fields:[categoryId], references:[id], onDelete: SetNull)
+  videoMedia Media? @relation("PostVideo", fields:[videoMediaId], references:[id], onDelete: Restrict)
+  sourceSubmission VideoSubmission? @relation("GuestStorySource", fields:[sourceSubmissionId], references:[id], onDelete: Restrict) @@index([kind, status, sortOrder]) @@index([status, publishAt]) }
 model Faq { id String @id @default(cuid()) question Json answer Json groupKey String? sortOrder Int @default(0) isPublished Boolean @default(true) deletedAt DateTime? }
 model Offer { id String @id @default(cuid()) slug String @unique title Json description Json? discountType DiscountType? discountValue Int? startsAt DateTime endsAt DateTime packageIds String[] status PublishStatus @default(DRAFT) deletedAt DateTime? @@index([status, startsAt, endsAt]) }
 model SeoMetadata { id String @id @default(cuid()) entityType String entityId String locale String @default("en") title String? description String? keywords String? canonicalUrl String? ogMediaId String? robots String? jsonLd Json?
@@ -635,6 +638,21 @@ model AuditLog {                        // IMMUTABLE
   @@index([actorId, createdAt]) @@index([entityType, entityId]) @@index([action, createdAt])
 }
 ```
+
+### Stories unification (2026-10-28)
+
+Migration `20261028120000_stories_unify` makes `Post` the single Stories table.
+Existing `Experience` rows are copied idempotently into `Post` as `StoryKind.EXPERIENCE`; the original rows and their media remain untouched. A copied row is identified by `sourceExperienceId`. Existing Post slugs win; copied Experience slugs use a deterministic `-experience` suffix when necessary. The migration emits a PostgreSQL `NOTICE` with the dry-run copy count before inserting rows and also creates the corresponding `MediaUsage` record with `entityType = 'Post'` and `field = 'cover'`.
+
+Guest stories use `StoryKind.GUEST`, `sourceSubmissionId`, and `videoMediaId`. The public video is a separate Cloudinary copy. The customer submission and its original authenticated Media row are never changed. Story photos are stored as an ordered JSON array of Media IDs and each photo has a `Post` MediaUsage row with `field = 'photo'`.
+
+Apply on DEV only with:
+
+```sh
+npx prisma migrate deploy
+```
+
+Do not run this against production from the local workspace.
 
 Implementation note for the Prisma v7 schema: PDF-derived catalogue, menu,
 policy, reward-rule, and setting rows carry nullable `meta Json?` with

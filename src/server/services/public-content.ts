@@ -36,6 +36,10 @@ function jsonRecord(value: Prisma.JsonValue | null | undefined): Record<string, 
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
 
+function storiesMigrationPending(error: unknown): boolean {
+  return Boolean(error && typeof error === "object" && "code" in error && (error as { code?: unknown }).code === "P2022");
+}
+
 function socialLinkValues(value: Prisma.JsonValue | null | undefined): Array<{ label: string; url: string }> {
   if (!Array.isArray(value)) return [];
   return value.flatMap((entry) => {
@@ -270,26 +274,56 @@ export async function getPublicGallery() {
 
 export async function getPublicStories() {
   return unstable_cache(async () => {
-    const rows = await db.post.findMany({
-      where: { ...published, OR: [{ publishAt: null }, { publishAt: { lte: new Date() } }] },
-      include: { category: true },
-      orderBy: [{ publishAt: "desc" }, { createdAt: "desc" }],
-    });
-    const media = await mediaMap(rows.map((row) => row.coverMediaId));
-    return rows.map((row) => ({ ...row, coverMedia: row.coverMediaId ? media.get(row.coverMediaId) ?? null : null }));
+    try {
+      const now = new Date();
+      const rows = await db.post.findMany({
+        where: {
+          ...published,
+          OR: [{ publishAt: null }, { publishAt: { lte: now } }],
+          AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }],
+        },
+        include: { category: true, sourceSubmission: { select: { status: true, consentPublish: true } } },
+        orderBy: [{ featured: "desc" }, { sortOrder: "asc" }, { publishAt: "desc" }, { createdAt: "desc" }],
+      });
+      const ids = rows.flatMap((row) => [row.coverMediaId, row.videoMediaId, ...(Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [])]);
+      const media = await db.media.findMany({ where: { id: { in: [...new Set(ids.filter((id): id is string => Boolean(id)))] }, origin: "ADMIN", isPublic: true, deletedAt: null }, select: publicMediaSelect });
+      const mediaById = new Map(media.map((item) => [item.id, item]));
+      return rows.map(({ sourceSubmission: _source, ...row }) => {
+        const photoIds = Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [];
+        return { ...row, coverMedia: row.coverMediaId ? mediaById.get(row.coverMediaId) ?? null : null, videoMedia: row.videoMediaId ? mediaById.get(row.videoMediaId) ?? null : null, photoMedia: photoIds.flatMap((id) => { const item = mediaById.get(id); return item ? [item] : []; }) };
+      });
+    } catch (error) {
+      if (storiesMigrationPending(error)) return [];
+      throw error;
+    }
   }, ["public-content:stories"], { tags: ["cms:post", "cms:all"], revalidate: cacheRevalidateSeconds })();
 }
 
 export async function getPublicStoryBySlug(slug: string) {
   return unstable_cache(async () => {
-    const row = await db.post.findFirst({
-      where: { slug, ...published, OR: [{ publishAt: null }, { publishAt: { lte: new Date() } }] },
-      include: { category: true },
-    });
-    if (!row) return null;
-    const media = await mediaMap([row.coverMediaId]);
-    return { ...row, coverMedia: row.coverMediaId ? media.get(row.coverMediaId) ?? null : null };
+    try {
+      const now = new Date();
+      const row = await db.post.findFirst({
+        where: { slug, ...published, OR: [{ publishAt: null }, { publishAt: { lte: now } }], AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }] },
+        include: { category: true, sourceSubmission: { select: { status: true, consentPublish: true } } },
+      });
+      if (!row) return null;
+      const ids = [row.coverMediaId, row.videoMediaId, ...(Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [])].filter((id): id is string => Boolean(id));
+      const media = await db.media.findMany({ where: { id: { in: [...new Set(ids)] }, origin: "ADMIN", isPublic: true, deletedAt: null }, select: publicMediaSelect });
+      const mediaById = new Map(media.map((item) => [item.id, item]));
+      const { sourceSubmission: _source, ...story } = row;
+      const photoIds = Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [];
+      return { ...story, coverMedia: row.coverMediaId ? mediaById.get(row.coverMediaId) ?? null : null, videoMedia: row.videoMediaId ? mediaById.get(row.videoMediaId) ?? null : null, photoMedia: photoIds.flatMap((id) => { const item = mediaById.get(id); return item ? [item] : []; }) };
+    } catch (error) {
+      if (storiesMigrationPending(error)) return null;
+      throw error;
+    }
   }, ["public-content:story", slug], { tags: ["cms:post", `cms:post:${slug}`, "cms:all"], revalidate: cacheRevalidateSeconds })();
+}
+
+export async function getPublicStorySlugForExperience(slug: string) {
+  const experience = await db.experience.findUnique({ where: { slug }, select: { id: true } });
+  return experience ? db.post.findUnique({ where: { sourceExperienceId: experience.id }, select: { slug: true } }) : null;
 }
 
 export async function getPublicOffers() {

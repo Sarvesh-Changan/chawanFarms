@@ -290,7 +290,7 @@ export async function getPublicCmsContent(type: CmsContentType) {
     switch (type) {
       case "activity": return db.activity.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ sortOrder: "asc" }, { slug: "asc" }] });
       case "experience": return db.experience.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ sortOrder: "asc" }, { slug: "asc" }] });
-      case "menu-category": return db.menuCategory.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ sortOrder: "asc" }, { slug: "asc" }], include: { items: { where: publicCmsWhere("menu-item", now), orderBy: [{ sortOrder: "asc" }, { id: "asc" }] } } });
+      case "menu-category": return db.menuCategory.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ sortOrder: "asc" }, { slug: "asc" }], include: { items: { where: publicCmsWhere("menu-item", now) as never, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] } } });
       case "menu-item": return db.menuItem.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] });
       case "faq": return db.faq.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ groupKey: "asc" }, { sortOrder: "asc" }] });
       case "offer": return db.offer.findMany({ where: publicCmsWhere(type, now) as never });
@@ -310,7 +310,7 @@ export async function publishScheduledCms(now = new Date(), take = 100) {
     const menuCategoryIds = (await tx.menuCategory.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null }, take, select: { id: true } })).map((row) => row.id);
     const menuItemIds = (await tx.menuItem.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null }, take, select: { id: true } })).map((row) => row.id);
     const faqIds = (await tx.faq.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null }, take, select: { id: true } })).map((row) => row.id);
-    const postIds = (await tx.post.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null }, take, select: { id: true } })).map((row) => row.id);
+    const postIds = (await tx.post.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null, AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }] }, take, select: { id: true } })).map((row) => row.id);
     const testimonialIds = (await tx.testimonial.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, consentConfirmed: true, deletedAt: null }, take, select: { id: true } })).map((row) => row.id);
     const galleryIds = (await tx.galleryItem.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null, media: { origin: "ADMIN", isPublic: true, deletedAt: null } }, take, select: { id: true } })).map((row) => row.id);
     const results = await Promise.all([

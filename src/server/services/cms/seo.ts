@@ -39,7 +39,7 @@ export async function getPublishedEntityForSeo(entityType: Exclude<SeoEntityType
     case "accommodation": return db.accommodation.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null }, select: { id: true } });
     case "activity": return db.activity.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null }, select: { id: true } });
     case "experience": return db.experience.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null }, select: { id: true } });
-    case "post": return db.post.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null, OR: [{ publishAt: null }, { publishAt: { lte: new Date() } }] }, select: { id: true } });
+    case "post": return db.post.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null, OR: [{ publishAt: null }, { publishAt: { lte: new Date() } }], AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }] }, select: { id: true } });
   }
 }
 
