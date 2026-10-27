@@ -210,13 +210,13 @@ SMTP is configured with an app password and TLS: port 465 requires `SMTP_SECURE=
 |---|---|---|
 | `expire-points` | daily | Write `EXPIRE` entries for lapsed lots (FIFO) |
 | `expire-coupons` | daily | Mark expired |
-| `outbox-send` | every 5 min | Retry failed emails |
-| `lead-reminders` | hourly/daily | Follow-up due notifications |
+| `outbox-send` | daily on Hobby (every 5 min on Pro) | Retry failed emails |
+| `lead-reminders` | daily on Hobby (hourly/daily on Pro) | Follow-up due notifications |
 | `pre-arrival-reminder` | daily | Email guests with ID/policy checklist (P1) |
 | `reconcile-balances` | nightly | Compare cache vs ledger; alert on drift |
 | `purge-retention` | weekly | Apply retention policy (SECURITY.md) |
 | `media-orphans` | weekly | Report unused Cloudinary assets |
-| `cleanup-rate-limits` | hourly | Delete expired `RateLimitBucket` rows |
+| `cleanup-rate-limits` | daily on Hobby (hourly on Pro) | Delete expired `RateLimitBucket` rows |
 
 All jobs are idempotent, logged without secrets or message bodies, and protected by `CRON_SECRET`. Retention only runs when an explicit `retention.auditDays` Setting exists; media-orphans reports candidates and does not delete external assets.
 

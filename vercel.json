@@ -1,8 +1,8 @@
 {
   "crons": [
-    { "path": "/api/cron/outbox-send", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/cleanup-rate-limits", "schedule": "0 * * * *" },
-    { "path": "/api/cron/lead-reminders", "schedule": "5 * * * *" },
+    { "path": "/api/cron/outbox-send", "schedule": "0 1 * * *" },
+    { "path": "/api/cron/cleanup-rate-limits", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/lead-reminders", "schedule": "0 5 * * *" },
     { "path": "/api/cron/expire-points", "schedule": "15 0 * * *" },
     { "path": "/api/cron/expire-coupons", "schedule": "20 0 * * *" },
     { "path": "/api/cron/pre-arrival-reminder", "schedule": "30 4 * * *" },
