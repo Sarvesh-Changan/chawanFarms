@@ -5,6 +5,8 @@
 
 Use only the DEV environment and a DEV/test database. Use a private browser window for the anonymous visitor. Prefix every created value with `QA-<timestamp>`. Do not send real email; use console/in-memory transport. Run against a production build (`npm run build`, `npm start`) first, then repeat the key checks in dev mode. Record the time from the admin success message to the first anonymous page that shows the new value.
 
+Media note: there is no central media library. Upload and replace images/videos from the owning Activity, Gallery, Story, Package, Accommodation, Settings or SEO form; `/admin/media` is only a permanent redirect to `/admin`.
+
 ## Setup
 
 - [ ] Confirm the browser URL is the DEV site and the database is not production.
@@ -15,11 +17,11 @@ Use only the DEV environment and a DEV/test database. Use a private browser wind
 
 ## A. Images and media
 
-1. **Upload:** open `/admin/media`, choose a valid JPG, PNG, and WebP one at a time, and confirm progress, success, Media row, thumbnail, QA category/tag and English alt text. Verify the Cloudinary DEV Admin API asset exists and its delivery URL returns 200 with an image content type and `f_auto`/`q_auto` transforms.
+1. **Upload:** open each owning image/video form, choose a valid JPG, PNG, WebP or supported video one at a time, and confirm progress, success, Media row, usage after save, preview and required accessibility text. Verify the Cloudinary DEV Admin API asset exists and its delivery URL returns 200 with the expected media content type and `f_auto`/`q_auto` transforms.
 2. **Invalid upload:** try an oversized file, `.txt`, `.exe` renamed to `.jpg`, an SVG, and the same file twice. Confirm clear errors, no Media row for rejected files, and no Cloudinary orphan.
 3. **Public assignment:** assign the QA image in the page builder Home hero, an Experience, Accommodation, Package, Activity, Post cover, SEO OG image and Gallery item. Publish each owner and check Home, each list/detail page, related blocks, metadata/OG, JSON-LD and sitemap where applicable. Check alt text, focal crop, no broken image, no CSP/console error, and hero priority.
 4. **Replacement:** replace one assigned image with a second QA image. Save/publish and check every prior location without a hard reload or redeploy; record the delay and confirm the old URL is absent.
-5. **In-use delete:** select the image while it is assigned and soft-delete it. Confirm the UI explains where it is used and blocks deletion. Remove the usage, delete again, confirm it disappears from the library and Cloudinary, and verify no public broken reference.
+5. **In-use delete:** attempt to replace or delete an assigned image. Confirm the UI explains where it is used and blocks deletion of an in-use asset. Remove the usage, delete again through the owning workflow, confirm the unused Cloudinary asset is cleaned up, and verify no public broken reference.
 6. **Draft privacy:** attach media to a draft/unpublished entity. Check anonymous HTML, `view-source`, sitemap and metadata contain neither the draft content nor its private image URL. Confirm only a valid preview token can show it.
 
 ## B. Content edits

@@ -1,11 +1,11 @@
 import Link from "next/link";
 
+import { MenuManager, type MenuCategoryRow } from "@/components/admin/menu/MenuManager";
 import { NoAccess } from "@/components/admin/NoAccess";
 import { PageHeader } from "@/components/admin/PageHeader";
-import { MenuManager, type MenuCategoryRow } from "@/components/admin/menu/MenuManager";
 import { Button } from "@/components/ui/button";
-import { getCmsPageStaff } from "@/server/services/cms/page-access";
 import { getMenuAdmin } from "@/server/services/cms/menu";
+import { getCmsPageStaff } from "@/server/services/cms/page-access";
 
 export default async function MenuPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const staff = await getCmsPageStaff("cms.read"); if (!staff) return <NoAccess />;

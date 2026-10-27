@@ -30,7 +30,6 @@ export const adminNavigation = [
     { label: "Points Ledger", href: "/admin/rewards/ledger", permission: "rewards.ledger.read" },
     { label: "Coupons", href: "/admin/rewards/coupons", permission: "coupons.read" },
   ] },
-  { label: "Media", href: "/admin/media", permission: "media.read" },
   { label: "SEO", href: "/admin/seo", permission: "seo.write" },
   { label: "Settings", href: "/admin/settings", permission: "settings.read", children: [
     { label: "Business settings", href: "/admin/settings", permission: "settings.read" },

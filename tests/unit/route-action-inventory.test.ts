@@ -94,4 +94,19 @@ describe("route and server-action authorization inventory", () => {
     expect(existsSync(join(sourceRoot, "src", "app", "(public)", "offers", "page.tsx"))).toBe(false);
     expect(existsSync(join(sourceRoot, "src", "app", "(public)", "preview", "page", "[token]", "page.tsx"))).toBe(false);
   });
+
+  it("keeps the removed media library out of source while preserving its legacy redirect", () => {
+    const files = sourceFiles(join(sourceRoot, "src"));
+    const forbiddenReferences = files.flatMap((path) => {
+      const relativePath = relativeSourcePath(path);
+      if (relativePath === "src/config/media.ts") return [];
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const source = readFileSync(path, "utf8");
+      return /MediaPicker|MediaLibrary|\/admin\/media/.test(source) ? [relativePath] : [];
+    });
+    expect(forbiddenReferences).toEqual([]);
+
+    const legacyRoute = join(sourceRoot, "src", "app", "admin", "media", "page.tsx");
+    expect(readFileSync(legacyRoute, "utf8")).toContain('permanentRedirect("/admin")');
+  });
 });

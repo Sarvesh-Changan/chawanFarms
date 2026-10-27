@@ -282,13 +282,13 @@ export async function getPublicStories() {
           OR: [{ publishAt: null }, { publishAt: { lte: now } }],
           AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }],
         },
-        include: { category: true, sourceSubmission: { select: { status: true, consentPublish: true } } },
+        include: { category: true },
         orderBy: [{ featured: "desc" }, { sortOrder: "asc" }, { publishAt: "desc" }, { createdAt: "desc" }],
       });
       const ids = rows.flatMap((row) => [row.coverMediaId, row.videoMediaId, ...(Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [])]);
       const media = await db.media.findMany({ where: { id: { in: [...new Set(ids.filter((id): id is string => Boolean(id)))] }, origin: "ADMIN", isPublic: true, deletedAt: null }, select: publicMediaSelect });
       const mediaById = new Map(media.map((item) => [item.id, item]));
-      return rows.map(({ sourceSubmission: _source, ...row }) => {
+      return rows.map((row) => {
         const photoIds = Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [];
         return { ...row, coverMedia: row.coverMediaId ? mediaById.get(row.coverMediaId) ?? null : null, videoMedia: row.videoMediaId ? mediaById.get(row.videoMediaId) ?? null : null, photoMedia: photoIds.flatMap((id) => { const item = mediaById.get(id); return item ? [item] : []; }) };
       });
@@ -305,15 +305,14 @@ export async function getPublicStoryBySlug(slug: string) {
       const now = new Date();
       const row = await db.post.findFirst({
         where: { slug, ...published, OR: [{ publishAt: null }, { publishAt: { lte: now } }], AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }] },
-        include: { category: true, sourceSubmission: { select: { status: true, consentPublish: true } } },
+        include: { category: true },
       });
       if (!row) return null;
       const ids = [row.coverMediaId, row.videoMediaId, ...(Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [])].filter((id): id is string => Boolean(id));
       const media = await db.media.findMany({ where: { id: { in: [...new Set(ids)] }, origin: "ADMIN", isPublic: true, deletedAt: null }, select: publicMediaSelect });
       const mediaById = new Map(media.map((item) => [item.id, item]));
-      const { sourceSubmission: _source, ...story } = row;
       const photoIds = Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [];
-      return { ...story, coverMedia: row.coverMediaId ? mediaById.get(row.coverMediaId) ?? null : null, videoMedia: row.videoMediaId ? mediaById.get(row.videoMediaId) ?? null : null, photoMedia: photoIds.flatMap((id) => { const item = mediaById.get(id); return item ? [item] : []; }) };
+      return { ...row, coverMedia: row.coverMediaId ? mediaById.get(row.coverMediaId) ?? null : null, videoMedia: row.videoMediaId ? mediaById.get(row.videoMediaId) ?? null : null, photoMedia: photoIds.flatMap((id) => { const item = mediaById.get(id); return item ? [item] : []; }) };
     } catch (error) {
       if (storiesMigrationPending(error)) return null;
       throw error;

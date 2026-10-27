@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { localizedHtmlSchema } from "@/lib/schemas/cms/content";
 import { localizedTextSchema, optionalLocalizedTextSchema, slugSchema } from "@/lib/schemas/cms/common";
+import { localizedHtmlSchema } from "@/lib/schemas/cms/content";
 
 export const storyKindSchema = z.enum(["EXPERIENCE", "STORY", "GUEST"]);
 

@@ -152,6 +152,7 @@ Pure function + persisted snapshot: `quote(input, rateCardVersion) → { lines[]
 Created from redemption; single-use; bound to the owner; `eligiblePackages/Accommodation` enforced in the pricing engine; combination rules from active `RewardRule`; redemption row `CouponRedemption(couponId unique, bookingId)` created when a booking is **confirmed** (and released on cancellation per policy).
 
 ### 8.6 Media (`services/media`)
+Current implementation: the owning admin form uses LocalImageUploader or LocalVideoUploader to request signed params from `/api/upload-signature` and upload directly to Cloudinary. Media and MediaUsage remain the source of truth for content hashes, where-used checks and delete protection; there is no central media browser. The weekly orphan report only cleans expired, unreferenced pending admin uploads and excludes customer-origin and referenced media.
 Upload flow: client requests **signed params** from `/api/upload-signature` (auth + rate limit + purpose: `customer_video` | `admin_media`) → direct browser upload to Cloudinary into a purpose-specific folder & preset (size/format limits, `resource_type`, moderation add-on optional) → Cloudinary webhook (signature verified) and/or server confirmation call records `Media` row with `publicId`, bytes, duration, format, hash. Customer videos are `private`/`authenticated` delivery until approved; public gallery uses only admin-published assets.
 
 ### 8.7 Notifications

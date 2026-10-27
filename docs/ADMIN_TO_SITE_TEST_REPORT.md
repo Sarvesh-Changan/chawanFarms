@@ -1,5 +1,7 @@
 # Superseded by the admin simplification on 2026-10-27. Retained as a historical QA record.
 
+Step 4 note: historical central-library observations below are superseded. Verify uploads and replacement from each owning form; the former media URL redirects to `/admin`.
+
 # Admin → public-site propagation test report
 
 

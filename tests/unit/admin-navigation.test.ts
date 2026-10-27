@@ -10,12 +10,12 @@ const labels = (role: RoleName) => {
 
 describe("permission-filtered admin navigation", () => {
   it.each([
-    ["Super Admin", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "Media", "SEO", "Settings", "Security"]],
-    ["Owner/Manager", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "Media", "SEO", "Settings", "Security"]],
+    ["Super Admin", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "SEO", "Settings", "Security"]],
+    ["Owner/Manager", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "SEO", "Settings", "Security"]],
     ["Reservations", ["Bookings", "Enquiries", "Leads"]],
-    ["Content Editor", ["Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Media", "SEO", "Settings"]],
+    ["Content Editor", ["Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "SEO", "Settings"]],
     ["Reward Moderator", ["Rewards"]],
-    ["Read-only", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "Media", "Settings", "Security"]],
+    ["Read-only", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "Settings", "Security"]],
   ] as const)("shows only allowed sections for %s", (role, expected) => {
     expect(labels(role)).toEqual(expected);
   });

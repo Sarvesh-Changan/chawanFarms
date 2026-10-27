@@ -76,7 +76,7 @@ Implementation: a `RateLimitBucket` table updated with a single atomic `INSERT �
 6. Quotas: per-user pending cap, per-day cap, global monthly bytes alert to avoid cost abuse.
 7. Delivery: customer videos not publicly guessable; admin preview via short-lived signed URLs; public gallery uses only admin-published `Media.isPublic=true` assets. If the user withdraws consent or video is removed, delete from Cloudinary and set `REMOVED`.
 8. Duplicate detection: SHA-256 of original (if available client-side/hash from Cloudinary `etag`) + perceptual hash on key frames (post-processing step) — flag, don't auto-reject; admin sees "possible duplicate of #…".
-9. Admin media uploads: staff-only, image/video allow-list, alt text mandatory for public images.
+9. Admin media uploads: staff-only and performed inside the owning form through LocalImageUploader or LocalVideoUploader; image/video allow-lists and server verification remain mandatory, with alt text required for images and an accessibility description required for videos. The former central library is gone, so the weekly orphan report is the compensating control for expired pending admin uploads. It excludes customer-origin media, VideoSubmission references and any Story/Gallery/Activity or other MediaUsage reference.
 10. Secrets rotation: Cloudinary API secret rotated on staff change/leak; stored only in Vercel env.
 
 ## 9. Reward, points & coupon integrity (the highest-risk logic)

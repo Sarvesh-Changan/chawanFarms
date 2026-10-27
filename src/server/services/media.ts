@@ -123,7 +123,7 @@ export async function updateMedia(rawInput: unknown): Promise<Result<{ id: strin
   if (input.isPublic && existing.kind === "IMAGE" && !input.altText.en) {
     return err("VALIDATION", "English alt text is required before publishing an image.", { altText: ["Enter English alt text."] });
   }
-  if (input.isPublic && existing.origin === "CUSTOMER") return err("FORBIDDEN", "Customer uploads cannot be published from the media library.");
+  if (input.isPublic && existing.origin === "CUSTOMER") return err("FORBIDDEN", "Customer uploads cannot be published from this workflow.");
   try {
     await db.media.update({
       where: { id: input.id },
@@ -194,6 +194,6 @@ export async function cleanupUnusedAdminMedia(mediaId: string | null | undefined
   if (!mediaId) return;
   const media = await db.media.findUnique({ where: { id: mediaId }, include: { usages: true, videoSubmission: true } });
   if (!media || media.origin !== "ADMIN" || media.usages.length || media.videoSubmission || media.deletedAt) return;
-  const removed = await db.media.updateMany({ where: { id: mediaId, deletedAt: null }, data: { deletedAt: new Date(), isPublic: false } });
+  const removed = await db.media.updateMany({ where: { id: mediaId, origin: "ADMIN", deletedAt: null, usages: { none: {} }, videoSubmission: null }, data: { deletedAt: new Date(), isPublic: false } });
   if (removed.count) await deleteCloudinaryAsset({ publicId: media.publicId, resourceType: media.resourceType === "video" ? "video" : "image", deliveryType: media.deliveryType === "authenticated" ? "authenticated" : "upload" });
 }

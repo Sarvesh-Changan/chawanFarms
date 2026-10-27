@@ -22,7 +22,7 @@
 | 3 | Database: Neon + Prisma | — |
 | 4 | Authentication | D-12 |
 | 5 | Authorization & admin shell | D-17 |
-| 6 | Cloudinary & media library | D-9 |
+| 6 | Cloudinary & local media uploads | D-9 |
 | 7 | CMS | D-6, D-7 |
 | 8 | Lead management & enquiry forms | D-11, D-13 |
 | 9 | Public website | D-6, D-14, D-19 |
@@ -463,7 +463,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 
 ## PHASE 6 – Cloudinary & Media Library
 
-**Objective:** Safe image and video uploads plus an admin media library that CMS and customer videos will reuse.
+**Objective:** Safe image and video uploads owned by each CMS form; customer videos remain a separate private moderation flow. There is no central media library.
 
 ### Step 1 — Configure Cloudinary (manual)
 
@@ -479,21 +479,21 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 * Expected Output: Two signed presets and credentials ready.
 
 
-### Step 2 — Cloudinary integration and media library
+### Step 2 — Cloudinary integration and local form uploaders
 
 * AI Tool: Claude Code
 * Documents to Attach: `SECURITY.md` (section 8), `ARCHITECTURE.md` (sections 8.6, 9), `DATABASE.md` (Media), `DESIGN.md` (section 9)
 * Prompt:
 
 ```
-Act as a senior full-stack engineer with security focus. Implement Cloudinary integration and the admin media library.
+Act as a senior full-stack engineer with security focus. Implement Cloudinary integration and reusable local form uploaders.
 
 1. Install `cloudinary` (and `next-cloudinary` only if useful). Add CLOUDINARY_* and preset names to `src/config/env.ts` and `.env.example`. The API secret must never be exposed to the client.
 2. Create `src/server/integrations/cloudinary.ts`: server-side signing with purpose-scoped folder, preset and allowed formats, public_id generated server-side, asset verification via the Admin API (exists, resource type, format, bytes, duration, folder), and delete.
 3. Create `POST /api/upload-signature` (auth + rate limit 5/hour per user for customers, staff permission `media.write` for admin purposes) and `POST /api/webhooks/cloudinary` (verify `X-Cld-Signature` and timestamp; idempotent; 401 on invalid).
 4. Create `src/server/services/media.ts` for Media/MediaUsage CRUD: alt text required for public images, usage tracking, delete blocked while in use.
-5. Build the admin Media page (`/admin/media`): grid with search, tag/category filters, kind filter, uploader with progress, detail drawer (alt text per locale, caption, focal point, tags, 'where used'), soft-delete.
-6. Build components in `src/components/media/`: `CldImage` (f_auto, q_auto, responsive sizes, blur placeholder), `HeroVideo` (poster-first, lazy, disabled for reduced-motion/Save-Data), `MediaPicker` dialog, `Uploader`.
+5. Build `LocalImageUploader` and `LocalVideoUploader` in `src/components/media/`: choose/drag, client UX checks, progress, preview, required accessibility text, replace/remove, pending-upload tracking and server verification. Forms attach Media and MediaUsage atomically on save.
+6. Keep `CldImage` (f_auto, q_auto, responsive sizes, blur placeholder), `HeroVideo` (poster-first, lazy, disabled for reduced-motion/Save-Data), Media services, where-used and delete protection. Do not build a central browser, picker or generic library uploader.
 7. Update the CSP/headers allow-list for `res.cloudinary.com` images/media and the Cloudinary upload API in connect-src.
 8. Write tests: signature scoped to folder/purpose; forged webhook rejected; oversize/wrong format rejected server-side; delete-in-use blocked.
 9. Before writing code, inspect the existing repository (structure, package.json, prisma/, git log, /docs) and briefly explain your plan and the files you will touch. If something is ambiguous or needs a client decision, ask instead of guessing.

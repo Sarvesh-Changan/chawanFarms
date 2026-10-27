@@ -39,6 +39,8 @@ Rebuild the Chawan Farms website from an informational brochure into a **lead-ge
 
 ## 4. Sitemap / Information architecture
 
+The admin information architecture no longer includes a central Media page. Image and video management stays inside the owning Activity, Gallery, Story, Package, Accommodation, Settings and SEO forms; the former media URL only redirects to the admin home. Media and MediaUsage still provide verification, content hashes, where-used checks and deletion protection.
+
 ### Current implementation (2026-10-27)
 
 Primary public navigation is Home, Stay (Accommodation, Packages, Food), Activities, Stories, Gallery, Rewards, and Contact; FAQ is in the footer. `/offers` permanently redirects to `/packages`. Experiences remain live but are temporarily omitted from primary navigation until step 3. Admin navigation is Dashboard, Activity, Stories, Gallery, Menu, FAQ, Packages, Accommodation, Bookings, Enquiries, Leads, Rewards, Media, SEO, Settings (including versioned Policies), and Security; the CMS hub is removed.
@@ -119,6 +121,8 @@ Hard rules:
 - FR-RW-10 (P1) Referral rewards (optional, same ledger; separate rule set; disabled by default) — decision D-10.
 
 ### 5.6 Admin dashboard
+
+The admin dashboard modules include Stories and Menu but not a central media library. Local uploaders are used in each image/video-bearing form, while customer video originals remain in the private rewards moderation flow.
 Modules and permissions are defined in `DATABASE.md` (RBAC). Dashboard widgets: new leads (today/7d/30d), enquiries & bookings by status, upcoming arrivals, conversion funnel, lead sources, customers, reward activity (points issued/redeemed), pending videos (queue count + oldest age), recent activity (audit feed), revenue/booking metrics (confirmed value, collected, outstanding).
 
 CMS entities: preserved Page/PageSection, Experience, Activity, Accommodation, Package/PackageRate, Menu, GalleryItem, Post/Story, FAQ, Offer, Testimonial, SEO per entity, global settings. Public Home/About are fixed-code compositions with Settings overrides; the admin Page editor and testimonial/offer UI are removed. Draft/publish with preview, scheduled publish (P1), revision history (P1), soft delete.

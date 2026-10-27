@@ -1,10 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
@@ -12,9 +12,9 @@ import { LocalImageUploader, type LocalUploaderMedia } from "@/components/media/
 import { LocalVideoUploader } from "@/components/media/LocalVideoUploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { storyFormSchema, type StoryFormData } from "@/lib/schemas/cms/stories";
 import { createCmsPreviewAction } from "@/server/actions/cms-content";
 import { deleteStoryAction, restoreStoryAction, saveStoryAction, setStoryStatusAction } from "@/server/actions/cms-stories";
-import { storyFormSchema, type StoryFormData } from "@/lib/schemas/cms/stories";
 
 type StoryMedia = LocalUploaderMedia & { kind: "IMAGE" | "VIDEO"; caption?: unknown };
 type StoryInitial = { id?: string; kind?: StoryFormData["kind"]; title?: unknown; summary?: unknown; body?: unknown; coverMediaId?: string | null; photoMediaIds?: unknown; videoMediaId?: string | null; slug?: string; featured?: boolean; status?: string; publishAt?: Date | string | null; deletedAt?: Date | string | null; media: StoryMedia[] };
@@ -42,7 +42,7 @@ export function StoryEditor({ initial, cloudName, listPath = "/admin/stories" }:
     if (!initial?.id) { setMessage("Save the story before changing its status."); return; }
     startTransition(async () => { const result = await setStoryStatusAction({ id: initial.id, status: value, publishAt: value === "SCHEDULED" && publishAt ? new Date(publishAt).toISOString() : null }); setMessage(result.ok ? `Story set to ${value.toLowerCase()}.` : result.error.message); router.refresh(); });
   }
-  function changePhoto(index: number, id: string) { const next = [...photoMediaIds]; if (index >= next.length) next.push(id); else next[index] = id; form.setValue("photoMediaIds", next, { shouldDirty: true }); }
+  function changePhoto(index: number, id: string) { const next = [...photoMediaIds]; if (index >= next.length) next.push(id); else next.splice(index, 1, id); form.setValue("photoMediaIds", next, { shouldDirty: true }); }
   function removePhoto(index: number) { form.setValue("photoMediaIds", photoMediaIds.filter((_, itemIndex) => itemIndex !== index), { shouldDirty: true }); }
   const photoSlots = photoMediaIds.length < 8 ? [...photoMediaIds, ""] : photoMediaIds;
 

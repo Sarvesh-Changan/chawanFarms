@@ -89,7 +89,7 @@ Blockers:
 - D-17: staff list, role assignments, video approvers, point-adjustment authority and second approver.
 - Auth implementation and seeded permissions from Phase 3/4.
 
-## Phase 6 — Cloudinary and media library
+## Phase 6 — Cloudinary and local media uploads
 
 Tasks:
 

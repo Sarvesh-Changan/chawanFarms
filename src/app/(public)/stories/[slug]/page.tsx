@@ -4,12 +4,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SafeHtml } from "@/components/admin/SafeHtml";
+import { GalleryViewer } from "@/components/gallery/GalleryViewer";
 import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
 import { PublicClosing } from "@/components/marketing/PublicClosing";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
-import { GalleryViewer } from "@/components/gallery/GalleryViewer";
 import { CldImage } from "@/components/media/CldImage";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { env } from "@/config/env";
