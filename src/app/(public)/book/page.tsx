@@ -208,7 +208,9 @@ export default async function BookPage({
       ? (settingsMap.get("whatsapp.number") as string)
       : null;
   const rawPhones = settingsMap.get("business.phones");
-  const phoneNumbers = Array.isArray(rawPhones) ? rawPhones.map(String) : [];
+  const phoneNumbers = Array.isArray(rawPhones)
+    ? rawPhones.flatMap((value) => typeof value === "string" ? [value] : value && typeof value === "object" && !Array.isArray(value) && typeof (value as Record<string, unknown>).number === "string" ? [(value as Record<string, unknown>).number as string] : [])
+    : [];
   const minLeadDays =
     typeof settingsMap.get("booking.minLeadDays") === "number"
       ? (settingsMap.get("booking.minLeadDays") as number)

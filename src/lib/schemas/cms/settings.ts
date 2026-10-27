@@ -1,54 +1,86 @@
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { z } from "zod";
 
-import { localizedTextSchema, optionalLocalizedTextSchema } from "./common";
+import { optionalLocalizedTextSchema } from "./common";
 
-const phoneSchema = z.string().trim().min(7).max(24).regex(/^[+0-9 ()-]+$/);
-const phoneListSchema = z.string().max(500).transform((value) => value.split(/\r?\n/).map((phone) => phone.trim()).filter(Boolean))
-  .pipe(z.array(phoneSchema).max(10));
-const emailListSchema = z.string().max(2_000).transform((value) => value.split(/\r?\n/).map((email) => email.trim()).filter(Boolean))
-  .pipe(z.array(z.string().email().max(254)).max(50));
-const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).or(z.literal(""))
-  .transform((value) => value || null);
-const optionalPositiveIntSchema = z.string().trim().regex(/^\d*$/).max(6)
-  .transform((value) => value === "" ? undefined : Number(value))
-  .pipe(z.number().int().positive().max(100_000).optional());
-const notificationTemplateOverridesSchema = z.string().max(100_000).refine((value) => {
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return false;
-    return Object.entries(parsed).every(([key, entry]) => /^[A-Z_]+$/.test(key) && entry && typeof entry === "object" && !Array.isArray(entry) && Object.entries(entry).every(([field, fieldValue]) => (field === "subject" || field === "body") && typeof fieldValue === "string" && fieldValue.length <= 10_000));
-  } catch {
-    return false;
-  }
-}, "Enter valid notification template JSON with subject/body strings.").default("{}");
-
-export const settingsFormSchema = z.object({
-  businessName: localizedTextSchema,
-  businessPhones: phoneListSchema,
-  businessEmail: z.union([z.string().trim().email().max(254), z.literal("")]).transform((value) => value || null),
-  address: localizedTextSchema,
-  socialLinks: z.array(z.object({
-    label: z.string().trim().min(1).max(80),
-    url: z.string().trim().url().max(2048).refine((value) => new URL(value).protocol === "https:", "Use an https URL."),
-  }).strict()).max(20),
-  whatsappNumber: z.union([phoneSchema, z.literal("")]).transform((value) => value || null),
-  whatsappDefaultMessage: optionalLocalizedTextSchema,
-  minLeadTimeHours: optionalPositiveIntSchema,
-  minimumGroupSize: optionalPositiveIntSchema,
-  checkInTime: timeSchema,
-  checkOutTime: timeSchema,
-  bookingPolicyText: optionalLocalizedTextSchema,
-  notificationRecipients: emailListSchema,
-  notificationEmailEnabled: z.boolean().default(true),
-  notificationInAppEnabled: z.boolean().default(true),
-  notificationLeadAlertsEnabled: z.boolean().default(true),
-  notificationBookingUpdatesEnabled: z.boolean().default(true),
-  notificationRewardUpdatesEnabled: z.boolean().default(true),
-  notificationReminderEmailsEnabled: z.boolean().default(true),
-  notificationStuckThreshold: z.preprocess((value) => value === undefined ? "" : value, optionalPositiveIntSchema),
-  notificationTemplateOverridesJson: notificationTemplateOverridesSchema,
+const localizedField = (max: number) => z.object({
+  en: z.string().trim().max(max),
+  mr: z.string().trim().max(max).optional(),
+  hi: z.string().trim().max(max).optional(),
 }).strict();
 
-export type SettingsFormValues = z.input<typeof settingsFormSchema>;
-export type SettingsData = z.output<typeof settingsFormSchema>;
+const optionalText = (max: number) => z.string().trim().max(max).transform((value) => value || null);
+const phoneInput = z.string().trim().min(3).max(40).transform((value, context) => {
+  const parsed = parsePhoneNumberFromString(value, "IN");
+  if (!parsed || !parsed.isValid()) {
+    context.addIssue({ code: "custom", message: "Enter a valid phone number." });
+    return z.NEVER;
+  }
+  return parsed.number;
+});
 
+const phoneList = z.array(z.object({ number: phoneInput, isPrimary: z.boolean() }).strict()).max(10)
+  .refine((phones) => phones.length === 0 || phones.filter((phone) => phone.isPrimary).length === 1, "Choose exactly one primary phone number.");
+
+const httpsUrl = z.string().trim().max(2048).refine((value) => {
+  try { return new URL(value).protocol === "https:"; } catch { return false; }
+}, "Use an https URL.");
+
+const mediaId = z.string().uuid().nullable();
+
+const settingsFieldsSchema = z.object({
+  businessName: localizedField(240),
+  businessEmail: z.union([z.string().trim().email().max(254), z.literal("")]).transform((value) => value || null),
+  phones: phoneList,
+  whatsappNumber: z.union([phoneInput, z.literal("")]).transform((value) => value || null),
+  whatsappDefaultMessage: optionalLocalizedTextSchema,
+  address: localizedField(1_000),
+  ownerDisplay: z.boolean(),
+  ownerMediaId: mediaId,
+  ownerName: optionalText(120),
+  ownerCaption: optionalText(300),
+  heroHeadline: optionalText(240),
+  heroSubhead: optionalText(1_000),
+  heroPrimaryCta: optionalText(100),
+  heroSecondaryCta: optionalText(100),
+  heroMediaId: mediaId,
+  closingHeadline: optionalText(240),
+  instagramUrl: z.union([httpsUrl, z.literal("")]).transform((value) => value || null),
+  facebookUrl: z.union([httpsUrl, z.literal("")]).transform((value) => value || null),
+  youtubeUrl: z.union([httpsUrl, z.literal("")]).transform((value) => value || null),
+}).strict().superRefine((value, context) => {
+  if (value.ownerDisplay && !value.ownerMediaId) {
+    context.addIssue({ code: "custom", path: ["ownerMediaId"], message: "Choose an owner portrait before displaying this section." });
+  }
+});
+
+const legacySettingsSchema = z.object({
+  businessName: localizedField(240), businessPhones: z.string(), businessEmail: z.string(), address: localizedField(1_000), socialLinks: z.array(z.object({ label: z.string(), url: z.string() })), whatsappNumber: z.string(), whatsappDefaultMessage: z.object({ en: z.string(), mr: z.string(), hi: z.string() }),
+}).passthrough();
+
+/** Accepts the pre-step-2 settings payload so old seeded/admin clients fail soft while new writes use the strict shape above. */
+export const settingsFormSchema = z.preprocess((raw) => {
+  const legacy = legacySettingsSchema.safeParse(raw);
+  if (!legacy.success || !("businessPhones" in legacy.data)) return raw;
+  const value = legacy.data;
+  const phones = value.businessPhones.split(/\r?\n/).map((number) => number.trim()).filter(Boolean).map((number, index) => ({ number, isPrimary: index === 0 }));
+  const link = (label: string) => value.socialLinks.find((item) => item.label.toLowerCase() === label)?.url ?? "";
+  return { businessName: value.businessName, businessEmail: value.businessEmail, phones, whatsappNumber: value.whatsappNumber, whatsappDefaultMessage: value.whatsappDefaultMessage, address: value.address, ownerDisplay: false, ownerMediaId: null, ownerName: "", ownerCaption: "", heroHeadline: "", heroSubhead: "", heroPrimaryCta: "", heroSecondaryCta: "", heroMediaId: null, closingHeadline: "", instagramUrl: link("instagram"), facebookUrl: link("facebook"), youtubeUrl: link("youtube") };
+}, settingsFieldsSchema);
+
+const strongPassword = z.string().min(10).max(128).refine((value) => [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((pattern) => pattern.test(value)).length >= 3, "Use at least three of lowercase, uppercase, number and symbol.");
+
+export const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(1).max(128),
+  newPassword: strongPassword,
+  confirmPassword: z.string().min(10).max(128),
+}).strict().superRefine((value, context) => {
+  if (value.newPassword !== value.confirmPassword) context.addIssue({ code: "custom", path: ["confirmPassword"], message: "Passwords do not match." });
+  if (value.newPassword === value.currentPassword) context.addIssue({ code: "custom", path: ["newPassword"], message: "Choose a password different from the current password." });
+});
+
+export type SettingsFormValues = {
+  businessName: { en: string; mr?: string; hi?: string };
+  businessEmail: string; phones: Array<{ number: string; isPrimary: boolean }>; whatsappNumber: string; whatsappDefaultMessage: { en?: string; mr?: string; hi?: string }; address: { en: string; mr?: string; hi?: string }; ownerDisplay: boolean; ownerMediaId: string | null; ownerName: string; ownerCaption: string; heroHeadline: string; heroSubhead: string; heroPrimaryCta: string; heroSecondaryCta: string; heroMediaId: string | null; closingHeadline: string; instagramUrl: string; facebookUrl: string; youtubeUrl: string;
+};
+export type SettingsData = z.output<typeof settingsFormSchema>;

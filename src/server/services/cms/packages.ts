@@ -7,6 +7,7 @@ import { CMS_LIST_PAGE_SIZE } from "@/config/cms";
 import { Prisma, type PublishStatus } from "@/generated/prisma/client";
 import type { packageFormSchema, packageRateFormSchema } from "@/lib/schemas/cms/package";
 import { db } from "@/server/db";
+import { cleanupUnusedAdminMedia } from "@/server/services/media";
 
 export type PackageFormData = z.output<typeof packageFormSchema>;
 export type PackageRateFormData = z.output<typeof packageRateFormSchema>;
@@ -55,7 +56,7 @@ function nullableJson(value: unknown): Prisma.InputJsonValue | Prisma.NullableJs
   return value === undefined || value === null ? Prisma.DbNull : value as Prisma.InputJsonValue;
 }
 
-export async function savePackage(input: PackageFormData) {
+export async function savePackage(input: PackageFormData, actorId?: string) {
   const { id, accommodationIds, activityIds, ...fields } = input;
   const data = {
     slug: fields.slug,
@@ -73,10 +74,14 @@ export async function savePackage(input: PackageFormData) {
     heroMediaId: fields.heroMediaId,
   } satisfies Prisma.PackageUncheckedCreateInput;
 
-  return db.$transaction(async (transaction) => {
+  const previous = id ? await db.package.findUnique({ where: { id }, select: { heroMediaId: true } }) : null;
+  const record = await db.$transaction(async (transaction) => {
     if (fields.heroMediaId) {
-      const media = await transaction.media.findFirst({ where: { id: fields.heroMediaId, kind: "IMAGE", origin: "ADMIN", isPublic: true, deletedAt: null }, select: { id: true } });
-      if (!media) throw new Error("CMS_HERO_MEDIA_UNAVAILABLE");
+      const media = await transaction.media.findFirst({ where: { id: fields.heroMediaId, kind: "IMAGE", origin: "ADMIN", deletedAt: null }, select: { id: true, isPublic: true, uploadedById: true, meta: true } });
+      const meta = media?.meta && typeof media.meta === "object" && !Array.isArray(media.meta) ? media.meta as Record<string, unknown> : {};
+      const pendingOwned = meta.pending === true && meta.pendingById === actorId && typeof meta.pendingUntil === "string" && new Date(meta.pendingUntil) > new Date();
+      if (!media || (!media.isPublic && !pendingOwned)) throw new Error("CMS_HERO_MEDIA_UNAVAILABLE");
+      if (pendingOwned) await transaction.media.update({ where: { id: media.id }, data: { isPublic: true, meta: Prisma.DbNull } });
     }
     const [accommodations, activities] = await Promise.all([
       accommodationIds.length ? transaction.accommodation.count({ where: { id: { in: accommodationIds }, deletedAt: null } }) : 0,
@@ -99,6 +104,8 @@ export async function savePackage(input: PackageFormData) {
     }
     return record;
   }, { isolationLevel: "Serializable" });
+  if (previous?.heroMediaId && previous.heroMediaId !== fields.heroMediaId) await cleanupUnusedAdminMedia(previous.heroMediaId);
+  return record;
 }
 
 export async function listPackageRelationOptions() {

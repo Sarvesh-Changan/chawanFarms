@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { MEDIA_API_MAX_REQUEST_BYTES, mediaPolicy } from "@/config/media";
 import { identifyMediaPurpose } from "@/lib/media-policy";
+import { localizedMediaTextSchema } from "@/lib/schemas/media";
 import { getSession } from "@/server/auth";
 import { requirePermission } from "@/server/authz";
 import { AuthorizationError } from "@/server/authz/errors";
@@ -10,7 +11,11 @@ import { db } from "@/server/db";
 import { deleteCloudinaryAsset, verifyCloudinaryAsset } from "@/server/integrations/cloudinary";
 import { recordVerifiedMedia } from "@/server/services/media";
 
-const requestSchema = z.object({ publicId: z.string().min(1).max(255).regex(/^[A-Za-z0-9_/-]+$/) }).strict();
+const requestSchema = z.object({
+  publicId: z.string().min(1).max(255).regex(/^[A-Za-z0-9_/-]+$/),
+  altText: localizedMediaTextSchema.optional(),
+  description: z.string().trim().max(500).optional(),
+}).strict();
 
 function sameOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
@@ -39,6 +44,8 @@ export async function POST(request: Request) {
   const identity = identifyMediaPurpose(parsed.data.publicId);
   if (!identity || identity.userId !== session.user.id) return NextResponse.json({ error: "Asset is not available to this account." }, { status: 404 });
   if (identity.purpose === "customer_video") return NextResponse.json({ error: "Customer videos must complete through the upload-intent flow." }, { status: 410 });
+  if (identity.purpose === "admin_image" && !parsed.data.altText?.en) return NextResponse.json({ error: "English alt text is required for admin images." }, { status: 422 });
+  if (identity.purpose === "admin_video" && !parsed.data.description) return NextResponse.json({ error: "A video description is required." }, { status: 422 });
 
   const account = await db.user.findUnique({ where: { id: session.user.id }, select: { type: true, status: true, emailVerified: true, deletedAt: true } });
   if (!account || account.status !== "ACTIVE" || account.deletedAt) return NextResponse.json({ error: "Account unavailable." }, { status: 403 });
@@ -57,7 +64,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Cloudinary rejected this asset's metadata or upload limits." }, { status: 422 });
   }
   try {
-    const media = await recordVerifiedMedia(verification.asset);
+    const media = await recordVerifiedMedia(verification.asset, { altText: parsed.data.altText as never, description: parsed.data.description, pending: true });
     return NextResponse.json({ mediaId: media.id }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Unable to record verified media." }, { status: 503 });

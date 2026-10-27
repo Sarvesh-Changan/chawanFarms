@@ -7,6 +7,7 @@ import { canDeleteMediaWithUsageCount } from "@/lib/media-policy";
 import { err, ok, type Result } from "@/lib/result";
 import { updateMediaInputSchema } from "@/lib/schemas/media";
 import { db } from "@/server/db";
+import { deleteCloudinaryAsset } from "@/server/integrations/cloudinary";
 import type { VerifiedCloudinaryAsset } from "@/server/integrations/cloudinary";
 
 const mediaQuerySchema = z.object({
@@ -73,7 +74,7 @@ export async function getMediaDetail(id: string) {
   });
 }
 
-export async function recordVerifiedMedia(asset: VerifiedCloudinaryAsset) {
+export async function recordVerifiedMedia(asset: VerifiedCloudinaryAsset, options?: { altText?: Prisma.InputJsonValue; description?: string; pending?: boolean }) {
   const mediaData = {
     kind: asset.kind,
     origin: asset.origin,
@@ -87,6 +88,9 @@ export async function recordVerifiedMedia(asset: VerifiedCloudinaryAsset) {
     durationSec: asset.durationSec,
     contentHash: asset.contentHash,
     uploadedById: asset.uploadedById,
+    ...(options?.altText ? { altText: options.altText } : {}),
+    ...(options?.description ? { caption: { en: options.description } as Prisma.InputJsonValue } : {}),
+    ...(options?.pending ? { meta: { pending: true, pendingById: asset.uploadedById, pendingUntil: new Date(Date.now() + 24 * 60 * 60 * 1_000).toISOString() } as Prisma.InputJsonValue } : {}),
   };
   return db.media.upsert({
     where: { publicId: asset.publicId },
@@ -102,6 +106,9 @@ export async function recordVerifiedMedia(asset: VerifiedCloudinaryAsset) {
       height: asset.height,
       durationSec: asset.durationSec,
       uploadedById: asset.uploadedById,
+      ...(options?.altText ? { altText: options.altText } : {}),
+      ...(options?.description ? { caption: { en: options.description } as Prisma.InputJsonValue } : {}),
+      ...(options?.pending ? { meta: { pending: true, pendingById: asset.uploadedById, pendingUntil: new Date(Date.now() + 24 * 60 * 60 * 1_000).toISOString() } as Prisma.InputJsonValue } : {}),
     },
   });
 }
@@ -180,4 +187,13 @@ export async function softDeleteMedia(id: string): Promise<Result<{ id: string }
     if (error instanceof Error && error.message === "MEDIA_IN_USE") return err("CONFLICT", "This media is still in use and cannot be deleted.");
     return err("CONFLICT", "Unable to delete media safely.");
   }
+}
+
+/** Removes an unreferenced admin asset after a replacement; customer media is never touched. */
+export async function cleanupUnusedAdminMedia(mediaId: string | null | undefined): Promise<void> {
+  if (!mediaId) return;
+  const media = await db.media.findUnique({ where: { id: mediaId }, include: { usages: true, videoSubmission: true } });
+  if (!media || media.origin !== "ADMIN" || media.usages.length || media.videoSubmission || media.deletedAt) return;
+  const removed = await db.media.updateMany({ where: { id: mediaId, deletedAt: null }, data: { deletedAt: new Date(), isPublic: false } });
+  if (removed.count) await deleteCloudinaryAsset({ publicId: media.publicId, resourceType: media.resourceType === "video" ? "video" : "image", deliveryType: media.deliveryType === "authenticated" ? "authenticated" : "upload" });
 }

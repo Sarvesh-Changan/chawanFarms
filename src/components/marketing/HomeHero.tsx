@@ -40,7 +40,7 @@ export function HomeHero({ section, media, settings }: { section: HeroSection; m
   const eyebrow = text(content.eyebrow);
   const primaryLabel = settings.home.hero.cta;
   const primaryHref = "/book";
-  const secondaryLabel = "Explore experiences";
+  const secondaryLabel = settings.home.hero.secondaryCta || "Explore experiences";
   const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const hasFacts = Boolean(settings.address || settings.phones.length);
 

@@ -7,6 +7,7 @@ import { CMS_LIST_PAGE_SIZE } from "@/config/cms";
 import { Prisma, type PublishStatus } from "@/generated/prisma/client";
 import type { accommodationFormSchema } from "@/lib/schemas/cms/accommodation";
 import { db } from "@/server/db";
+import { cleanupUnusedAdminMedia } from "@/server/services/media";
 
 export type AccommodationFormData = z.output<typeof accommodationFormSchema>;
 
@@ -44,7 +45,7 @@ function nullableJson(value: unknown): Prisma.InputJsonValue | Prisma.NullableJs
   return value === undefined || value === null ? Prisma.DbNull : value as Prisma.InputJsonValue;
 }
 
-export async function saveAccommodation(input: AccommodationFormData) {
+export async function saveAccommodation(input: AccommodationFormData, actorId?: string) {
   const { id, ...fields } = input;
   const data = {
     slug: fields.slug,
@@ -58,13 +59,19 @@ export async function saveAccommodation(input: AccommodationFormData) {
     heroMediaId: fields.heroMediaId,
     imageMediaIds: fields.imageMediaIds,
   } satisfies Prisma.AccommodationUncheckedCreateInput;
-  return db.$transaction(async (transaction) => {
+  const previous = id ? await db.accommodation.findUnique({ where: { id }, select: { heroMediaId: true, imageMediaIds: true } }) : null;
+  const record = await db.$transaction(async (transaction) => {
     const selectedMedia = [...new Set([fields.heroMediaId, ...fields.imageMediaIds].filter((mediaId): mediaId is string => Boolean(mediaId)))];
     const availableMedia = selectedMedia.length ? await transaction.media.findMany({
       where: { id: { in: selectedMedia }, kind: "IMAGE", origin: "ADMIN", isPublic: true, deletedAt: null },
-      select: { id: true },
+      select: { id: true, isPublic: true, uploadedById: true, meta: true },
     }) : [];
-    if (availableMedia.length !== selectedMedia.length) throw new Error("CMS_IMAGE_UNAVAILABLE");
+    const attachable = availableMedia.filter((media) => {
+      const meta = media.meta && typeof media.meta === "object" && !Array.isArray(media.meta) ? media.meta as Record<string, unknown> : {};
+      return media.isPublic || (meta.pending === true && meta.pendingById === actorId && typeof meta.pendingUntil === "string" && new Date(meta.pendingUntil) > new Date());
+    });
+    if (attachable.length !== selectedMedia.length) throw new Error("CMS_IMAGE_UNAVAILABLE");
+    for (const media of attachable) if (!media.isPublic) await transaction.media.update({ where: { id: media.id }, data: { isPublic: true, meta: Prisma.DbNull } });
 
     const record = id
       ? await transaction.accommodation.update({ where: { id }, data })
@@ -78,6 +85,10 @@ export async function saveAccommodation(input: AccommodationFormData) {
     if (usages.length) await transaction.mediaUsage.createMany({ data: usages.map((usage) => ({ ...usage, entityType: "Accommodation", entityId: record.id })) });
     return record;
   }, { isolationLevel: "Serializable" });
+  const previousMedia = [...new Set([previous?.heroMediaId, ...(previous?.imageMediaIds ?? [])].filter((mediaId): mediaId is string => Boolean(mediaId)))];
+  const nextMedia = new Set([fields.heroMediaId, ...fields.imageMediaIds]);
+  for (const mediaId of previousMedia) if (!nextMedia.has(mediaId)) await cleanupUnusedAdminMedia(mediaId);
+  return record;
 }
 
 export async function getPublicAccommodationBySlug(slug: string) {

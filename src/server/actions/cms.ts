@@ -8,7 +8,8 @@ import { err, ok, type Result } from "@/lib/result";
 import { accommodationFormSchema } from "@/lib/schemas/cms/accommodation";
 import { entityReferenceSchema, publishInputSchema, reorderInputSchema } from "@/lib/schemas/cms/common";
 import { packageFormSchema, packageRateFormSchema } from "@/lib/schemas/cms/package";
-import { settingsFormSchema } from "@/lib/schemas/cms/settings";
+import { passwordChangeSchema, settingsFormSchema } from "@/lib/schemas/cms/settings";
+import { auth } from "@/server/auth";
 import { requirePermission } from "@/server/authz";
 import { AuthorizationError } from "@/server/authz/errors";
 import type { Permission } from "@/server/authz/permissions";
@@ -103,7 +104,7 @@ export async function savePackageAction(rawInput: unknown): Promise<Result<{ id:
   if (!parsed.success) return err("VALIDATION", "Please review the package fields.", parsed.error.flatten().fieldErrors);
   try {
     const before = parsed.data.id ? await getPackageForEditor(parsed.data.id) : null;
-    const saved = await savePackage(parsed.data);
+    const saved = await savePackage(parsed.data, started.data.actorId);
     const auditResult = await completeMutation({
       context: started.data,
       action: before ? "cms.package.update" : "cms.package.create",
@@ -127,7 +128,7 @@ export async function saveAccommodationAction(rawInput: unknown): Promise<Result
   if (!parsed.success) return err("VALIDATION", "Please review the accommodation fields.", parsed.error.flatten().fieldErrors);
   try {
     const before = parsed.data.id ? await getAccommodationForEditor(parsed.data.id) : null;
-    const saved = await saveAccommodation(parsed.data);
+    const saved = await saveAccommodation(parsed.data, started.data.actorId);
     const auditResult = await completeMutation({
       context: started.data,
       action: before ? "cms.accommodation.update" : "cms.accommodation.create",
@@ -296,7 +297,24 @@ export async function saveCmsSettingsAction(rawInput: unknown): Promise<Result<{
       paths: ["/admin/settings", "/", "/about", "/packages", "/book", "/contact"],
     });
     return auditResult.ok ? ok({ id: updated.updatedKeys.join(",") }) : auditResult;
-  } catch {
-    return err("INTERNAL", "Settings could not be saved.");
+  } catch (error) {
+    return err("CONFLICT", error instanceof Error && error.message === "SETTINGS_MEDIA_UNAVAILABLE" ? "Choose a verified admin image that belongs to your account." : "Settings could not be saved.");
   }
+}
+
+export async function changeStaffPasswordAction(rawInput: unknown): Promise<Result<{ changed: true }>> {
+  const started = await beginMutation("settings.password", "settings.write");
+  if (!started.ok) return started as Result<never>;
+  const parsed = passwordChangeSchema.safeParse(rawInput);
+  if (!parsed.success) return err("VALIDATION", "Please review the password fields.", parsed.error.flatten().fieldErrors);
+  try {
+    await auth.api.changePassword({
+      body: { currentPassword: parsed.data.currentPassword, newPassword: parsed.data.newPassword, revokeOtherSessions: true },
+      headers: await headers(),
+    });
+  } catch {
+    return err("FORBIDDEN", "The current password is incorrect or the new password was rejected.");
+  }
+  const auditResult = await audit({ actor: { id: started.data.actorId, type: "STAFF" }, action: "settings.password.change", entityType: "User", entityId: started.data.actorId, before: { password: "set" }, after: { password: "changed", otherSessionsRevoked: true }, ip: started.data.ip, userAgent: started.data.userAgent, requestId: started.data.requestId });
+  return auditResult.ok ? ok({ changed: true }) : auditResult;
 }

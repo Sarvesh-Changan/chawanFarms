@@ -66,20 +66,21 @@ export type PublicSettings = {
   socialLinks?: Array<{ label: string; url: string }>;
   whatsappNumber: string;
   whatsappMessage: string;
-  home: { hero: { headline: string; subhead: string; cta: string }; closing: { headline: string } };
+  home: { hero: { headline: string; subhead: string; cta: string; secondaryCta?: string; media?: PublicMedia | null }; closing: { headline: string } };
+  owner?: { display: boolean; name: string; caption: string; media: PublicMedia | null };
 };
 
 export async function getPublicSettings(): Promise<PublicSettings> {
   return unstable_cache(async () => {
     try {
       const rows = await db.setting.findMany({
-        where: { key: { in: ["business.phones", "business.address", "business.socialLinks", "whatsapp.number", "whatsapp.defaultMessage", "home.hero.headline", "home.hero.subhead", "home.hero.cta", "home.closing.headline"] } },
+        where: { key: { in: ["business.phones", "business.address", "business.socialLinks", "whatsapp.number", "whatsapp.defaultMessage", "home.hero.headline", "home.hero.subhead", "home.hero.cta", "home.hero.primaryCta", "home.hero.secondaryCta", "home.hero.mediaId", "home.closing.headline", "owner.display", "owner.mediaId", "owner.name", "owner.caption"] } },
         select: { key: true, value: true },
       });
       const values = new Map(rows.map((row) => [row.key, row.value]));
       const rawPhones = values.get("business.phones");
       const phones = (Array.isArray(rawPhones) ? rawPhones : typeof rawPhones === "string" ? rawPhones.split(/\r?\n/) : [])
-        .filter((value): value is string => typeof value === "string")
+        .flatMap((value) => typeof value === "string" ? [value] : value && typeof value === "object" && !Array.isArray(value) && typeof (value as Record<string, unknown>).number === "string" ? [(value as Record<string, unknown>).number as string] : [])
         .flatMap((value) => {
           try {
             return [normalizeLeadPhone(value)];
@@ -103,6 +104,10 @@ export async function getPublicSettings(): Promise<PublicSettings> {
         const record = jsonRecord(value);
         return typeof record.en === "string" && record.en.trim() ? record.en : typeof value === "string" && value.trim() ? value : fallback;
       };
+      const heroMediaId = typeof values.get("home.hero.mediaId") === "string" ? values.get("home.hero.mediaId") as string : null;
+      const ownerMediaId = typeof values.get("owner.mediaId") === "string" ? values.get("owner.mediaId") as string : null;
+      const media = await mediaMap([heroMediaId, ownerMediaId]);
+      const ownerDisplay = values.get("owner.display") === true;
       return {
         phones: [...new Set(phones)],
         address: typeof address.en === "string" ? address.en : "",
@@ -110,9 +115,10 @@ export async function getPublicSettings(): Promise<PublicSettings> {
         whatsappNumber,
         whatsappMessage: typeof whatsappMessage.en === "string" ? whatsappMessage.en : "",
         home: {
-          hero: { headline: stringSetting("home.hero.headline", siteContentDefaults.home.hero.headline), subhead: stringSetting("home.hero.subhead", siteContentDefaults.home.hero.subhead), cta: stringSetting("home.hero.cta", siteContentDefaults.home.hero.cta) },
+          hero: { headline: stringSetting("home.hero.headline", siteContentDefaults.home.hero.headline), subhead: stringSetting("home.hero.subhead", siteContentDefaults.home.hero.subhead), cta: stringSetting("home.hero.primaryCta", stringSetting("home.hero.cta", siteContentDefaults.home.hero.cta)), secondaryCta: stringSetting("home.hero.secondaryCta", "Explore experiences"), media: heroMediaId ? media.get(heroMediaId) ?? null : null },
           closing: { headline: stringSetting("home.closing.headline", siteContentDefaults.home.closing.headline) },
         },
+        owner: { display: ownerDisplay && Boolean(ownerMediaId && media.get(ownerMediaId)), name: stringSetting("owner.name", ""), caption: stringSetting("owner.caption", ""), media: ownerDisplay && ownerMediaId ? media.get(ownerMediaId) ?? null : null },
       };
     } catch {
       return {
@@ -121,7 +127,8 @@ export async function getPublicSettings(): Promise<PublicSettings> {
         socialLinks: [],
         whatsappNumber: "",
         whatsappMessage: "",
-        home: siteContentDefaults.home,
+        home: { hero: { ...siteContentDefaults.home.hero, secondaryCta: "Explore experiences", media: null }, closing: siteContentDefaults.home.closing },
+        owner: { display: false, name: "", caption: "", media: null },
       };
     }
   }, ["public-content:settings"], { tags: ["cms:settings", "cms:all"], revalidate: cacheRevalidateSeconds })();
