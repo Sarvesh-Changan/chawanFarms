@@ -23,13 +23,14 @@ import { saveAccommodationAction, softDeleteCmsEntityAction } from "@/server/act
 type AccommodationFormInput = z.input<typeof accommodationFormSchema>;
 type MediaOption = { id: string; publicId: string; kind: "IMAGE"; altText: unknown; format: string | null };
 
-export function AccommodationEditor({ initial, mediaOptions, cloudName, canWrite, canPublish, canDelete }: {
+export function AccommodationEditor({ initial, mediaOptions, cloudName, canWrite, canPublish, canDelete, adminPath = "/admin/accommodation" }: {
   initial: AccommodationFormInput & { status?: "DRAFT" | "SCHEDULED" | "PUBLISHED" | "ARCHIVED" };
   mediaOptions: MediaOption[];
   cloudName?: string;
   canWrite: boolean;
   canPublish: boolean;
   canDelete: boolean;
+  adminPath?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -44,7 +45,7 @@ export function AccommodationEditor({ initial, mediaOptions, cloudName, canWrite
       const result = await saveAccommodationAction(data);
       setMessage(result.ok ? "Accommodation saved." : result.error.message);
       if (result.ok) {
-        router.push(`/admin/cms/accommodations/${result.data.id}`);
+        router.push(`${adminPath}/${result.data.id}`);
         router.refresh();
       }
     });
@@ -54,7 +55,7 @@ export function AccommodationEditor({ initial, mediaOptions, cloudName, canWrite
     if (!id) return;
     const result = await softDeleteCmsEntityAction({ entityType: "accommodation", id });
     setMessage(result.ok ? "Accommodation moved to trash." : result.error.message);
-    if (result.ok) router.push("/admin/cms/accommodations");
+    if (result.ok) router.push(adminPath);
   }
 
   return <div className="grid gap-6">

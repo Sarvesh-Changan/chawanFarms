@@ -10,7 +10,7 @@ import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton";
 import { Button } from "@/components/ui/button";
 import type { StaffPrincipal } from "@/server/authz";
 
-export type AdminNavigationItem = { label: string; href: string; permission: string | readonly string[]; children?: AdminNavigationItem[] };
+export type AdminNavigationItem = { label: string; href: string; permission: string | readonly string[]; children?: readonly AdminNavigationItem[] };
 
 function NavigationLinks({ items, currentPath }: { items: AdminNavigationItem[]; currentPath: string }) {
   return <nav aria-label="Admin sections" className="grid gap-1">{items.map(({ label, href, children }) => {

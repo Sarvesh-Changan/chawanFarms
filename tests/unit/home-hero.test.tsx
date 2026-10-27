@@ -9,6 +9,7 @@ const emptySettings = {
   phones: [],
   whatsappNumber: "",
   whatsappMessage: "",
+  home: { hero: { headline: "Settings headline", subhead: "Settings subhead", cta: "Settings CTA" }, closing: { headline: "Closing" } },
 };
 
 const cmsSection = {
@@ -22,13 +23,13 @@ const cmsSection = {
 };
 
 describe("home hero", () => {
-  it("renders CMS copy and the two hero actions", () => {
+  it("renders Settings copy and the two hero actions", () => {
     render(<HomeHero section={cmsSection} media={null} settings={emptySettings} />);
 
-    expect(screen.getByRole("heading", { name: "CMS headline" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Settings headline" })).toBeInTheDocument();
     expect(screen.getByText("CMS eyebrow")).toBeInTheDocument();
-    expect(screen.getByText("CMS supporting line")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "CMS primary action" })).toHaveAttribute("href", "/contact");
+    expect(screen.getByText("Settings subhead")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Settings CTA" })).toHaveAttribute("href", "/book");
     expect(screen.getByRole("link", { name: "Explore experiences" })).toHaveAttribute("href", "/experiences");
   });
 

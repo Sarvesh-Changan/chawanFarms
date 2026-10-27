@@ -1,4 +1,7 @@
+# Superseded by the admin simplification on 2026-10-27. Retained as a historical QA record.
+
 # Archi Green study → Chawan Farms adaptation brief
+
 
 This is a design study, not a visual copy. The reference was captured from the home page and the first five same-site header/footer destinations at 1440×900 and 390×844 touch viewports. Screenshots and videos are local-only; no reference assets are reused. The raw evidence is in `docs/reference/archigreen/` and the capture method is `scripts/reference/capture.ts`.
 
@@ -94,3 +97,4 @@ The following blocks must be **hidden until the client provides approved data**:
 The current home composition already has `Header`, `HomeSections`, `Footer`, `StickyCtaBar`, `SectionHeading`, `ExperienceCard`, `AccommodationShowcase`, `GalleryGrid`, `RewardsTeaser`, `Reveal` and `ParallaxImage` building blocks. The next design pass should refine those components and the CMS content shape rather than introduce a reference-site clone or a new navigation model.
 
 The capture artifacts are intentionally local-only for media: `docs/reference/**/*.png` and `docs/reference/**/*.webm` are ignored. The scripts, JSON measurements and markdown analysis are the reviewable study record.
+

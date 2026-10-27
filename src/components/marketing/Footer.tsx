@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { CallButton, WhatsAppButton } from "@/components/marketing/ContactButtons";
-import { publicNavGroups, publicNavHome, publicNavTopLevel } from "@/config/public-nav";
+import { publicNavFooter, publicNavGroups, publicNavHome, publicNavTopLevel } from "@/config/public-nav";
 import { getPublicSettings } from "@/server/services/public-content";
 
 export async function Footer() {
@@ -23,6 +23,7 @@ export function FooterContent({ settings }: { settings: Awaited<ReturnType<typeo
             <Link className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href={publicNavHome.href}>{publicNavHome.label}</Link>
             {publicNavGroups.flatMap((group) => group.items).map((item) => <Link key={item.href} className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href={item.href}>{item.label}</Link>)}
             {publicNavTopLevel.map((item) => <Link key={item.href} className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href={item.href}>{item.label}</Link>)}
+            {publicNavFooter.map((item) => <Link key={item.href} className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href={item.href}>{item.label}</Link>)}
             <Link className="w-fit hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-turmeric-500" href="/book">Book / Enquire</Link>
           </div>
         </div>

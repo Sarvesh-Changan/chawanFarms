@@ -682,6 +682,8 @@ transaction; customer-origin media is not eligible. Public reads require both a
 published, non-deleted GalleryItem and public, non-deleted media.
 
 ## 4. Seed data
+
+Navigation simplification does not change the Prisma schema or delete data. Page/PageSection, Offer, and Testimonial records remain preserved; only their removed admin/public UI is out of the step-1 runtime path. Booking `offerId`, coupon/reward combination fields, VideoSubmission, moderation, ledger, and coupon data remain unchanged.
 `prisma/seed.ts` is idempotent (upsert by slug/key) and loads:
 1. **Permissions & roles** (below).
 2. **PDF-sourced catalogue** (Appendix A of PRD): Packages A/B/C/Picnic, `PackageRate` rows (₹1400/1800, 2300/2800, 1200/1800, 1100 adult / 750 kids; child 4–10 = 60%; under-4 = 0), accommodation (Tent, Dormitory, Guest House [2 AC rooms with terrace], Camp Lawn), menu items, activities list, amenities, policies (stay rules as `PolicyVersion` v1 **DRAFT-flagged pending D-2**), contact numbers and address into `Setting`. Every PDF-derived row carries `meta = { "source": "client-pdf" }`; the policy additionally carries `pendingDecision = "D-2 cancellation conflict"`.

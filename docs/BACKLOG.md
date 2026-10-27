@@ -318,6 +318,10 @@ Blockers:
 
 ## Current safe next step
 
+- [x] Step 1 admin simplification: remove the CMS hub, mount existing editors at canonical routes, preserve permissions and policy versioning, convert Home/About away from Page readers, remove Offers/testimonial public UI, and retain Experience until step 3.
+- [ ] Step 2: build the Settings screen for Home/About copy keys and complete the approved Stories/Gallery/Menu UX.
+- [ ] Step 3: migrate Experiences into Stories and remove the hidden legacy Experience editor.
+
 ## Phase 14 completion note
 
 - Notifications, SMTP-backed outbox processing, React Email templates, protected cron routes and Vercel schedules are implemented. Retention remains configuration-gated and media-orphans is report-only until a client-approved deletion policy exists.

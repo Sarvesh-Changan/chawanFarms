@@ -70,7 +70,7 @@ test.describe("admin to anonymous propagation", () => {
     const visitor = await visitorContext.newPage();
     const marker = `QA-${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14)}`;
     const publicPath = process.env.QA_PROPAGATION_PUBLIC_PATH as string;
-    const editorPath = process.env.QA_PROPAGATION_EDITOR_PATH ?? "/admin/cms/faq/new";
+    const editorPath = process.env.QA_PROPAGATION_EDITOR_PATH ?? "/admin/faqs/new";
     const fieldLabel = process.env.QA_PROPAGATION_FIELD_LABEL ?? "Question (English)";
 
     await loginAsStaff(admin);

@@ -1,4 +1,7 @@
+# Superseded by the admin simplification on 2026-10-27. Retained as a historical QA record.
+
 # Admin → public-site manual QA checklist
+
 
 Use only the DEV environment and a DEV/test database. Use a private browser window for the anonymous visitor. Prefix every created value with `QA-<timestamp>`. Do not send real email; use console/in-memory transport. Run against a production build (`npm run build`, `npm start`) first, then repeat the key checks in dev mode. Record the time from the admin success message to the first anonymous page that shows the new value.
 
@@ -45,3 +48,4 @@ Use only the DEV environment and a DEV/test database. Use a private browser wind
 - [ ] Remove QA bookings/leads/settings/policy fixtures using the approved DEV cleanup path; do not delete pre-existing records.
 - [ ] Confirm audit records remain as evidence and list any intentional residue.
 - [ ] Re-run `/`, `/sitemap.xml`, `/gallery`, `/packages`, `/stories`, `/book`, and `/api/health` anonymously after cleanup.
+

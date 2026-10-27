@@ -56,6 +56,10 @@ Status: all questions below remain open unless the client records a written answ
 
 ## Decision recording rule
 
+### Admin simplification decisions (2026-10-27)
+
+Step 1 removes the public Offers page and Home testimonials block without deleting Offer/Testimonial records or changing booking, coupon, reward-combination, VideoSubmission, moderation, ledger, or coupon code. The `/book?offer=` compatibility finding is recorded in `docs/DECISIONS.md`. Experiences remain public and editable at the hidden legacy admin route until step 3.
+
 ### Where we are and stats data approval
 
 The public location block currently uses the Settings address and phone numbers, with the PDF wording as the location-copy fallback. Before publishing a map pin or directions link, the client should confirm the canonical address spelling, PIN, map pin, and Google Maps URL (see D-33).

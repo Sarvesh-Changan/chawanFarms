@@ -2,6 +2,7 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
+import { siteContentDefaults } from "@/config/site-content";
 import { Prisma } from "@/generated/prisma/client";
 import { normalizeLeadPhone } from "@/lib/lead-phone";
 import { db } from "@/server/db";
@@ -65,13 +66,14 @@ export type PublicSettings = {
   socialLinks?: Array<{ label: string; url: string }>;
   whatsappNumber: string;
   whatsappMessage: string;
+  home: { hero: { headline: string; subhead: string; cta: string }; closing: { headline: string } };
 };
 
 export async function getPublicSettings(): Promise<PublicSettings> {
   return unstable_cache(async () => {
     try {
       const rows = await db.setting.findMany({
-        where: { key: { in: ["business.phones", "business.address", "business.socialLinks", "whatsapp.number", "whatsapp.defaultMessage"] } },
+        where: { key: { in: ["business.phones", "business.address", "business.socialLinks", "whatsapp.number", "whatsapp.defaultMessage", "home.hero.headline", "home.hero.subhead", "home.hero.cta", "home.closing.headline"] } },
         select: { key: true, value: true },
       });
       const values = new Map(rows.map((row) => [row.key, row.value]));
@@ -96,12 +98,21 @@ export async function getPublicSettings(): Promise<PublicSettings> {
       } catch {
         whatsappNumber = "";
       }
+      const stringSetting = (key: string, fallback: string) => {
+        const value = values.get(key);
+        const record = jsonRecord(value);
+        return typeof record.en === "string" && record.en.trim() ? record.en : typeof value === "string" && value.trim() ? value : fallback;
+      };
       return {
         phones: [...new Set(phones)],
         address: typeof address.en === "string" ? address.en : "",
         socialLinks,
         whatsappNumber,
         whatsappMessage: typeof whatsappMessage.en === "string" ? whatsappMessage.en : "",
+        home: {
+          hero: { headline: stringSetting("home.hero.headline", siteContentDefaults.home.hero.headline), subhead: stringSetting("home.hero.subhead", siteContentDefaults.home.hero.subhead), cta: stringSetting("home.hero.cta", siteContentDefaults.home.hero.cta) },
+          closing: { headline: stringSetting("home.closing.headline", siteContentDefaults.home.closing.headline) },
+        },
       };
     } catch {
       return {
@@ -110,43 +121,12 @@ export async function getPublicSettings(): Promise<PublicSettings> {
         socialLinks: [],
         whatsappNumber: "",
         whatsappMessage: "",
+        home: siteContentDefaults.home,
       };
     }
   }, ["public-content:settings"], { tags: ["cms:settings", "cms:all"], revalidate: cacheRevalidateSeconds })();
 }
 
-
-export async function getPublicHomePage() {
-  return unstable_cache(async () => {
-    const page = await db.page.findFirst({
-      where: { slug: "home", status: "PUBLISHED", deletedAt: null },
-      include: { sections: { where: { isVisible: true }, orderBy: { sortOrder: "asc" } } },
-    });
-    if (!page) return null;
-    const imageIds = page.sections.flatMap((section) => {
-      const content = jsonRecord(section.content);
-      return typeof content.imageMediaId === "string" ? [content.imageMediaId] : [];
-    });
-    const images = await mediaMap(imageIds);
-    return { ...page, images: [...images.values()] };
-  }, ["public-content:home-page"], { tags: ["cms:page:home", "cms:pages", "cms:all"], revalidate: cacheRevalidateSeconds })();
-}
-
-export async function getPublicPageBySlug(slug: string) {
-  return unstable_cache(async () => {
-    const page = await db.page.findFirst({
-      where: { slug, status: "PUBLISHED", deletedAt: null },
-      include: { sections: { where: { isVisible: true }, orderBy: { sortOrder: "asc" } } },
-    });
-    if (!page) return null;
-    const imageIds = page.sections.flatMap((section) => {
-      const content = jsonRecord(section.content);
-      return typeof content.imageMediaId === "string" ? [content.imageMediaId] : [];
-    });
-    const images = await mediaMap(imageIds);
-    return { ...page, images: [...images.values()] };
-  }, ["public-content:page", slug], { tags: ["cms:pages", `cms:page:${slug}`, "cms:all"], revalidate: cacheRevalidateSeconds })();
-}
 
 export async function getPublicExperiences() {
   return unstable_cache(async () => {
@@ -281,14 +261,6 @@ export async function getPublicGallery() {
   }), ["public-content:gallery"], { tags: ["cms:gallery-item", "cms:all"], revalidate: cacheRevalidateSeconds })();
 }
 
-export async function getPublicTestimonials() {
-  return unstable_cache(async () => {
-    const rows = await db.testimonial.findMany({ where: { ...published, consentConfirmed: true }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] });
-    const media = await mediaMap(rows.map((row) => row.mediaId));
-    return rows.map((row) => ({ ...row, media: row.mediaId ? media.get(row.mediaId) ?? null : null }));
-  }, ["public-content:testimonials"], { tags: ["cms:testimonial", "cms:all"], revalidate: cacheRevalidateSeconds })();
-}
-
 export async function getPublicStories() {
   return unstable_cache(async () => {
     const rows = await db.post.findMany({
@@ -348,8 +320,7 @@ export async function getPublicActiveRewardRule() {
 }
 
 export async function getPublicHomeData() {
-  const [page, settings, experiences, accommodations, packages, activities, food, gallery, testimonials, stories, activeRewardRule] = await Promise.all([
-    getPublicHomePage(),
+  const [settings, experiences, accommodations, packages, activities, food, gallery, stories, activeRewardRule] = await Promise.all([
     getPublicSettings(),
     getPublicExperiences(),
     getPublicAccommodations(),
@@ -357,11 +328,10 @@ export async function getPublicHomeData() {
     getPublicActivities(),
     getPublicFood(),
     getPublicGallery(),
-    getPublicTestimonials(),
     getPublicStories(),
     getPublicActiveRewardRule(),
   ]);
-  return { page, settings, experiences, accommodations, packages, activities, food, gallery, testimonials, stories, activeRewardRule };
+  return { settings, experiences, accommodations, packages, activities, food, gallery, stories, activeRewardRule };
 }
 
 export type PublicHomeData = Awaited<ReturnType<typeof getPublicHomeData>>;

@@ -8,7 +8,7 @@ import type { Permission } from "@/server/authz/permissions";
 
 export async function getCmsPageStaff(permission: Permission) {
   const session = await getSession();
-  if (!session) redirect("/login?callbackUrl=%2Fadmin%2Fcms");
+  if (!session) redirect("/login?callbackUrl=%2Fadmin");
   const staff = await getStaffPrincipal(session.user.id);
   return staff && await can(staff, permission) ? staff : null;
 }

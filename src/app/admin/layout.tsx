@@ -1,38 +1,11 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { AdminShell, type AdminNavigationItem } from "@/components/admin/AdminShell";
+import { AdminShell } from "@/components/admin/AdminShell";
 import { NoAccess } from "@/components/admin/NoAccess";
+import { adminNavigation, filterAdminNavigation } from "@/config/admin-navigation";
 import { getSession } from "@/server/auth";
 import { can, getStaffPrincipal } from "@/server/authz";
-import type { Permission } from "@/server/authz/permissions";
-
-const navigation = [
-  { label: "Dashboard", href: "/admin", permission: "dashboard.read" },
-  { label: "CMS", href: "/admin/cms", permission: "cms.read" },
-  { label: "Bookings", href: "/admin/bookings", permission: "bookings.read", children: [
-    { label: "All Bookings", href: "/admin/bookings", permission: "bookings.read" },
-    { label: "New Booking", href: "/admin/bookings/new", permission: "bookings.write" },
-    { label: "Arrivals & Calendar", href: "/admin/calendar", permission: "bookings.read" },
-    { label: "Availability Grid", href: "/admin/availability", permission: "bookings.read" },
-  ] },
-  { label: "Enquiries", href: "/admin/enquiries", permission: "enquiries.read" },
-  { label: "Leads", href: "/admin/leads", permission: "leads.read" },
-  { label: "Rewards", href: "/admin/rewards/rules", permission: ["rewards.videos.read", "rewards.rules.read", "rewards.ledger.read", "coupons.read"], children: [
-    { label: "Video review", href: "/admin/rewards/videos", permission: "rewards.videos.review" },
-    { label: "Rules & Tiers", href: "/admin/rewards/rules", permission: "rewards.rules.read" },
-    { label: "Points Ledger", href: "/admin/rewards/ledger", permission: "rewards.ledger.read" },
-    { label: "Coupons", href: "/admin/rewards/coupons", permission: "coupons.read" },
-  ] },
-  { label: "SEO", href: "/admin/seo", permission: "seo.write" },
-  { label: "Settings", href: "/admin/settings", permission: "settings.read" },
-  { label: "Security", href: "/admin/security/staff", permission: "staff.read", children: [
-    { label: "Staff", href: "/admin/security/staff", permission: "staff.read" },
-    { label: "Roles & permissions", href: "/admin/security/roles", permission: "roles.write" },
-    { label: "Audit log", href: "/admin/security/audit", permission: "audit.read" },
-    { label: "Your sessions", href: "/admin/security/sessions", permission: "staff.read" },
-  ] },
-] satisfies AdminNavigationItem[];
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await getSession();
@@ -40,17 +13,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const staff = await getStaffPrincipal(session.user.id);
   if (!staff) return <NoAccess title="Staff access required" message="The admin workspace is available to invited staff accounts." />;
 
-  const items = (await Promise.all(navigation.map(async (item) => {
-    const children = item.children
-      ? (await Promise.all(item.children.map(async (child) => ({ child, allowed: await can(staff, child.permission as Permission) }))))
-          .filter(({ allowed }) => allowed)
-          .map(({ child }) => child)
-      : undefined;
-    const permissions = Array.isArray(item.permission) ? item.permission : [item.permission];
-    const allowed = (await Promise.all(permissions.map((permission) => can(staff, permission as Permission)))).some(Boolean);
-    const visible = item.children ? Boolean(children?.length) : allowed;
-    return { item: { ...item, ...(children ? { children } : {}) }, visible };
-  }))).filter(({ visible }) => visible).map(({ item }) => item);
+  const { PERMISSIONS } = await import("@/server/authz/permissions");
+  const allowed = new Set((await Promise.all(PERMISSIONS.map(async (permission) => ({ permission, allowed: await can(staff, permission) })))).filter(({ allowed: isAllowed }) => isAllowed).map(({ permission }) => permission));
+  const items = filterAdminNavigation(adminNavigation, allowed);
 
   return <AdminShell items={items} staff={staff} displayName={session.user.name}>{children}</AdminShell>;
 }

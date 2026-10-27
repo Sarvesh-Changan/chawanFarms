@@ -92,6 +92,8 @@ Next.js App (Vercel)
 
 ## 5. Rendering & caching strategy
 
+Home and About are fixed-code compositions with Settings overrides and PDF-backed defaults. Page/PageSection records remain preserved for compatibility but are not public readers in step 1. Admin navigation is module-based and permission-filtered; the CMS hub is not a runtime route.
+
 | Route group | Strategy |
 |---|---|
 | Public marketing/CMS pages | Static/ISR with **tag-based revalidation**: admin publish → `revalidateTag('cms:page:<slug>')`. Cache Components / `use cache` or fetch caching per the installed Next.js version's docs |

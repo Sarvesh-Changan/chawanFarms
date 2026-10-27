@@ -110,7 +110,7 @@ function PackageRateEditor({ packageId, rates }: { packageId: string; rates: Pac
   </section>;
 }
 
-export function PackageEditor({ initial, rates, accommodationOptions, activityOptions, mediaOptions, cloudName, canWrite, canPublish, canDelete }: {
+export function PackageEditor({ initial, rates, accommodationOptions, activityOptions, mediaOptions, cloudName, canWrite, canPublish, canDelete, adminPath = "/admin/packages" }: {
   initial: PackageFormInput & { status?: "DRAFT" | "SCHEDULED" | "PUBLISHED" | "ARCHIVED"; publishAt?: Date | null };
   rates: PackageRateRow[];
   accommodationOptions: Array<{ id: string; slug: string; name: unknown }>;
@@ -120,6 +120,7 @@ export function PackageEditor({ initial, rates, accommodationOptions, activityOp
   canWrite: boolean;
   canPublish: boolean;
   canDelete: boolean;
+  adminPath?: string;
 }) {
   const router = useRouter();
   const [message, setMessage] = useState("");
@@ -139,7 +140,7 @@ export function PackageEditor({ initial, rates, accommodationOptions, activityOp
         return;
       }
       setMessage("Package saved.");
-      router.push(`/admin/cms/packages/${result.data.id}`);
+      router.push(`${adminPath}/${result.data.id}`);
       router.refresh();
     });
   }
@@ -148,7 +149,7 @@ export function PackageEditor({ initial, rates, accommodationOptions, activityOp
     if (!packageId) return;
     const result = await softDeleteCmsEntityAction({ entityType: "package", id: packageId });
     setMessage(result.ok ? "Package moved to trash." : result.error.message);
-    if (result.ok) router.push("/admin/cms/packages");
+    if (result.ok) router.push(adminPath);
   }
 
   return <div className="grid gap-6">

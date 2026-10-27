@@ -32,7 +32,7 @@ async function prepare(action: string, permission: "cms.write" | "cms.publish"):
 async function record(input: { actorId: string; ip: string; requestHeaders: Headers; action: string; before: unknown; after: { id: string } }) {
   const result = await audit({ actor: { id: input.actorId, type: "STAFF" }, action: input.action, entityType: "PolicyVersion", entityId: input.after.id, before: input.before, after: input.after, ip: input.ip, userAgent: input.requestHeaders.get("user-agent")?.slice(0, 512), requestId: input.requestHeaders.get("x-request-id")?.slice(0, 128) });
   revalidateTag("cms:policies", "max");
-  for (const path of ["/policies", "/privacy", "/terms", "/admin/cms/policies"]) revalidatePath(path);
+  for (const path of ["/policies", "/privacy", "/terms", "/admin/settings/policies"]) revalidatePath(path);
   return result;
 }
 

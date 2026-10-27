@@ -7,7 +7,7 @@ import { StatStrip } from "@/components/marketing/StatStrip";
 import { WhereWeAre } from "@/components/marketing/WhereWeAre";
 import { CountUp } from "@/components/motion/CountUp";
 
-const emptySettings = { address: "", phones: [], whatsappNumber: "", whatsappMessage: "" };
+const emptySettings = { address: "", phones: [], whatsappNumber: "", whatsappMessage: "", home: { hero: { headline: "Headline", subhead: "Subhead", cta: "Plan your stay" }, closing: { headline: "Closing" } } };
 
 describe("where we are and stats", () => {
   it("hides optional settings details and map link when settings are empty", () => {

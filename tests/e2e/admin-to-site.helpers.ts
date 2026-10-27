@@ -9,7 +9,6 @@ export const PUBLIC_ROUTES = [
   "/food",
   "/faqs",
   "/gallery",
-  "/offers",
   "/packages",
   "/rewards",
   "/stories",

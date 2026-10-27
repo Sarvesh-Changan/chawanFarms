@@ -439,7 +439,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 ```
 Act as a senior full-stack engineer. Build the admin shell using the already-created authz and audit modules.
 
-1. Create `src/app/admin/` layout with permission-filtered left navigation (Dashboard, CMS, Bookings, Enquiries, Leads, Customers, Rewards, Media, SEO, Settings, Security), a mobile-friendly top bar, breadcrumbs, and a 'no access' page.
+1. Create `src/app/admin/` layout with permission-filtered left navigation (Dashboard, Activity, Stories, Gallery, Menu, FAQ, Packages, Accommodation, Bookings, Enquiries, Leads, Rewards, Media, SEO, Settings, Security), a mobile-friendly top bar, breadcrumbs, and a 'no access' page. Do not recreate a CMS hub; preserve existing `cms.*` permissions.
 2. Build reusable admin components in `src/components/admin/`: DataTable (TanStack Table with server-side pagination/sorting/filtering), PageHeader, StatCard, FilterBar, ConfirmDialog, StatusBadge.
 3. Build the Dashboard with real aggregate queries (leads today/7d/30d, enquiries and bookings by status, pending videos count, recent audit activity) and graceful empty states.
 4. Build Security pages: Staff list, invite staff (token email, invite-only, no public staff signup), assign/remove roles, disable staff (revokes sessions), Roles & Permissions matrix, Audit log viewer with filters, and the user's own Sessions list with revoke.
@@ -581,7 +581,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 Act as a senior full-stack engineer. Finish the CMS with page builder-style sections, SEO fields and policies.
 
 1. Define typed section schemas (Zod) for the Home funnel: hero, why-chawan, experiences-grid, accommodation, packages, food, activities, gallery, stories, rewards-teaser, location, final-cta, plus generic rich-text and image+text sections for About.
-2. Build `/admin/cms/pages` with section list, add/remove/reorder, per-section form generated from its schema, visibility toggle, preview and publish.
+2. Page/PageSection models and seed data remain preserved, but step 1 removes the Page editor, Page preview, and public Page readers. Home/About are fixed-code compositions with Settings overrides until a future approved Pages migration.
 3. Add an SEO panel (title, description, keywords, canonical, robots, OG image picker, JSON-LD override) saved to SeoMetadata for pages, packages, experiences, activities, accommodation and posts.
 4. Add Policies management (PolicyVersion create-new-version; never edit published versions) for stay rules, cancellation, privacy and terms. Seeded PDF rules stay flagged pending decision D-2.
 5. Seed the Home page and About page structures with the PDF's wording only (taglines such as 'Come live, experience & rediscover yourself & nature at its best').
@@ -732,7 +732,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 Act as a senior Next.js engineer. Build the remaining public pages.
 
 1. `/gallery`: masonry, category chips, accessible lightbox (keyboard, swipe, ESC), video tiles, deep-linkable items.
-2. `/stories` (+`[slug]`), `/offers` (active offers only, with validity dates), `/faqs` (accordion), `/about`, `/contact` (contact form, phones/address/map from Settings), `/rewards` (how it works: share video → admin approves → earn points → redeem coupon; show numeric values only if read from the active RewardRule, otherwise no numbers), `/privacy`, `/terms`, `/policies` (stay rules from PolicyVersion; show cancellation text as configured).
+2. `/stories` (+`[slug]`), `/faqs` (accordion), `/about`, `/contact` (contact form, phones/address/map from Settings), `/rewards` (how it works: share video → admin approves → earn points → redeem coupon; show numeric values only if read from the active RewardRule, otherwise no numbers), `/privacy`, `/terms`, `/policies` (stay rules from PolicyVersion; show cancellation text as configured). `/offers` permanently redirects to `/packages`; Offer booking/coupon/reward logic remains server-side.
 3. Create `not-found.tsx` and `error.tsx` with friendly designs and a Contact CTA.
 4. Run axe and fix issues; verify no layout shift and no hard-coded business data.
 5. Before writing code, inspect the existing repository (structure, package.json, prisma/, git log, /docs) and briefly explain your plan and the files you will touch. If something is ambiguous or needs a client decision, ask instead of guessing.

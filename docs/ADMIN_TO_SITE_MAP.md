@@ -1,4 +1,7 @@
+# Superseded by the admin simplification on 2026-10-27. Retained as a historical QA record.
+
 # Admin → public-site propagation map
+
 
 QA scope: DEV only. This map is based on the source trace completed on 27 October 2026. The public readers in `src/server/services/public-content.ts` use `unstable_cache` with a 300-second fallback and CMS tags; public route modules are mostly `force-dynamic`, so a request still depends on those reader caches. This document records coverage; it is not evidence that every path has passed an authenticated browser test.
 
@@ -46,3 +49,4 @@ Primary anonymous routes checked by the QA suite: `/`, `/about`, `/accommodation
 ## Evidence boundary
 
 The source map is complete enough to plan coverage, but authenticated admin actions, audit-log assertions, Cloudinary Admin API verification, concurrency, policy snapshots, and every entity’s propagation delay require explicit DEV QA credentials and fixture records. They must remain `Not verified` until those checks are actually run.
+

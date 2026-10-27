@@ -32,10 +32,10 @@ async function mutationGate(key: string, permission: "cms.write" | "cms.publish"
 
 function cmsPath(type: CmsContentType): string {
   switch (type) {
-    case "activity": return "activities"; case "experience": return "experiences";
-    case "menu-category": return "menu-categories"; case "menu-item": return "menu-items";
-    case "faq": return "faqs"; case "offer": return "offers"; case "testimonial": return "testimonials";
-    case "gallery-item": return "gallery"; case "post": return "stories"; case "post-category": return "story-categories";
+    case "activity": return "activities"; case "experience": return "experiences-legacy";
+    case "menu-category": return "menu"; case "menu-item": return "menu";
+    case "faq": return "faqs"; case "offer": return ""; case "testimonial": return "";
+    case "gallery-item": return "gallery"; case "post": return "stories"; case "post-category": return "stories";
   }
 }
 
@@ -44,8 +44,7 @@ async function record(actorId: string, action: string, type: CmsContentType, id:
   const result = await audit({ actor: { id: actorId, type: "STAFF" }, action, entityType: type, entityId: id, before, after, ip: requestHeaders.get("cf-connecting-ip")?.slice(0, 128), userAgent: requestHeaders.get("user-agent")?.slice(0, 512), requestId: requestHeaders.get("x-request-id")?.slice(0, 128) });
   revalidateTag(`cms:${type}`, "max");
   revalidateTag("cms:all", "max");
-  revalidatePath("/admin/cms");
-  revalidatePath(`/admin/cms/${cmsPath(type)}`);
+  revalidatePath(`/admin/${cmsPath(type)}`);
   return result;
 }
 

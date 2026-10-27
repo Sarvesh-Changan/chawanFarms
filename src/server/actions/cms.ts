@@ -93,7 +93,7 @@ function entityTag(type: CmsEntityType, slug?: string): string {
 }
 
 function listPath(type: CmsEntityType): string {
-  return type === "package" ? "/admin/cms/packages" : "/admin/cms/accommodations";
+  return type === "package" ? "/admin/packages" : "/admin/accommodation";
 }
 
 export async function savePackageAction(rawInput: unknown): Promise<Result<{ id: string }>> {
@@ -112,7 +112,7 @@ export async function savePackageAction(rawInput: unknown): Promise<Result<{ id:
       before,
       after: saved,
       tags: [entityTag("package"), ...(before?.slug ? [entityTag("package", before.slug)] : []), entityTag("package", saved.slug)],
-      paths: [listPath("package"), "/admin/cms"],
+      paths: [listPath("package"), "/admin"],
     });
     return auditResult.ok ? ok({ id: saved.id }) : auditResult;
   } catch {
@@ -136,7 +136,7 @@ export async function saveAccommodationAction(rawInput: unknown): Promise<Result
       before,
       after: saved,
       tags: [entityTag("accommodation"), ...(before?.slug ? [entityTag("accommodation", before.slug)] : []), entityTag("accommodation", saved.slug)],
-      paths: [listPath("accommodation"), "/admin/cms"],
+      paths: [listPath("accommodation"), "/admin"],
     });
     return auditResult.ok ? ok({ id: saved.id }) : auditResult;
   } catch {
@@ -162,7 +162,7 @@ export async function createPackageRateAction(rawInput: unknown): Promise<Result
       before: { package: before, rates: before.rates },
       after: { packageId: before.id, newRate: created, rates: after?.rates },
       tags: [entityTag("package"), entityTag("package", before.slug)],
-      paths: [listPath("package"), `/admin/cms/packages/${before.id}`],
+      paths: [listPath("package"), `/admin/packages/${before.id}`],
     });
     return auditResult.ok ? ok({ id: created.id }) : auditResult;
   } catch {
@@ -193,7 +193,7 @@ export async function changeCmsPublishStatusAction(rawInput: unknown): Promise<R
       before,
       after: saved,
       tags: [entityTag(parsed.data.entityType), entityTag(parsed.data.entityType, slug)],
-      paths: [listPath(parsed.data.entityType), "/admin/cms"],
+      paths: [listPath(parsed.data.entityType), "/admin"],
     });
     return auditResult.ok ? ok({ id: saved.id }) : auditResult;
   } catch {

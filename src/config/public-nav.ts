@@ -5,14 +5,6 @@ export const publicNavHome = { label: "Home", href: "/" } as const satisfies Pub
 
 export const publicNavGroups = [
   {
-    label: "Explore",
-    items: [
-      { label: "Experiences", href: "/experiences" },
-      { label: "Activities", href: "/activities" },
-      { label: "Stories", href: "/stories" },
-    ],
-  },
-  {
     label: "Stay",
     items: [
       { label: "Accommodation", href: "/accommodation" },
@@ -23,7 +15,13 @@ export const publicNavGroups = [
 ] satisfies readonly PublicNavGroup[];
 
 export const publicNavTopLevel = [
+  { label: "Activities", href: "/activities" },
+  { label: "Stories", href: "/stories" },
   { label: "Gallery", href: "/gallery" },
   { label: "Rewards", href: "/rewards" },
   { label: "Contact", href: "/contact" },
+] satisfies readonly PublicNavItem[];
+
+export const publicNavFooter = [
+  { label: "FAQ", href: "/faqs" },
 ] satisfies readonly PublicNavItem[];

@@ -22,7 +22,7 @@ describe("public navigation", () => {
 
   it("uses real public routes for the primary links", () => {
     expect(publicNavigation.map((item) => item.href)).toEqual([
-      "/", "/experiences", "/activities", "/stories", "/accommodation", "/packages", "/food", "/gallery", "/rewards", "/contact",
+      "/", "/accommodation", "/packages", "/food", "/activities", "/stories", "/gallery", "/rewards", "/contact",
     ]);
   });
 
@@ -37,13 +37,8 @@ describe("public navigation", () => {
 
   it("opens dropdowns by keyboard and closes the previous one", () => {
     render(<PublicNavigation isSignedIn={false} />);
-    const explore = screen.getByRole("button", { name: /Explore/ });
     const stay = screen.getByRole("button", { name: /Stay/ });
-    fireEvent.keyDown(explore, { key: "Enter" });
-    expect(explore).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("menu", { name: "Explore" })).toBeInTheDocument();
     fireEvent.click(stay);
-    expect(screen.queryByRole("menu", { name: "Explore" })).toBeNull();
     expect(screen.getByRole("menu", { name: "Stay" })).toBeInTheDocument();
     fireEvent.keyDown(stay, { key: "Escape" });
     expect(stay).toHaveAttribute("aria-expanded", "false");
