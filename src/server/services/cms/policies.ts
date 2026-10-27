@@ -7,7 +7,7 @@ import { sanitizeLocalizedHtml } from "@/server/cms/html";
 import { db } from "@/server/db";
 
 export async function listPolicyVersions() {
-  return db.policyVersion.findMany({ orderBy: [{ key: "asc" }, { version: "desc" }] });
+  return db.policyVersion.findMany({ orderBy: { key: "asc" } });
 }
 
 export async function getPolicyVersion(id: string) {
@@ -16,19 +16,22 @@ export async function getPolicyVersion(id: string) {
 
 export async function savePolicyDraft(input: PolicyVersionSaveInput) {
   const body = sanitizeLocalizedHtml(input.body) as Prisma.InputJsonValue;
-  if (input.id) {
-    const result = await db.policyVersion.updateMany({
-      where: { id: input.id, status: "DRAFT" },
-      data: { title: input.title, body },
-    });
-    if (!result.count) throw new Error("POLICY_VERSION_IMMUTABLE");
-    return db.policyVersion.findUniqueOrThrow({ where: { id: input.id } });
-  }
   return db.$transaction(async (tx) => {
-    const latest = await tx.policyVersion.aggregate({ where: { key: input.key }, _max: { version: true } });
+    const existing = input.id
+      ? await tx.policyVersion.findUnique({ where: { id: input.id } })
+      : await tx.policyVersion.findUnique({ where: { key: input.key } });
+
+    if (existing) {
+      if (existing.key !== input.key) throw new Error("POLICY_KEY_MISMATCH");
+      return tx.policyVersion.update({
+        where: { id: existing.id },
+        data: { title: input.title, body, status: "DRAFT", publishedAt: null },
+      });
+    }
+
     return tx.policyVersion.create({ data: {
       key: input.key,
-      version: (latest._max.version ?? 0) + 1,
+      version: 1,
       title: input.title,
       body,
       status: "DRAFT",
@@ -47,19 +50,19 @@ export async function publishPolicyVersion(id: string) {
 }
 
 export async function getPublishedPolicyVersions() {
-  return db.policyVersion.findMany({ where: { status: "PUBLISHED", publishedAt: { lte: new Date() } }, orderBy: [{ key: "asc" }, { version: "desc" }] });
+  return db.policyVersion.findMany({ where: { status: "PUBLISHED", publishedAt: { lte: new Date() } }, orderBy: { key: "asc" } });
 }
 
 export async function getPolicyVersionsForPublic(keys: string[]) {
   const published = await db.policyVersion.findMany({
     where: { key: { in: keys }, status: "PUBLISHED", publishedAt: { lte: new Date() } },
-    orderBy: [{ version: "desc" }],
+    orderBy: { key: "asc" },
   });
   if (published.length > 0) return published;
 
   return db.policyVersion.findMany({
     where: { key: { in: keys } },
-    orderBy: [{ version: "desc" }],
+    orderBy: { key: "asc" },
   });
 }
 

@@ -791,7 +791,7 @@ model Payment {
 
 model PolicyVersion {
   id          String             @id @default(uuid())
-  key         String
+  key         String             @unique
   version     Int
   title       String
   body        Json
@@ -800,7 +800,6 @@ model PolicyVersion {
   meta        Json?
   acceptances PolicyAcceptance[]
 
-  @@unique([key, version])
 }
 
 model PolicyAcceptance {

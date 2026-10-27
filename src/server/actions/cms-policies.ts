@@ -44,11 +44,11 @@ export async function savePolicyDraftAction(raw: unknown): Promise<Result<{ id: 
   const before = parsed.data.id ? await getPolicyVersion(parsed.data.id) : null;
   try {
     const after = await savePolicyDraft(parsed.data);
-    const logged = await record({ ...started, action: before ? "cms.policy.draft.update" : "cms.policy.version.create", before, after });
+    const logged = await record({ ...started, action: before ? "cms.policy.update" : "cms.policy.create", before, after });
     return logged.ok ? ok({ id: after.id }) : logged;
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
-    return err(message === "POLICY_VERSION_IMMUTABLE" ? "CONFLICT" : "UNAVAILABLE", message === "POLICY_VERSION_IMMUTABLE" ? "Published policy versions are immutable. Create a new version." : "The policy draft could not be saved.");
+    return err(message === "POLICY_KEY_MISMATCH" ? "CONFLICT" : "UNAVAILABLE", message === "POLICY_KEY_MISMATCH" ? "The selected policy type does not match this policy." : "The policy could not be saved.");
   }
 }
 
@@ -64,6 +64,6 @@ export async function publishPolicyVersionAction(raw: unknown): Promise<Result<{
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (message === "POLICY_PENDING_DECISION") return err("CONFLICT", "This policy remains unpublished until client decision D-2 is recorded.");
-    return err("CONFLICT", "Published policy versions cannot be changed; create a new draft version.");
+    return err("CONFLICT", "The policy could not be published. Please try again.");
   }
 }

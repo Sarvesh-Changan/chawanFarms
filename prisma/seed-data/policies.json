@@ -1,0 +1,14 @@
+{
+  "stay-rules-and-cancellation": {
+    "version": 1,
+    "title": "Stay rules and cancellation policy",
+    "body": {
+      "en": "<p>Confirm check-in/out time at booking.</p><p>Outside food, catering and alcohol/beverages not permitted.</p><p>Mosquito coil provided; bring repellents.</p><p>Not responsible for accidents/loss of belongings.</p><p>Animals &amp; pets not permitted.</p><p>Management may vacate guests for noise, nuisance, unruly behaviour.</p><p>Original photo ID mandatory at check-in (driver's licence, passport, photo credit card etc.).</p><p>Bank details provided on request.</p><p>Booking confirmed against 100% payment (cheque: after realisation).</p><p>Guests visit an agricultural farm; insects and animals are common; basic first aid available; bring mosquito/insect repellent, painkillers, band-aids.</p><h2>Cancellation statements — pending decision D-2</h2><p>No Refund, Cancellation or Postponement shall be accepted for whatsoever Reasons given by the guest once confirmed &amp; paid.</p><p>25% charged when booking cancelled seven days before checking.</p>"
+    },
+    "meta": {
+      "source": "client-pdf",
+      "pendingDecision": "D-2 cancellation conflict",
+      "status": "DRAFT"
+    }
+  }
+}

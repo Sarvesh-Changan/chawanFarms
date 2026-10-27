@@ -10,6 +10,8 @@ import {
   ROLE_PERMISSION_MATRIX,
 } from "../src/server/authz/permissions";
 
+import policySeeds from "./seed-data/policies.json";
+
 loadEnv({ path: ".env.local" });
 loadEnv();
 
@@ -32,11 +34,6 @@ const db = new PrismaClient({
 });
 
 const pdfMeta = { source: "client-pdf" } satisfies Prisma.InputJsonObject;
-const policyMeta = {
-  source: "client-pdf",
-  pendingDecision: "D-2 cancellation conflict",
-  status: "DRAFT",
-} satisfies Prisma.InputJsonObject;
 
 const localizedTextSchema = z
   .object({ en: z.string().trim().min(1) })
@@ -260,10 +257,6 @@ const settingSeeds = [
   { key: "catalogue.amenities", value: amenitySeeds },
 ] as const;
 
-const policyBody = {
-  en: "<p>Confirm check-in/out time at booking.</p><p>Outside food, catering and alcohol/beverages not permitted.</p><p>Mosquito coil provided; bring repellents.</p><p>Not responsible for accidents/loss of belongings.</p><p>Animals &amp; pets not permitted.</p><p>Management may vacate guests for noise, nuisance, unruly behaviour.</p><p>Original photo ID mandatory at check-in (driver's licence, passport, photo credit card etc.).</p><p>Bank details provided on request.</p><p>Booking confirmed against 100% payment (cheque: after realisation).</p><p>Guests visit an agricultural farm; insects and animals are common; basic first aid available; bring mosquito/insect repellent, painkillers, band-aids.</p><h2>Cancellation statements — pending decision D-2</h2><p>No Refund, Cancellation or Postponement shall be accepted for whatsoever Reasons given by the guest once confirmed &amp; paid.</p><p>25% charged when booking cancelled seven days before checking.</p>",
-} satisfies Prisma.InputJsonObject;
-
 const homePageSections: Array<{ type: string; content: Prisma.InputJsonObject; isVisible?: boolean }> = [
   { type: "hero", content: { eyebrow: { en: "Chawan Farms — Agri-Tourism Centre" }, heading: { en: "Come live, experience & rediscover yourself & nature at its best" } } },
   { type: "why-chawan", content: { heading: { en: "Live with the nature" }, body: { en: "Imagine a place where time slows down." }, items: [] } },
@@ -287,7 +280,8 @@ const aboutPageSections: Array<{ type: string; content: Prisma.InputJsonObject; 
 
 function validateSeedData(): void {
   metaSchema.parse(pdfMeta);
-  metaSchema.parse(policyMeta);
+  const policySeed = policySeeds["stay-rules-and-cancellation"];
+  metaSchema.parse(policySeed.meta);
   localizedTextSchema.array().parse(
     accommodationSeeds.flatMap((item) => [item.name, item.description]),
   );
@@ -298,7 +292,7 @@ function validateSeedData(): void {
   z.array(z.string().trim().min(1)).parse(amenitySeeds);
   z.record(z.string(), z.array(z.string().min(1))).parse(rolePermissionMap);
   z.array(z.object({ key: z.string().min(1) }).passthrough()).parse(settingSeeds);
-  z.record(z.string(), z.unknown()).parse(policyBody);
+  localizedTextSchema.parse(policySeed.body);
   pageBuilderSchema.parse({ id: "00000000-0000-4000-8000-000000000001", title: { en: "Home" }, sections: homePageSections.map((section) => ({ ...section, isVisible: section.isVisible ?? true })) });
   pageBuilderSchema.parse({ id: "00000000-0000-4000-8000-000000000002", title: { en: "About" }, sections: aboutPageSections.map((section) => ({ ...section, isVisible: section.isVisible ?? true })) });
 }
@@ -569,18 +563,18 @@ async function seedCatalogue(): Promise<void> {
 }
 
 async function seedPoliciesAndRewards(): Promise<void> {
+  const policySeed = policySeeds["stay-rules-and-cancellation"];
   await db.policyVersion.upsert({
-    where: { key_version: { key: "stay-rules-and-cancellation", version: 1 } },
-    update: {
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-    },
+    where: { key: "stay-rules-and-cancellation" },
+    // Seed data is a bootstrap only. Never overwrite an admin's draft,
+    // publication state, metadata, or timestamp on a later seed run.
+    update: {},
     create: {
       key: "stay-rules-and-cancellation",
-      version: 1,
-      title: "Stay rules and cancellation policy",
-      body: policyBody,
-      meta: policyMeta,
+      version: policySeed.version,
+      title: policySeed.title,
+      body: policySeed.body as Prisma.InputJsonValue,
+      meta: policySeed.meta as Prisma.InputJsonValue,
       status: "PUBLISHED",
       publishedAt: new Date(),
     },

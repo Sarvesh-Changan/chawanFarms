@@ -78,7 +78,6 @@ export async function PublishedPolicyDocument({
                     </h2>
                     {doc.version ? (
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Version {doc.version}
                         {doc.publishedAt ? ` · Published ${new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(doc.publishedAt))}` : " · Configured policy"}
                       </p>
                     ) : null}
