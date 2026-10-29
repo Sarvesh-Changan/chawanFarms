@@ -4,9 +4,10 @@ import { localizedTextSchema, optionalLocalizedTextSchema, slugSchema } from "@/
 import { localizedHtmlSchema } from "@/lib/schemas/cms/content";
 
 export const storyKindSchema = z.enum(["EXPERIENCE", "STORY", "GUEST"]);
+const storyIdSchema = z.string().trim().min(1).max(64).regex(/^[A-Za-z0-9_-]+$/, "Invalid story id.");
 
 export const storyFormSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: storyIdSchema.optional(),
   kind: storyKindSchema.default("STORY"),
   title: localizedTextSchema,
   summary: optionalLocalizedTextSchema.optional(),
@@ -26,7 +27,7 @@ export const storyListSchema = z.object({
 }).strict();
 
 export const storyStatusSchema = z.object({
-  id: z.string().uuid(),
+  id: storyIdSchema,
   status: z.enum(["DRAFT", "SCHEDULED", "PUBLISHED", "ARCHIVED"]),
   publishAt: z.string().datetime({ offset: true }).nullable(),
 }).strict().superRefine((value, context) => {
@@ -34,7 +35,7 @@ export const storyStatusSchema = z.object({
   if (value.status !== "SCHEDULED" && value.publishAt) context.addIssue({ code: "custom", path: ["publishAt"], message: "Publish time is only used for scheduled stories." });
 });
 
-export const storyReferenceSchema = z.object({ id: z.string().uuid() }).strict();
+export const storyReferenceSchema = z.object({ id: storyIdSchema }).strict();
 export const storyReorderSchema = storyReferenceSchema.extend({ direction: z.enum(["up", "down"]) }).strict();
 
 export type StoryFormData = z.output<typeof storyFormSchema>;

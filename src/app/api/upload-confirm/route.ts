@@ -44,7 +44,6 @@ export async function POST(request: Request) {
   const identity = identifyMediaPurpose(parsed.data.publicId);
   if (!identity || identity.userId !== session.user.id) return NextResponse.json({ error: "Asset is not available to this account." }, { status: 404 });
   if (identity.purpose === "customer_video") return NextResponse.json({ error: "Customer videos must complete through the upload-intent flow." }, { status: 410 });
-  if (identity.purpose === "admin_image" && !parsed.data.altText?.en) return NextResponse.json({ error: "English alt text is required for admin images." }, { status: 422 });
   if (identity.purpose === "admin_video" && !parsed.data.description) return NextResponse.json({ error: "A video description is required." }, { status: 422 });
 
   const account = await db.user.findUnique({ where: { id: session.user.id }, select: { type: true, status: true, emailVerified: true, deletedAt: true } });

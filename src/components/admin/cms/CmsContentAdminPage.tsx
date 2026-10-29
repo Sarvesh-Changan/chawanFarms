@@ -1,9 +1,8 @@
-import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CmsContentDataTable } from "@/components/admin/cms/CmsContentDataTable";
 import { CmsContentEditor } from "@/components/admin/cms/CmsContentEditor";
-import { DataTable } from "@/components/admin/DataTable";
 import { NoAccess } from "@/components/admin/NoAccess";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import { cmsContentListQuerySchema } from "@/lib/schemas/cms/content";
 import { getCmsContent, getCmsEditorOptions, listCmsContent } from "@/server/services/cms/content";
 import { getCmsPageStaff } from "@/server/services/cms/page-access";
 
-type Row = { id: string; label: string; slug: string; status: string; updatedAt: string };
+export type CmsContentListRow = { id: string; label: string; slug: string; status: string; updatedAt: string };
 
 export type CmsContentRouteProps = {
   entityType: CmsContentType;
@@ -43,19 +42,13 @@ export async function CmsContentListPage({ entityType, title, basePath, editorPa
   const query = cmsContentListQuerySchema.safeParse({ ...raw, entityType });
   if (!query.success) notFound();
   const result = await listCmsContent({ entityType, page: query.data.page, q: query.data.q, status: query.data.status, trash: query.data.trash });
-  const rows: Row[] = result.rows.map((row) => ({
+  const rows: CmsContentListRow[] = result.rows.map((row) => ({
     id: String(row.id),
     slug: String(row.slug ?? ""),
     label: labelOf(row),
     status: String(row.status ?? "—"),
     updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toLocaleDateString("en-IN") : "—",
   }));
-  const columns: ColumnDef<Row, string>[] = [
-    { accessorKey: "label", header: "Title", cell: ({ row }) => <Link className="font-medium text-forest-800 underline-offset-4 hover:underline" href={`${editorPath}/${row.original.id}`}>{row.original.label || row.original.slug || row.original.id}</Link> },
-    { accessorKey: "slug", header: "Slug" },
-    { accessorKey: "status", header: "Status" },
-    { accessorKey: "updatedAt", header: "Updated" },
-  ];
   const listHref = tab ? pathWithQuery(basePath, `tab=${tab}`) : basePath;
   return <section className="space-y-6">
     <PageHeader title={query.data.trash ? `${title} trash` : title} description="New content is saved as a draft. Publish only client-approved details." actions={<>
@@ -63,7 +56,7 @@ export async function CmsContentListPage({ entityType, title, basePath, editorPa
       <Button asChild variant="outline"><Link href={pathWithQuery(listHref, "trash=1")}>Trash</Link></Button>
     </>} />
     {query.data.trash ? <p className="text-sm text-muted-foreground">Showing trashed records. Restore is available when editing an item.</p> : null}
-    <DataTable columns={columns} data={rows} page={result.page} pageCount={result.pageCount} pageSize={result.pageSize} emptyMessage={`No ${title.toLowerCase()} yet.`} />
+    <CmsContentDataTable rows={rows} editorPath={editorPath} page={result.page} pageCount={result.pageCount} pageSize={result.pageSize} emptyMessage={`No ${title.toLowerCase()} yet.`} />
   </section>;
 }
 
@@ -71,7 +64,7 @@ export async function NewCmsContentPage({ entityType, title, basePath, editorPat
   const staff = await getCmsPageStaff("cms.write");
   if (!staff) return <NoAccess />;
   const editorOptions = await getCmsEditorOptions(entityType);
-  return <section className="space-y-6"><PageHeader title={`Create ${title.toLowerCase()}`} description="Save as draft; publishing requires the appropriate permission." /><CmsContentEditor entityType={entityType} editorPath={editorPath} listPath={basePath} {...editorOptions} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} /></section>;
+  return <section className="space-y-6"><PageHeader title={`Create ${title.toLowerCase()}`} description="Save as draft; publishing requires the appropriate permission." /><CmsContentEditor entityType={entityType} editorPath={editorPath} listPath={basePath} {...editorOptions} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? ""} /></section>;
 }
 
 export async function EditCmsContentPage({ entityType, title, basePath, editorPath = basePath, id }: Omit<CmsContentRouteProps, "searchParams"> & { id: string }) {
@@ -80,5 +73,5 @@ export async function EditCmsContentPage({ entityType, title, basePath, editorPa
   const item = await getCmsContent(entityType, id);
   if (!item) notFound();
   const editorOptions = await getCmsEditorOptions(entityType);
-  return <section className="space-y-6"><PageHeader title={`Edit ${title.toLowerCase()}`} description={`Status: ${"status" in item ? item.status : "—"}`} /><CmsContentEditor entityType={entityType} id={id} item={item as unknown as Record<string, unknown>} editorPath={editorPath} listPath={basePath} {...editorOptions} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} /></section>;
+  return <section className="space-y-6"><PageHeader title={`Edit ${title.toLowerCase()}`} description={`Status: ${"status" in item ? item.status : "—"}`} /><CmsContentEditor entityType={entityType} id={id} item={item as unknown as Record<string, unknown>} editorPath={editorPath} listPath={basePath} {...editorOptions} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? ""} /></section>;
 }

@@ -15,13 +15,13 @@ import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { SUPPORTED_LOCALES } from "@/config/locales";
 import type { SupportedLocale } from "@/config/locales";
 import { accommodationFormSchema } from "@/lib/schemas/cms/accommodation";
 import { saveAccommodationAction, softDeleteCmsEntityAction } from "@/server/actions/cms";
 
 type AccommodationFormInput = z.input<typeof accommodationFormSchema>;
 type MediaOption = { id: string; publicId: string; kind: "IMAGE"; altText: unknown; format: string | null };
+const ADMIN_LOCALES = ["en"] as const satisfies readonly SupportedLocale[];
 
 export function AccommodationEditor({ initial, mediaOptions, cloudName, canWrite, canPublish, canDelete, adminPath = "/admin/accommodation" }: {
   initial: AccommodationFormInput & { status?: "DRAFT" | "SCHEDULED" | "PUBLISHED" | "ARCHIVED" };
@@ -63,10 +63,10 @@ export function AccommodationEditor({ initial, mediaOptions, cloudName, canWrite
     <form onSubmit={form.handleSubmit(submit)} className="grid gap-6 rounded-2xl border border-border/70 bg-card p-5 sm:p-7">
       <div><h1 className="font-heading text-3xl text-forest-900">{id ? "Edit accommodation" : "Create accommodation"}</h1><p className="mt-1 text-sm text-muted-foreground">Use only client-confirmed names, descriptions and amenities. Unknown capacity values may remain blank.</p></div>
       <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1 text-xs font-medium">Slug<Input {...form.register("slug")} aria-invalid={Boolean(form.formState.errors.slug)} /><span className="text-destructive">{form.formState.errors.slug?.message}</span></label><label className="grid gap-1 text-xs font-medium">Accommodation type<select {...form.register("type")} className="min-h-11 rounded-lg border border-input bg-background px-3 text-sm"><option value="TENT">Tent</option><option value="DORMITORY">Dormitory</option><option value="GUEST_HOUSE">Guest house</option><option value="CAMP_LAWN">Camp lawn</option><option value="DAY_VISIT">Day visit</option></select></label></div>
-      <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4"><legend className="px-1 text-sm font-semibold">Name · English required</legend>{SUPPORTED_LOCALES.map((locale) => <LocalizedInput key={locale} locale={locale} path="name" register={form.register} error={form.formState.errors.name?.[locale]?.message} required={locale === "en"} />)}</fieldset>
-      <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4"><legend className="px-1 text-sm font-semibold">Summary</legend>{SUPPORTED_LOCALES.map((locale) => <LocalizedInput key={locale} locale={locale} path="summary" register={form.register} error={form.formState.errors.summary?.[locale]?.message} />)}</fieldset>
-      <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4"><legend className="px-1 text-sm font-semibold">Description</legend>{SUPPORTED_LOCALES.map((locale) => <LocalizedInput key={locale} locale={locale} path="description" register={form.register} error={form.formState.errors.description?.[locale]?.message} multiline />)}</fieldset>
-      <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4"><legend className="px-1 text-sm font-semibold">Amenities</legend>{SUPPORTED_LOCALES.map((locale) => <LocalizedInput key={locale} locale={locale} path="amenities" register={form.register} error={form.formState.errors.amenities?.[locale]?.message} multiline />)}</fieldset>
+      <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4"><legend className="px-1 text-sm font-semibold">Name · English required</legend>{ADMIN_LOCALES.map((locale) => <LocalizedInput key={locale} locale={locale} path="name" register={form.register} error={form.formState.errors.name?.[locale]?.message} required={locale === "en"} />)}</fieldset>
+      <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4"><legend className="px-1 text-sm font-semibold">Summary</legend>{ADMIN_LOCALES.map((locale) => <LocalizedInput key={locale} locale={locale} path="summary" register={form.register} error={form.formState.errors.summary?.[locale]?.message} />)}</fieldset>
+      <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4"><legend className="px-1 text-sm font-semibold">Description</legend>{ADMIN_LOCALES.map((locale) => <LocalizedInput key={locale} locale={locale} path="description" register={form.register} error={form.formState.errors.description?.[locale]?.message} multiline />)}</fieldset>
+      <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4"><legend className="px-1 text-sm font-semibold">Amenities</legend>{ADMIN_LOCALES.map((locale) => <LocalizedInput key={locale} locale={locale} path="amenities" register={form.register} error={form.formState.errors.amenities?.[locale]?.message} multiline />)}</fieldset>
       <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1 text-xs font-medium">Total units/capacity (optional)<Input inputMode="numeric" {...form.register("unitsTotal")} /><span className="text-destructive">{form.formState.errors.unitsTotal?.message}</span></label><label className="grid gap-1 text-xs font-medium">Maximum guests (optional)<Input inputMode="numeric" {...form.register("maxGuests")} /><span className="text-destructive">{form.formState.errors.maxGuests?.message}</span></label></div>
       <MediaReferenceField label="Hero image" value={selectedMediaId} items={mediaOptions} cloudName={cloudName} disabled={!canWrite} onChange={(value) => form.setValue("heroMediaId", value, { shouldDirty: true })} />
       <MediaGalleryField value={galleryMediaIds} items={mediaOptions} cloudName={cloudName} disabled={!canWrite} onChange={(value) => form.setValue("imageMediaIds", value, { shouldDirty: true })} />
@@ -84,5 +84,5 @@ function LocalizedInput({ locale, path, register, error, multiline = false, requ
   required?: boolean;
 }) {
   const name = `${path}.${locale}` as const;
-  return <label className="grid gap-1 text-xs font-medium uppercase">{locale}{required ? " · required" : ""}{multiline ? <Textarea {...register(name)} required={required} aria-invalid={Boolean(error)} /> : <Input {...register(name)} required={required} aria-invalid={Boolean(error)} />}<span className="text-destructive">{error}</span></label>;
+  return <label className="grid gap-1 text-xs font-medium">English{required ? " · required" : ""}{multiline ? <Textarea {...register(name)} required={required} aria-invalid={Boolean(error)} /> : <Input {...register(name)} required={required} aria-invalid={Boolean(error)} />}<span className="text-destructive">{error}</span></label>;
 }

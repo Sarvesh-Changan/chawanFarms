@@ -20,12 +20,15 @@ function upload(endpoint: string, data: FormData, onProgress: (value: number) =>
 
 export function LocalVideoUploader({ label = "Video", value, publicId, cloudName, onChange, onRemove, description = "", disabled = false }: { label?: string; value: string; publicId?: string; cloudName?: string; onChange: (mediaId: string) => void; onRemove: () => void; description?: string; disabled?: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [uploadedMediaId, setUploadedMediaId] = useState<string>();
+  const [uploadedPublicId, setUploadedPublicId] = useState<string>();
   const [text, setText] = useState(description);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
   const policy = mediaPolicy("admin_video");
   const accept = policy.formats.map((format) => `.${format}`).join(",");
+  const currentPublicId = uploadedMediaId === value ? uploadedPublicId : publicId;
 
   function choose(file: File | undefined) {
     if (!file) return;
@@ -44,14 +47,14 @@ export function LocalVideoUploader({ label = "Video", value, publicId, cloudName
         const response = await fetch("/api/upload-confirm", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ publicId: uploaded.public_id, description: text.trim() }) });
         const result = await response.json().catch(() => undefined) as { mediaId?: string; error?: string };
         if (!response.ok || !result.mediaId) throw new Error(result.error || "Upload verification is still pending.");
-        onChange(result.mediaId); setMessage("Video uploaded and verified. Save the form to attach it."); if (fileRef.current) fileRef.current.value = "";
+        setUploadedMediaId(result.mediaId); setUploadedPublicId(uploaded.public_id); onChange(result.mediaId); setMessage("Video uploaded and verified. Save the form to attach it."); if (fileRef.current) fileRef.current.value = "";
       } catch (error) { setMessage(error instanceof Error ? error.message : "Upload failed."); }
     });
   }
 
   return <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4" disabled={disabled || pending}>
     <legend className="px-1 text-sm font-semibold">{label}</legend>
-    {publicId && cloudName ? <video controls preload="metadata" className="aspect-video w-full rounded-lg bg-black" poster={`https://res.cloudinary.com/${encodeURIComponent(cloudName)}/video/upload/so_0,f_jpg/${publicId}.jpg`} src={`https://res.cloudinary.com/${encodeURIComponent(cloudName)}/video/upload/f_auto,q_auto/${publicId}`} aria-label={text || label} /> : null}
+    {currentPublicId && cloudName ? <video controls preload="metadata" className="aspect-video w-full rounded-lg bg-black" poster={`https://res.cloudinary.com/${encodeURIComponent(cloudName)}/video/upload/so_0,f_jpg/${currentPublicId}.jpg`} src={`https://res.cloudinary.com/${encodeURIComponent(cloudName)}/video/upload/f_auto,q_auto/${currentPublicId}`} aria-label={text || label} /> : null}
     <label className="grid gap-1 text-xs font-medium">Description (required)<textarea value={text} onChange={(event) => setText(event.target.value)} maxLength={500} required className="min-h-20 rounded-md border border-input bg-background p-3 text-sm" /><span className="font-normal text-muted-foreground">Describe the video for people who cannot see it. MP4 or WebM · up to {formatMediaBytes(policy.maxBytes)} · {policy.maxDurationSeconds}s max.</span></label>
     <input ref={fileRef} id={`${label.replaceAll(" ", "-")}-file`} type="file" accept={accept} className="sr-only" onChange={(event) => choose(event.target.files?.[0])} />
     <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => fileRef.current?.click()}>{value ? "Replace video" : "Choose video"}</Button>{value ? <Button type="button" variant="ghost" onClick={onRemove}>Remove</Button> : null}</div>

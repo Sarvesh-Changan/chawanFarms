@@ -30,7 +30,7 @@ function formatDate(date: Date | null): string {
 
 export default async function StoriesPage() {
   const stories = await getPublicStories();
-  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
+  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? "";
 
   return (
     <>

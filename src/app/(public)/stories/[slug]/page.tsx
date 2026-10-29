@@ -69,7 +69,7 @@ export default async function StoryDetailPage({
   const excerpt = localizedString(story.excerpt);
   const body = localizedString(story.body);
   const formattedDate = formatDate(story.publishAt ?? story.createdAt);
-  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
+  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? "";
   const pageUrl = `${env.NEXT_PUBLIC_SITE_URL}/stories/${story.slug}`;
 
   const jsonLd = {

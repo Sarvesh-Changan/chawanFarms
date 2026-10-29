@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { publicCmsWhere } from "@/lib/cms-public-policy";
 import { menuItemFormSchema } from "@/lib/schemas/cms/menu";
-import { storyFormSchema } from "@/lib/schemas/cms/stories";
+import { storyFormSchema, storyStatusSchema } from "@/lib/schemas/cms/stories";
 
 const migration = readFileSync(path.join(process.cwd(), "prisma/migrations/20261028120000_stories_unify/migration.sql"), "utf8");
 
@@ -15,6 +15,10 @@ describe("unified stories and menu safeguards", () => {
     const base = { slug: "a-story", title: { en: "A story" }, photoMediaIds: Array.from({ length: 8 }, (_, index) => `${String(index + 1).padStart(8, "0")}-0000-4000-8000-000000000000`) };
     expect(storyFormSchema.safeParse(base).success).toBe(true);
     expect(storyFormSchema.safeParse({ ...base, photoMediaIds: [...base.photoMediaIds, "99999999-0000-4000-8000-000000000000"] }).success).toBe(false);
+  });
+
+  it("accepts migrated experience identifiers when publishing a story", () => {
+    expect(storyStatusSchema.safeParse({ id: "12d6880ca556715a44915f7ad6672b52", status: "PUBLISHED", publishAt: null }).success).toBe(true);
   });
 
   it("converts a blank menu price to null and stores rupees as paise", () => {

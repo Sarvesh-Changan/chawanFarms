@@ -12,5 +12,5 @@ export default async function EditStoryPage({ params }: { params: Promise<{ id: 
   if (!staff) return <NoAccess />;
   const story = await getStoryAdmin((await params).id);
   if (!story) notFound();
-  return <section className="space-y-6"><PageHeader title="Edit story" description="Keep story copy, media, publishing and consent state reviewable."/><StoryEditor initial={story} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}/></section>;
+  return <section className="space-y-6"><PageHeader title="Edit story" description="Keep story copy, media, publishing and consent state reviewable."/><StoryEditor initial={story} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? ""}/></section>;
 }

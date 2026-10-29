@@ -2,14 +2,12 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 
 import { AccommodationEditor } from "@/components/admin/cms/AccommodationEditor";
-import { SeoMetadataPanel } from "@/components/admin/cms/SeoMetadataPanel";
 import { NoAccess } from "@/components/admin/NoAccess";
 import { env } from "@/config/env";
 import { can } from "@/server/authz";
 import { getAccommodationForEditor } from "@/server/services/cms/accommodations";
 import { getCmsHeroMediaOptions } from "@/server/services/cms/options";
 import { getCmsPageStaff } from "@/server/services/cms/page-access";
-import { getSeoImageOptions, getSeoMetadata } from "@/server/services/cms/seo";
 
 function localized(value: unknown) { if (!value || typeof value !== "object" || Array.isArray(value)) return { en: "", mr: "", hi: "" }; const record = value as Record<string, unknown>; return { en: typeof record.en === "string" ? record.en : "", mr: typeof record.mr === "string" ? record.mr : "", hi: typeof record.hi === "string" ? record.hi : "" }; }
 
@@ -18,11 +16,10 @@ export default async function EditAccommodationPage({ params }: { params: Promis
   if (!staff) return <NoAccess />;
   const parsedId = z.string().uuid().safeParse((await params).id);
   if (!parsedId.success) notFound();
-  const [record, permissions] = await Promise.all([getAccommodationForEditor(parsedId.data), Promise.all([can(staff, "cms.write"), can(staff, "cms.publish"), can(staff, "cms.delete"), can(staff, "media.read"), can(staff, "seo.write")])]);
+  const [record, permissions] = await Promise.all([getAccommodationForEditor(parsedId.data), Promise.all([can(staff, "cms.write"), can(staff, "cms.publish"), can(staff, "cms.delete"), can(staff, "media.read")])]);
   if (!record || record.deletedAt) notFound();
   const mediaOptions = permissions[3] ? await getCmsHeroMediaOptions() : [];
-  const [seo, seoImages] = permissions[4] ? await Promise.all([getSeoMetadata("accommodation", record.id), permissions[3] ? getSeoImageOptions() : []]) : [null, []];
   const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? "";
   const initial = { id: record.id, slug: record.slug, type: record.type, name: localized(record.name), summary: localized(record.summary), description: localized(record.description), unitsTotal: record.unitsTotal === null ? "" : String(record.unitsTotal), maxGuests: record.maxGuests === null ? "" : String(record.maxGuests), amenities: localized(record.amenities), heroMediaId: record.heroMediaId ?? "", imageMediaIds: record.imageMediaIds, status: record.status, publishAt: record.publishAt };
-  return <div className="space-y-6"><AccommodationEditor adminPath="/admin/accommodation" initial={initial} mediaOptions={mediaOptions} cloudName={cloudName} canWrite={permissions[0]} canPublish={permissions[1]} canDelete={permissions[2]} />{permissions[4] ? <SeoMetadataPanel entityType="accommodation" entityId={record.id} initial={seo} images={seoImages} cloudName={cloudName}/> : null}</div>;
+  return <div className="space-y-6"><AccommodationEditor adminPath="/admin/accommodation" initial={initial} mediaOptions={mediaOptions} cloudName={cloudName} canWrite={permissions[0]} canPublish={permissions[1]} canDelete={permissions[2]} /></div>;
 }

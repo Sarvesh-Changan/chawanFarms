@@ -15,7 +15,7 @@ import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { SUPPORTED_LOCALES, type SupportedLocale } from "@/config/locales";
+import type { SupportedLocale } from "@/config/locales";
 import { formatINR } from "@/lib/money";
 import { packageFormSchema, packageRateFormSchema } from "@/lib/schemas/cms/package";
 import { createPackageRateAction, savePackageAction, softDeleteCmsEntityAction } from "@/server/actions/cms";
@@ -37,6 +37,7 @@ type PackageRateRow = {
   isActive: boolean;
 };
 type MediaOption = { id: string; publicId: string; kind: "IMAGE"; altText: unknown; format: string | null };
+const ADMIN_LOCALES = ["en"] as const satisfies readonly SupportedLocale[];
 
 function localizedForm(value: unknown): LocalizedRecord {
   if (!value || typeof value !== "object" || Array.isArray(value)) return { en: "", mr: "", hi: "" };
@@ -160,12 +161,12 @@ export function PackageEditor({ initial, rates, accommodationOptions, activityOp
         <label className="grid gap-1 text-xs font-medium">Slug<Input {...form.register("slug")} aria-invalid={Boolean(form.formState.errors.slug)} /><span className="text-destructive">{form.formState.errors.slug?.message}</span></label>
         <label className="grid gap-1 text-xs font-medium">Client package code (optional)<Input {...form.register("code")} /><span className="text-destructive">{form.formState.errors.code?.message}</span></label>
       </div>
-      <LocalizedInputs title="Name" path="name" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.name as LocalizedErrors} required />
-      <LocalizedInputs title="Summary" path="summary" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.summary as LocalizedErrors} />
-      <LocalizedInputs title="Description" path="description" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.description as LocalizedErrors} multiline />
-      <LocalizedInputs title="Inclusions" path="inclusions" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.inclusions as LocalizedErrors} multiline />
-      <LocalizedInputs title="Conditions" path="conditions" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.conditions as LocalizedErrors} multiline />
-      <LocalizedInputs title="Timing note" path="timingNote" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.timingNote as LocalizedErrors} />
+      <LocalizedInputs title="Name" path="name" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.name as LocalizedErrors} required />
+      <LocalizedInputs title="Summary" path="summary" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.summary as LocalizedErrors} />
+      <LocalizedInputs title="Description" path="description" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.description as LocalizedErrors} multiline />
+      <LocalizedInputs title="Inclusions" path="inclusions" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.inclusions as LocalizedErrors} multiline />
+      <LocalizedInputs title="Conditions" path="conditions" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.conditions as LocalizedErrors} multiline />
+      <LocalizedInputs title="Timing note" path="timingNote" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.timingNote as LocalizedErrors} />
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1 text-xs font-medium">Minimum guests (optional)<Input inputMode="numeric" {...form.register("minGuests")} /><span className="text-destructive">{form.formState.errors.minGuests?.message}</span></label>
         <label className="grid gap-1 text-xs font-medium">Maximum guests (optional)<Input inputMode="numeric" {...form.register("maxGuests")} /><span className="text-destructive">{form.formState.errors.maxGuests?.message}</span></label>

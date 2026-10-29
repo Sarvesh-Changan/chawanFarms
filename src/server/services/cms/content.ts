@@ -134,19 +134,22 @@ export async function listCmsContent(input: { entityType: CmsContentType; page: 
 }
 
 export async function getCmsEditorOptions(type: CmsContentType) {
-  const [menuCategories, postCategories, packages, media] = await Promise.all([
+  const { getGalleryCategories } = await import("./gallery-categories");
+  const [menuCategories, postCategories, packages, media, galleryCategories] = await Promise.all([
     type === "menu-item" ? db.menuCategory.findMany({ where: { deletedAt: null }, orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }) : [],
     type === "post" ? db.postCategory.findMany({ where: { deletedAt: null }, orderBy: { id: "asc" }, select: { id: true, name: true } }) : [],
     type === "offer" ? db.package.findMany({ where: { deletedAt: null }, orderBy: { sortOrder: "asc" }, select: { id: true, slug: true, code: true } }) : [],
     ["gallery-item", "activity", "experience", "post", "testimonial"].includes(type)
       ? db.media.findMany({ where: { origin: "ADMIN", isPublic: true, deletedAt: null }, orderBy: { createdAt: "desc" }, take: 60, select: { id: true, publicId: true, kind: true, altText: true, format: true } })
       : [],
+    type === "gallery-item" ? getGalleryCategories() : Promise.resolve([]),
   ]);
   const label = (value: unknown, fallback: string) => value && typeof value === "object" && "en" in value ? String(value.en ?? fallback) : fallback;
   return {
     options: [...menuCategories, ...postCategories].map((row) => ({ id: row.id, label: label(row.name, row.id) })),
     packageOptions: packages.map((row) => ({ id: row.id, label: `${row.code ?? ""} — ${row.slug}` })),
     media,
+    galleryCategories,
   };
 }
 
