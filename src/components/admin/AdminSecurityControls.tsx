@@ -8,7 +8,7 @@ import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { TurnstileField } from "@/components/auth/TurnstileField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { acceptStaffInviteAction, changeStaffRolesAction, disableStaffAction, inviteStaffAction, revokeOwnSessionAction, revokeStaffInviteAction, startTwoFactorSetupAction, verifyTwoFactorSetupAction } from "@/server/actions/admin-security";
+import { acceptStaffInviteAction, changeStaffRolesAction, disableStaffAction, inviteStaffAction, revokeStaffInviteAction, startTwoFactorSetupAction, verifyTwoFactorSetupAction } from "@/server/actions/admin-security";
 
 type RoleOption = { id: string; name: string };
 type StaffRow = { id: string; name: string; email: string; status: string; twoFactorEnabled: boolean; roleIds: string[] };
@@ -136,20 +136,6 @@ export function TwoFactorSetup({ email }: { email: string }) {
       <p role="status" className="lg:col-span-full text-sm text-muted-foreground">{message}</p>
     </div>
   );
-}
-
-export function OwnSessions({ sessions, currentSessionId }: { sessions: Array<{ id: string; createdAt: Date; expiresAt: Date; ipAddress: string | null; userAgent: string | null }>; currentSessionId: string }) {
-  const router = useRouter();
-  const [pendingId, setPendingId] = useState("");
-  const [message, setMessage] = useState("");
-  function revoke(sessionId: string) {
-    setPendingId(sessionId);
-    void revokeOwnSessionAction({ sessionId }).then((result) => {
-      setMessage(result.ok ? "Session revoked." : result.error.message);
-      router.refresh();
-    }).finally(() => setPendingId(""));
-  }
-  return <div className="space-y-3">{message ? <p role="status" className="text-sm text-muted-foreground">{message}</p> : null}{sessions.length ? sessions.map((session) => <article key={session.id} className="flex flex-col gap-3 rounded-xl border border-border/70 bg-card p-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="font-medium">{session.id === currentSessionId ? "This device" : "Signed-in device"}</p><p className="text-xs text-muted-foreground">{session.ipAddress ?? "IP unavailable"} · {session.userAgent?.slice(0, 120) ?? "Device details unavailable"}</p><p className="mt-1 text-xs text-muted-foreground">Started {session.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} · Expires {session.expiresAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p></div><ConfirmDialog trigger={<Button size="sm" variant="outline" disabled={pendingId === session.id}>Revoke</Button>} title="Revoke this session?" description="The selected device will be signed out." confirmLabel="Revoke session" destructive onConfirm={() => revoke(session.id)} /></article>) : <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">No active sessions found.</p>}</div>;
 }
 
 export function AcceptStaffInviteForm({ token, signedInEmail }: { token: string; signedInEmail?: string }) {
