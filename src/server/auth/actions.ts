@@ -5,9 +5,10 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { z } from "zod";
 
-import { safeCallbackUrl } from "@/lib/safe-url";
+import { resolvePostLoginDestination } from "@/lib/auth/post-login-destination";
 import { forgotPasswordSchema, loginSchema, resetPasswordSchema, signupSchema } from "@/lib/schemas/auth";
 import { auth } from "@/server/auth";
+import { resolveUserPostLogin } from "@/server/auth/post-login";
 import { db } from "@/server/db";
 import { limit } from "@/server/integrations/ratelimit";
 
@@ -99,21 +100,20 @@ export async function loginAction(rawInput: unknown): Promise<AuthActionResult> 
     return { ok: false, message: "This account has been temporarily locked due to failed attempts. Please try again later." };
   }
 
-  const redirectTo = safeCallbackUrl(parsed.data.callbackUrl, "/account");
   try {
     const signInResult = await auth.api.signInEmail({
-      body: { email: parsed.data.email, password: parsed.data.password, callbackURL: redirectTo },
+      body: { email: parsed.data.email, password: parsed.data.password, callbackURL: "/" },
       headers: requestHeaders,
     });
-    if ((signInResult as { twoFactorRedirect?: boolean })?.twoFactorRedirect) {
-      return {
-        ok: false,
-        message: "Two-factor authentication code is required to complete sign-in.",
-      };
-    }
-    return { ok: true, redirectTo };
-  } catch (error) {
-    console.error("[loginAction signInEmail error]:", error);
+    const needsTwoFactorVerify = Boolean((signInResult as { twoFactorRedirect?: boolean })?.twoFactorRedirect);
+    const signInUserId = "user" in signInResult && signInResult.user && "id" in signInResult.user && typeof signInResult.user.id === "string"
+      ? signInResult.user.id
+      : needsTwoFactorVerify ? user?.id : undefined;
+    if (!signInUserId) return { ok: false, message: genericLoginError };
+    const destination = await resolveUserPostLogin(signInUserId, parsed.data.callbackUrl, { needsTwoFactorVerify });
+    if (!destination) return { ok: false, message: genericLoginError };
+    return { ok: true, redirectTo: destination.redirectTo };
+  } catch {
     if (user?.emailVerified) await recordFailedLogin(user.id);
     return { ok: false, message: genericLoginError };
   }
@@ -130,8 +130,15 @@ export async function signupAction(rawInput: unknown): Promise<AuthActionResult>
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
 
   try {
+    const verificationDestination = resolvePostLoginDestination({
+      userType: "CUSTOMER",
+      callbackUrl: parsed.data.callbackUrl,
+      needsTwoFactorSetup: false,
+      needsTwoFactorVerify: false,
+      emailVerified: false,
+    });
     await auth.api.signUpEmail({
-      body: { name: parsed.data.name, email: parsed.data.email, password: parsed.data.password, callbackURL: "/verify-email" },
+      body: { name: parsed.data.name, email: parsed.data.email, password: parsed.data.password, callbackURL: verificationDestination.redirectTo },
       headers: requestHeaders,
     });
     return { ok: true, message: "Check your email to verify your account before signing in." };

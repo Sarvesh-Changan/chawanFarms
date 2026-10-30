@@ -16,7 +16,7 @@ type AuthMode = "login" | "signup" | "forgot" | "reset";
 
 function schemaFor(mode: AuthMode): z.ZodType {
   if (mode === "login") return z.object({ email: z.string().email(), password: z.string(), callbackUrl: z.string().optional() });
-  if (mode === "signup") return z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(10), confirmPassword: z.string() });
+  if (mode === "signup") return z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(10), confirmPassword: z.string(), callbackUrl: z.string().optional() });
   if (mode === "forgot") return z.object({ email: z.string().email() });
   return z.object({ token: z.string().min(1), password: z.string().min(10), confirmPassword: z.string() });
 }
@@ -83,12 +83,12 @@ export function AuthForm({ mode, action, defaultValues = {} }: { mode: AuthMode;
             {mode === "reset" ? <input type="hidden" {...register("token")} /> : null}
             {mode === "login" || mode === "signup" || mode === "reset" ? <label className="grid gap-2 text-sm font-semibold">Password<Input type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} aria-invalid={Boolean(errors.password)} {...register("password")} />{errorMessage(errors, "password") ? <span className="text-laterite-600 text-xs">{errorMessage(errors, "password")}</span> : null}</label> : null}
             {mode === "signup" || mode === "reset" ? <label className="grid gap-2 text-sm font-semibold">Confirm password<Input type="password" autoComplete="new-password" aria-invalid={Boolean(errors.confirmPassword)} {...register("confirmPassword")} />{errorMessage(errors, "confirmPassword") ? <span className="text-laterite-600 text-xs">{errorMessage(errors, "confirmPassword")}</span> : null}</label> : null}
-            {mode === "login" && defaultValues.callbackUrl ? <input type="hidden" {...register("callbackUrl")} /> : null}
+            {(mode === "login" || mode === "signup") && defaultValues.callbackUrl ? <input type="hidden" {...register("callbackUrl")} /> : null}
             <Button type="submit" disabled={pending} className="mt-2 w-full">{pending ? "Please wait…" : text.submit}</Button>
           </form>
           <div className="text-muted-foreground mt-6 flex flex-wrap justify-between gap-3 text-sm">
-            {mode === "login" ? <><Link className="underline underline-offset-4" href="/forgot-password">Forgot password?</Link><Link className="underline underline-offset-4" href="/signup">Create account</Link></> : null}
-            {mode === "signup" ? <Link className="underline underline-offset-4" href="/login">Already have an account?</Link> : null}
+            {mode === "login" ? <><Link className="underline underline-offset-4" href="/forgot-password">Forgot password?</Link><Link className="underline underline-offset-4" href={defaultValues.callbackUrl ? `/signup?callbackUrl=${encodeURIComponent(defaultValues.callbackUrl)}` : "/signup"}>Create account</Link></> : null}
+            {mode === "signup" ? <Link className="underline underline-offset-4" href={defaultValues.callbackUrl ? `/login?callbackUrl=${encodeURIComponent(defaultValues.callbackUrl)}` : "/login"}>Already have an account?</Link> : null}
             {mode === "forgot" ? <Link className="underline underline-offset-4" href="/login">Back to sign in</Link> : null}
             {mode === "reset" ? <Link className="underline underline-offset-4" href="/login">Back to sign in</Link> : null}
           </div>

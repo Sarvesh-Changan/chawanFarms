@@ -1,8 +1,10 @@
 "use client";
 
-import { Bell, Bookmark, Clapperboard, Home, LockKeyhole, Gift, ReceiptText, UserRound, WalletCards } from "lucide-react";
+import { ArrowLeft, Bell, Bookmark, Clapperboard, Home, LockKeyhole, Gift, ReceiptText, UserRound, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
 
 const links = [
   { href: "/account", label: "Overview", icon: Home },
@@ -26,6 +28,9 @@ export function AccountNav() {
     <>
       <aside className="hidden w-64 shrink-0 border-r border-border/70 bg-card/70 px-4 py-6 lg:block">
         <p className="px-3 text-xs font-semibold tracking-[0.18em] text-laterite-600 uppercase">Your farm account</p>
+        <Button asChild variant="outline" className="mt-4 w-full justify-start">
+          <Link href="/" aria-label="Back to website home"><ArrowLeft aria-hidden="true" />Back to website</Link>
+        </Button>
         <nav aria-label="Account navigation" className="mt-5 grid gap-1">
           {links.map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href} aria-current={active(href, pathname) ? "page" : undefined} className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition ${active(href, pathname) ? "bg-forest-700 text-cream-50" : "text-foreground hover:bg-muted"}`}>
@@ -35,6 +40,11 @@ export function AccountNav() {
           ))}
         </nav>
       </aside>
+      <header className="fixed inset-x-0 top-0 z-30 border-b border-border/70 bg-card/95 px-4 py-1 backdrop-blur lg:hidden">
+        <Button asChild variant="outline" aria-label="Back to website" className="justify-start">
+          <Link href="/"><ArrowLeft aria-hidden="true" />Back to website</Link>
+        </Button>
+      </header>
       <nav aria-label="Mobile account navigation" className="fixed right-0 bottom-0 left-0 z-20 flex overflow-x-auto border-t border-border/70 bg-card/95 px-1 pb-[env(safe-area-inset-bottom)] shadow-lg backdrop-blur lg:hidden">
         {links.map(({ href, label, icon: Icon }) => (
           <Link key={href} href={href} aria-current={active(href, pathname) ? "page" : undefined} className={`flex min-h-16 min-w-20 flex-1 flex-col items-center justify-center gap-1 text-[0.65rem] ${active(href, pathname) ? "font-semibold text-forest-700" : "text-muted-foreground"}`}>

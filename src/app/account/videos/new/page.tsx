@@ -2,12 +2,12 @@ import Link from "next/link";
 
 import { VideoUploader } from "@/components/rewards/VideoUploader";
 import { formatMediaBytes, mediaPolicy } from "@/config/media";
-import { requireUser } from "@/server/auth";
+import { requireCustomer } from "@/server/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewVideoPage() {
-  await requireUser();
+  await requireCustomer();
   const policy = mediaPolicy("customer_video");
 
   return (

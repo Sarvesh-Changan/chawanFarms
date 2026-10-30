@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { z } from "zod";
 
 import { env } from "@/config/env";
+import { resolvePostLoginDestination } from "@/lib/auth/post-login-destination";
 import { err, ok, type Result } from "@/lib/result";
 import { matchesCurrentSessionToken } from "@/lib/security/sessions";
 import { auth, getSession } from "@/server/auth";
@@ -178,8 +179,15 @@ export async function acceptStaffInviteAction(rawInput: unknown): Promise<Result
       if (!(await verifyTurnstileToken(parsed.data.turnstileToken, ip))) {
         return err("VALIDATION", "Please complete the security check.");
       }
+      const verificationDestination = resolvePostLoginDestination({
+        userType: "STAFF",
+        callbackUrl: "/admin",
+        needsTwoFactorSetup: false,
+        needsTwoFactorVerify: false,
+        emailVerified: false,
+      });
       const created = await auth.api.signUpEmail({
-        body: { name: parsed.data.name, email, password: parsed.data.password, callbackURL: "/verify-email" },
+        body: { name: parsed.data.name, email, password: parsed.data.password, callbackURL: verificationDestination.redirectTo },
         headers: requestHeaders,
       });
       userId = created.user.id;

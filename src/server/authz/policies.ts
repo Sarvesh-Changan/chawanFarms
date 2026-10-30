@@ -11,6 +11,12 @@ export type AuthorizationContext = {
   };
 };
 
+export function requiresTwoFactor(roleNames: readonly string[]): boolean {
+  // Two-factor enrollment is currently disabled in Better Auth for this workspace.
+  void roleNames;
+  return false;
+}
+
 export function hasPermission(
   roleNames: readonly string[],
   permissionKeys: readonly string[],

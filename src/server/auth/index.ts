@@ -112,3 +112,12 @@ export async function requireUser() {
   if (!session) redirect("/login?callbackUrl=/account");
   return session;
 }
+
+export async function requireCustomer() {
+  const session = await getSession();
+  if (!session) redirect("/login?callbackUrl=/account");
+  const user = await db.user.findUnique({ where: { id: session.user.id }, select: { type: true } });
+  if (user?.type === "STAFF") redirect("/admin");
+  if (user?.type !== "CUSTOMER") redirect("/login");
+  return session;
+}

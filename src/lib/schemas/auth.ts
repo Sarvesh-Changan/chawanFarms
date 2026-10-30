@@ -15,6 +15,7 @@ export const signupSchema = z.object({
   email,
   password,
   confirmPassword: z.string(),
+  callbackUrl,
 }).strict().superRefine((value, context) => {
   if (value.password !== value.confirmPassword) {
     context.addIssue({ code: "custom", path: ["confirmPassword"], message: "Passwords do not match." });
