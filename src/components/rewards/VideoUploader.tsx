@@ -18,7 +18,6 @@ import { formatMediaBytes } from "@/config/media";
 import {
   formatDateDDMMYYYY,
   getKolkataToday,
-  parseDateDDMMYYYY,
 } from "@/lib/booking-dates";
 
 type VideoUploaderProps = {
@@ -49,6 +48,17 @@ function todayIso(): string {
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 }
 
+function generateIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, formattedMaxBytes }: VideoUploaderProps) {
   const [visitDate, setVisitDate] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
@@ -63,7 +73,7 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
   const [error, setError] = useState("");
   const [complete, setComplete] = useState(false);
   const [busy, setBusy] = useState(false);
-  const idempotencyKeyRef = useRef(crypto.randomUUID());
+  const idempotencyKeyRef = useRef(generateIdempotencyKey());
 
   const acceptedLabel = useMemo(() => acceptedFormats.map((format) => format.toUpperCase()).join(", "), [acceptedFormats]);
   const accept = acceptedFormats.map((format) => `.${format}`).join(",");
@@ -71,15 +81,25 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
   function parseFlexibleDate(val: string): Date | null {
     if (!val) return null;
     const trimmed = val.trim();
-    const parsed = parseDateDDMMYYYY(trimmed);
-    if (parsed) return parsed;
-    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    const ddmmyyyyMatch = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(trimmed);
+    if (ddmmyyyyMatch) {
+      const d = Number(ddmmyyyyMatch[1]);
+      const m = Number(ddmmyyyyMatch[2]);
+      const y = Number(ddmmyyyyMatch[3]);
+      if (m >= 1 && m <= 12 && d >= 1 && d <= 31 && y >= 2000 && y <= 2100) {
+        const dt = new Date(y, m - 1, d);
+        if (dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d) return dt;
+      }
+    }
+    const isoMatch = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/.exec(trimmed);
     if (isoMatch) {
       const y = Number(isoMatch[1]);
       const m = Number(isoMatch[2]);
       const d = Number(isoMatch[3]);
-      const dt = new Date(y, m - 1, d);
-      if (!isNaN(dt.getTime())) return dt;
+      if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+        const dt = new Date(y, m - 1, d);
+        if (dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d) return dt;
+      }
     }
     return null;
   }
@@ -108,20 +128,27 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
   async function startIntent(): Promise<UploadIntent | null> {
     const isoDate = getEffectiveIsoDate();
     if (!isoDate) return null;
+    // Ensure fresh idempotency key
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current = generateIdempotencyKey();
+    }
     const response = await fetch("/api/account/videos/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         idempotencyKey: idempotencyKeyRef.current,
         visitDate: isoDate,
-        title: title || undefined,
-        description: description || undefined,
-        consentOwnership,
+        title: title.trim() || undefined,
+        description: description.trim() || undefined,
+        consentOwnership: true,
         consentPublish,
       }),
     });
-    const body = (await response.json()) as UploadIntent & { error?: string };
-    if (!response.ok) throw new Error(body.error ?? "Unable to start the upload.");
+    const body = (await response.json()) as UploadIntent & { error?: string; fieldErrors?: Record<string, string[]> };
+    if (!response.ok) {
+      const fieldErrorMsg = body.fieldErrors ? Object.values(body.fieldErrors).flat().join(" ") : null;
+      throw new Error(fieldErrorMsg || body.error || "Unable to start the upload.");
+    }
     return body;
   }
 
@@ -215,6 +242,7 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
   }
 
   function chooseFile(value: File | undefined) {
+    idempotencyKeyRef.current = generateIdempotencyKey();
     setFile(value ?? null);
     setIntent(null);
     setComplete(false);

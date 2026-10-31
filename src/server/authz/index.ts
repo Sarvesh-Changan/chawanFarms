@@ -39,10 +39,10 @@ export type StaffInvitePrincipal = {
 
 const permissionContextSchema = z
   .object({
-    actorId: z.string().uuid().optional(),
+    actorId: z.string().trim().min(1).max(128).optional(),
     amount: z.number().int().optional(),
     allowTwoFactorSetup: z.boolean().optional(),
-    targetUserId: z.string().uuid().optional(),
+    targetUserId: z.string().trim().min(1).max(128).optional(),
     roleChange: z
       .object({
         currentTargetRoles: z.array(z.string().min(1)),
@@ -53,7 +53,7 @@ const permissionContextSchema = z
   })
   .passthrough();
 
-const userSchema = z.object({ id: z.string().uuid() });
+const userSchema = z.object({ id: z.string().trim().min(1).max(128) });
 
 async function loadStaffUser(userId: string): Promise<StaffPrincipal | null> {
   const user = await db.user.findUnique({

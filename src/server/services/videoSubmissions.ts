@@ -22,7 +22,7 @@ import {
 } from "@/server/integrations/cloudinary";
 import { limit } from "@/server/integrations/ratelimit";
 
-const userIdSchema = z.string().uuid();
+const userIdSchema = z.string().trim().min(1).max(128);
 const submissionIdSchema = z.string().uuid();
 const idempotencyKeySchema = z.string().trim().min(16).max(128).regex(/^[A-Za-z0-9._:-]+$/);
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Visit date must use YYYY-MM-DD.");
@@ -118,7 +118,15 @@ export async function startUpload(userId: string, rawInput: unknown): Promise<Re
 }>> {
   const parsedUserId = userIdSchema.safeParse(userId);
   const parsed = startUploadSchema.safeParse(rawInput);
-  if (!parsedUserId.success || !parsed.success) return err("VALIDATION", "Please check the video submission details.");
+  if (!parsedUserId.success || !parsed.success) {
+    console.error("[startUpload validation error]", {
+      userIdError: parsedUserId.success ? null : parsedUserId.error.flatten(),
+      inputError: parsed.success ? null : parsed.error.flatten(),
+      rawInput,
+      userId,
+    });
+    return err("VALIDATION", "Please check the video submission details.", parsed.success ? undefined : parsed.error.flatten().fieldErrors);
+  }
   if (!visitDateIsValid(parsed.data.visitDate)) return err("VALIDATION", "Visit date must be a real date and cannot be in the future.", { visitDate: ["Enter a valid past or current date."] });
 
   try {
