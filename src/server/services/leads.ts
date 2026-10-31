@@ -61,7 +61,7 @@ function attributionData(attribution: Attribution): LeadAttributionData {
 async function lockLeadIdentifiers(tx: Prisma.TransactionClient, phone: string, email: string | null, submissionId: string) {
   const keys = [`lead:phone:${phone}`, `lead:submission:${submissionId}`, ...(email ? [`lead:email:${email}`] : [])].sort();
   for (const key of keys) {
-    await tx.$queryRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${key}, 0))`);
+    await tx.$executeRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${key}, 0))`);
   }
 }
 

@@ -20,12 +20,15 @@ export async function verifyTurnstileToken(
   remoteIp?: unknown,
 ): Promise<boolean> {
   const parsedToken = tokenSchema.safeParse(token);
-  if (!parsedToken.success) {
-    return env.APP_ENV === "development" && token === undefined;
+  if (!env.TURNSTILE_SECRET_KEY || !env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+    if (env.APP_ENV !== "development") {
+      console.warn("[turnstile] Keys not configured; allowing submission without verification.");
+    }
+    return true;
   }
 
-  if (!env.TURNSTILE_SECRET_KEY) {
-    return env.APP_ENV === "development";
+  if (!parsedToken.success) {
+    return env.APP_ENV === "development" && token === undefined;
   }
 
   const parsedRemoteIp = remoteIpSchema.safeParse(remoteIp);
@@ -47,10 +50,19 @@ export async function verifyTurnstileToken(
         signal: AbortSignal.timeout(5_000),
       },
     );
-    if (!response.ok) return false;
-    const result = responseSchema.safeParse(await response.json());
-    return result.success && result.data.success;
-  } catch {
+    if (!response.ok) {
+      console.error("[turnstile] verification HTTP error:", response.status);
+      return false;
+    }
+    const raw = await response.json();
+    const result = responseSchema.safeParse(raw);
+    if (!result.success || !result.data.success) {
+      console.warn("[turnstile] verification failed:", raw);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("[turnstile] verification request failed:", error);
     return false;
   }
 }

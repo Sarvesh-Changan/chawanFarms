@@ -4,9 +4,9 @@
 export const PROTOTYPE_IMAGE = "/placeholder-farm.svg";
 
 export const prototypeBusiness = {
-  name: "Chawan Farms",
+  name: "Chawan Farms (Agricultural Farming Centre)",
   title: "Agri-Tourism Centre",
-  address: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra, India",
+  address: "Chawan Farms (Agricultural Farming Centre), Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra, India",
   phones: ["9821502956", "9821089375", "9359895322"],
   whatsappHref: null,
   email: null,

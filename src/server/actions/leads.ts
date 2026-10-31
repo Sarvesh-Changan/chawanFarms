@@ -71,6 +71,7 @@ export async function submitLeadAction(raw: unknown): Promise<Result<LeadActionR
     }
     return ok({ reference: saved.reference });
   } catch (error) {
+    console.error("[submitLeadAction error]", error);
     const message = error instanceof Error ? error.message : "";
     return message === "LEAD_PHONE_INVALID"
       ? err("VALIDATION", "Please enter a valid phone number.", { phone: ["Enter a valid phone number, including country code if outside India."] })

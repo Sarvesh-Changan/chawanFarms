@@ -155,7 +155,7 @@ export async function setLeadAssignment(input: { leadId: string; assignedToId: s
 
 export async function saveLeadFilter(input: { name: string; filters: LeadFilters }, userId: string) {
   return db.$transaction(async (tx) => {
-    await tx.$queryRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${`saved-filter:${userId}:${SAVED_LEAD_FILTER_SCOPE}`}, 0))`);
+    await tx.$executeRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${`saved-filter:${userId}:${SAVED_LEAD_FILTER_SCOPE}`}, 0))`);
     const duplicate = await tx.savedFilter.findFirst({ where: { userId, scope: SAVED_LEAD_FILTER_SCOPE, name: { equals: input.name, mode: "insensitive" } }, select: { id: true } });
     if (duplicate) throw new LeadCrmError("CONFLICT", "A saved filter with that name already exists.");
     const count = await tx.savedFilter.count({ where: { userId, scope: SAVED_LEAD_FILTER_SCOPE } });

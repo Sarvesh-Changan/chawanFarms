@@ -2,8 +2,10 @@ import { ExternalLink, MapPin } from "lucide-react";
 
 import { prototypeBusiness } from "@/lib/prototype-data";
 
+const GOOGLE_MAPS_URL = "https://www.google.com/maps/@18.4381634,73.2249314,17z?entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D";
+
 export function LocationBlock() {
-  const mapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(prototypeBusiness.address)}`;
+  const mapHref = GOOGLE_MAPS_URL;
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr] lg:items-center">
       <div className="bg-forest-900 text-cream-50 relative min-h-72 overflow-hidden rounded-[1.5rem] p-6 sm:min-h-96 sm:p-8">

@@ -136,6 +136,7 @@ function LeadCaptureForm({ formType, heading, description, packageId, activityId
       <label className="flex gap-3 text-sm leading-6"><input type="checkbox" className="mt-1 size-4 accent-forest-700" {...form.register("consentToContact")}/>I agree to be contacted about this enquiry. This is separate from analytics and marketing tracking consent.</label>
       {fieldError("consentToContact") ? <p className="text-sm text-destructive">{fieldError("consentToContact")}</p> : null}
       <TurnstileField onToken={updateTurnstile}/>
+      {fieldError("turnstileToken") ? <p className="text-sm text-destructive">{fieldError("turnstileToken")}</p> : null}
       {serverError ? <p role="alert" className="text-sm text-destructive">{serverError}</p> : null}
       {successReference ? <p role="status" className="rounded-lg bg-leaf-500/10 p-3 text-sm text-forest-900">Thank you. Your enquiry reference is <strong>{successReference}</strong>.</p> : null}
       <Button type="submit" disabled={pending}>{pending ? "Sending…" : "Send enquiry"}</Button>

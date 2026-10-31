@@ -24,7 +24,10 @@ export function TurnstileField({ onToken, resetKey = 0 }: { onToken: (token: str
       sitekey: siteKey,
       callback: (token) => onToken(token),
       "expired-callback": () => onToken(undefined),
-      "error-callback": () => onToken(undefined),
+      "error-callback": () => {
+        console.warn("[turnstile] Security check widget encountered an error or connection timeout (check Cloudflare domain whitelist).");
+        onToken(undefined);
+      },
     });
   }, [onToken, scriptReady, siteKey]);
 

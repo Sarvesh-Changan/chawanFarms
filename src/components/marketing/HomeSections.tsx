@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { Fragment } from "react";
 
-import { ClosingCta } from "@/components/marketing/ClosingCta";
-import { HomeGallery, type HomeGalleryItem } from "@/components/marketing/HomeGallery";
 import { HomeHero } from "@/components/marketing/HomeHero";
 import { NatureFeature } from "@/components/marketing/NatureFeature";
 import { RewardsTeaser } from "@/components/marketing/RewardsTeaser";
