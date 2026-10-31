@@ -1,15 +1,16 @@
 "use client";
 
+import { Check, Image as ImageIcon, Loader2, Play, Plus, Trash2, UploadCloud } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
-import { Check, Film, Image as ImageIcon, Loader2, Play, Plus, Trash2, UploadCloud } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatMediaBytes, mediaPolicy } from "@/config/media";
 import { batchCreateGalleryItemsAction } from "@/server/actions/gallery-batch";
+
 import { GalleryCategoryManagerModal } from "./GalleryCategoryManagerModal";
 
 type Signature = {
@@ -124,7 +125,6 @@ type BatchItem = {
 
 export function GalleryBatchUploader({
   initialCategories = [],
-  cloudName = "",
 }: {
   initialCategories: string[];
   cloudName?: string;
@@ -258,11 +258,19 @@ export function GalleryBatchUploader({
   }
 
   const uploadedCount = items.filter((i) => i.status === "uploaded" && i.mediaId).length;
-  const isAllUploaded = items.length > 0 && uploadedCount === items.length;
   const isAnyUploading = items.some((i) => i.status === "uploading");
 
   async function handleBatchSave(status: "DRAFT" | "PUBLISHED") {
-    const validItems = items.filter((i) => i.status === "uploaded" && i.mediaId);
+    const validItems = items.flatMap((i) =>
+      i.status === "uploaded" && i.mediaId
+        ? [{
+            mediaId: i.mediaId,
+            category: i.category,
+            caption: i.caption,
+            isFeatured: i.isFeatured,
+          }]
+        : [],
+    );
     if (!validItems.length) {
       setGlobalMessage({ text: "Please wait for files to finish uploading.", error: true });
       return;
@@ -272,12 +280,7 @@ export function GalleryBatchUploader({
     setGlobalMessage(null);
 
     const payload = {
-      items: validItems.map((i) => ({
-        mediaId: i.mediaId!,
-        category: i.category,
-        caption: i.caption,
-        isFeatured: i.isFeatured,
-      })),
+      items: validItems,
       status,
     };
 

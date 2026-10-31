@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ export function AdminInactivityTracker({
   timeoutMs = DEFAULT_TIMEOUT_MS,
   warningBeforeMs = WARNING_BEFORE_MS,
 }: AdminInactivityTrackerProps) {
+  const router = useRouter();
   const isLoggingOutRef = useRef(false);
   const warningShownRef = useRef(false);
   const lastActivityRef = useRef<number>(0);
@@ -54,7 +56,7 @@ export function AdminInactivityTracker({
         // Fallback redirection even if network action fails
       }
 
-      window.location.href = "/login?reason=inactivity";
+      router.push("/login?reason=inactivity");
     };
 
     const recordActivity = () => {
@@ -174,7 +176,7 @@ export function AdminInactivityTracker({
       window.removeEventListener("focus", checkInactivity);
       toast.dismiss(TOAST_ID);
     };
-  }, [timeoutMs, warningBeforeMs]);
+  }, [timeoutMs, warningBeforeMs, router]);
 
   return null;
 }
