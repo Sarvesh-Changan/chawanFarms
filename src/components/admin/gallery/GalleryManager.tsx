@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GALLERY_CATEGORIES } from "@/config/gallery";
 import { bulkUpdateGalleryAction, reorderGalleryItemAction, updateGalleryFlagsAction } from "@/server/actions/cms-content";
+
 import { GalleryCategoryManagerModal } from "./GalleryCategoryManagerModal";
 
 type Row = { id: string; category: string; status: string; sortOrder: number; isFeatured: boolean; media: { publicId: string; format: string | null; bytes: number | null; contentHash: string | null; isPublic: boolean } };

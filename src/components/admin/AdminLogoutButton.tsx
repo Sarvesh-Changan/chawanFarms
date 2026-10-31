@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
@@ -21,6 +22,7 @@ export function AdminLogoutButton({
   size = "sm",
   showLabel = true,
 }: AdminLogoutButtonProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const handleLogout = () => {
@@ -28,7 +30,7 @@ export function AdminLogoutButton({
       try {
         await logoutAction();
         toast.success("Logged out successfully");
-        window.location.href = "/login";
+        router.push("/login");
       } catch {
         toast.error("Failed to log out. Please try again.");
       }

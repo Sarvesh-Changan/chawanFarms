@@ -29,37 +29,38 @@ import type { StaffPrincipal } from "@/server/authz";
 
 export type AdminNavigationItem = { label: string; href: string; permission: string | readonly string[]; children?: readonly AdminNavigationItem[] };
 
-const NAV_ICONS: Record<string, ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>> = {
-  Dashboard: LayoutDashboard,
-  Activity: Sparkles,
-  Stories: BookOpen,
-  Gallery: ImageIcon,
-  Menu: UtensilsCrossed,
-  FAQ: HelpCircle,
-  Packages: Package,
-  Accommodation: BedDouble,
-  Bookings: CalendarCheck,
-  Enquiries: MessageSquare,
-  Leads: Users,
-  Rewards: Award,
-  Settings: Settings,
-  Security: Shield,
-};
+const NAV_ICONS = new Map<string, ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>>([
+  ["Dashboard", LayoutDashboard],
+  ["Activity", Sparkles],
+  ["Stories", BookOpen],
+  ["Gallery", ImageIcon],
+  ["Menu", UtensilsCrossed],
+  ["FAQ", HelpCircle],
+  ["Packages", Package],
+  ["Accommodation", BedDouble],
+  ["Bookings", CalendarCheck],
+  ["Enquiries", MessageSquare],
+  ["Leads", Users],
+  ["Rewards", Award],
+  ["Settings", Settings],
+  ["Security", Shield],
+]);
 
 function NavigationLinks({ items, currentPath }: { items: AdminNavigationItem[]; currentPath: string }) {
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [openGroups, setOpenGroups] = useState<Map<string, boolean>>(() => new Map());
 
   const toggleGroup = (href: string, currentState: boolean) => {
-    setOpenGroups((prev) => ({
-      ...prev,
-      [href]: !currentState,
-    }));
+    setOpenGroups((prev) => {
+      const next = new Map(prev);
+      next.set(href, !currentState);
+      return next;
+    });
   };
 
   return (
     <nav aria-label="Admin sections" className="grid gap-1">
       {items.map(({ label, href, children }) => {
-        const Icon = NAV_ICONS[label] ?? ArrowUpRight;
+        const Icon = NAV_ICONS.get(label) ?? ArrowUpRight;
         const hasChildren = Boolean(children?.length);
 
         const isChildActive = Boolean(
@@ -73,7 +74,7 @@ function NavigationLinks({ items, currentPath }: { items: AdminNavigationItem[];
             : currentPath === href || currentPath.startsWith(`${href}/`);
         const active = isSelfActive || isChildActive;
 
-        const isOpen = openGroups[href] !== undefined ? openGroups[href] : active;
+        const isOpen = openGroups.get(href) ?? active;
 
         return (
           <div key={href} className="grid gap-1">

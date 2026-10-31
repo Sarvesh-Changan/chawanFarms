@@ -62,7 +62,9 @@ describe("CMS schemas", () => {
       publishAt: null,
     };
     // Simulating how AccommodationEditor extracts formDefaults without status/publishAt
-    const { status, publishAt, ...formDefaults } = rawInitial;
+    const formDefaults = Object.fromEntries(
+      Object.entries(rawInitial).filter(([key]) => key !== "status" && key !== "publishAt"),
+    );
     const parsed = accommodationFormSchema.safeParse(formDefaults);
     expect(parsed.success).toBe(true);
     if (parsed.success) {

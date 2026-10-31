@@ -1,10 +1,9 @@
 import { z } from "zod";
 
 import { CMS_CONTENT_TYPES } from "@/config/cms-content";
-import { GALLERY_CATEGORIES } from "@/config/gallery";
 import { isAllowedCmsLink } from "@/lib/cms-links";
 
-import { localizedTextSchema, optionalLocalizedTextSchema, slugSchema } from "./common";
+import { optionalLocalizedTextSchema, slugSchema } from "./common";
 
 const optionalHtmlString = z.string().max(50_000).refine((value) => {
   const plainText = value.replaceAll("<p></p>", "").replaceAll("<br>", "").trim();
