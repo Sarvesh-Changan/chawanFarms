@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { FaqAccordion } from "@/components/cms/FaqAccordion";
-import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { CallButton } from "@/components/marketing/ContactButtons";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
 import { PublicClosing } from "@/components/marketing/PublicClosing";
+import { PublicPageHeader } from "@/components/marketing/PublicPageHeader";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getPublicFaqs, getPublicSettings, localizedString } from "@/server/services/public-content";
@@ -40,23 +40,9 @@ export default async function FaqsPage() {
     <>
       <JsonLd data={jsonLd} />
       <Header />
-      <Breadcrumbs items={[{ label: "FAQs" }]} />
-      <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
+      <PublicPageHeader currentPage="FAQs" eyebrow="Answers & information" title="Frequently Asked Questions" description="Browse the answers published by the farm team." />
+      <main className="min-h-screen bg-cream-50/60 pb-20 pt-12 sm:pt-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-12 text-center sm:mb-16">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-laterite-600">
-              Answers & Information
-            </span>
-            <h1 className="mt-3 font-heading text-4xl text-forest-900 sm:text-5xl md:text-6xl">
-              Frequently Asked Questions
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Find essential details regarding farm stay packages, Maharashtrian
-              meals, children pricing, camping facilities, and visitor policies.
-            </p>
-          </div>
-
           {/* FAQ Accordion Component */}
           <FaqAccordion items={faqs} />
 

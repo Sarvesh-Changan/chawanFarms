@@ -12,7 +12,7 @@ export async function Header() {
   const accountHref = !session ? "/login" : identity?.userType === "STAFF" ? "/admin" : "/account";
   const accountLabel = !session ? "Login" : identity?.userType === "STAFF" ? "Admin" : "Account";
   return (
-    <header className="bg-cream-50/95 text-forest-900 sticky top-0 z-40 border-b border-forest-900/10 backdrop-blur">
+    <header data-public-site-header className="public-site-header bg-cream-50/95 text-forest-900 sticky top-0 z-40 border-b border-forest-900/10 backdrop-blur">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-3 px-4 sm:px-8 lg:px-12">
         <Link href="/" className="group flex min-h-11 shrink-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-turmeric-500">
           <span className="bg-forest-700 text-turmeric-500 grid size-10 place-items-center rounded-full font-heading text-xl">C</span>

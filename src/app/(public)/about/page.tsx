@@ -2,10 +2,10 @@ import { ArrowRight, Compass, Sprout, SunMedium, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
 import { PublicClosing } from "@/components/marketing/PublicClosing";
+import { PublicPageHeader } from "@/components/marketing/PublicPageHeader";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { siteContentDefaults } from "@/config/site-content";
 import { getPublicSettings } from "@/server/services/public-content";
@@ -28,19 +28,9 @@ export default async function AboutPage() {
   return (
     <>
       <Header />
-      <Breadcrumbs items={[{ label: "About" }]} />
-      <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
+      <PublicPageHeader currentPage="About" eyebrow="Agri-Tourism Centre" title={siteContentDefaults.about.headline} description={settings.home.hero.headline || siteContentDefaults.about.subhead} />
+      <main className="min-h-screen bg-cream-50/60 pb-20 pt-12 sm:pt-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-            {/* Hero Section */}
-            <header className="mb-14 text-center sm:mb-20">
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-laterite-600">
-                कृषी पर्यटन केंद्र · Agri-Tourism Centre
-              </span>
-              <h1 className="mt-3 font-heading text-4xl text-forest-900 sm:text-5xl md:text-6xl">{siteContentDefaults.about.headline}</h1>
-              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-                &ldquo;{settings.home.hero.headline || siteContentDefaults.about.subhead}&rdquo;
-              </p>
-            </header>
 
             {/* Core Philosophy Section */}
             <section className="mb-16 rounded-3xl border border-forest-900/10 bg-card p-8 shadow-sm sm:p-12">

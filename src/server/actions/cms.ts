@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { headers } from "next/headers";
 
 import { CMS_MUTATION_RATE_LIMIT } from "@/config/cms";
@@ -83,7 +83,7 @@ async function completeMutation(input: {
     userAgent: input.context.userAgent,
     requestId: input.context.requestId,
   });
-  for (const tag of input.tags) revalidateTag(tag, "max");
+  for (const tag of input.tags) updateTag(tag);
   for (const path of input.paths) revalidatePath(path);
   return auditResult.ok ? ok({ id: input.entityId }) : auditResult;
 }

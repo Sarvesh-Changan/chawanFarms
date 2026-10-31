@@ -2,13 +2,14 @@ import { ArrowRight, Calendar, User } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
 import { PublicClosing } from "@/components/marketing/PublicClosing";
+import { PublicPageHeader } from "@/components/marketing/PublicPageHeader";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { CldImage } from "@/components/media/CldImage";
 import { env } from "@/config/env";
+import { isPublicImage } from "@/lib/marketing-media";
 import { getPublicStories, localizedString } from "@/server/services/public-content";
 
 export const dynamic = "force-dynamic";
@@ -35,36 +36,21 @@ export default async function StoriesPage() {
   return (
     <>
       <Header />
-      <Breadcrumbs items={[{ label: "Stories" }]} />
-      <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
+      <PublicPageHeader currentPage="Stories" eyebrow="Stories from the farm" title="Tales from Baitwadi & the Sahyadris" description="Published stories and reflections from Chawan Farms." />
+      <main className="min-h-screen bg-cream-50/60 pb-20 pt-12 sm:pt-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-12 text-center sm:mb-16">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-laterite-600">
-              Farm Chronicles &amp; Insights
-            </span>
-            <h1 className="mt-3 font-heading text-4xl text-forest-900 sm:text-5xl md:text-6xl">
-              Tales from Baitwadi &amp; the Sahyadris
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Explore stories of agricultural rhythms, native plants and birds,
-              rural culinary traditions, and reflections from the farm.
-            </p>
-          </div>
-
           {/* Stories Grid */}
           {stories.length === 0 ? (
             <div className="mx-auto max-w-xl rounded-2xl border border-dashed border-border/80 p-12 text-center">
               <h2 className="font-heading text-2xl text-forest-900">
-                Stories are being penned
+                No published stories are available yet.
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                Our farm chronicles will be published here soon. Check back shortly
-                or explore our experiences and accommodation in the meantime.
+                Published stories from the farm team will appear here.
               </p>
               <div className="mt-6">
                 <Link
-                  href="/stories"
+                  href="/activities"
                   className="inline-flex items-center gap-2 rounded-full bg-forest-900 px-6 py-2.5 text-sm font-medium text-cream-50 transition hover:bg-forest-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
                 >
                   Explore Experiences <ArrowRight className="h-4 w-4" />
@@ -88,23 +74,17 @@ export default async function StoriesPage() {
                       href={`/stories/${story.slug}`}
                       className="relative block aspect-[16/10] w-full overflow-hidden bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
                     >
-                      {story.coverMedia ? (
+                      {isPublicImage(story.coverMedia) && cloudName ? (
                         <CldImage
                           cloudName={cloudName}
                           publicId={story.coverMedia.publicId}
-                          alt={title}
+                          alt={localizedString(story.coverMedia.altText)}
                           width={story.coverMedia.width ?? 800}
                           height={story.coverMedia.height ?? 500}
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-forest-900/10 to-laterite-600/10 p-6 text-center">
-                          <span className="font-heading text-xl text-forest-900/40">
-                            Chawan Farms
-                          </span>
-                        </div>
-                      )}
+                      ) : <div data-image-placeholder="story-cover" aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_18%,rgb(183_201_107_/.3),transparent_30%),linear-gradient(145deg,#d9ddc4,#b7c96b_55%,#66815a)]" />}
 
                       <span className="absolute left-4 top-4 rounded-full bg-forest-900/85 px-3 py-1 text-xs font-semibold text-cream-50 backdrop-blur-sm">
                         {story.kind === "GUEST" ? "Guest story" : story.kind === "EXPERIENCE" ? "Farm experience" : "Story"}

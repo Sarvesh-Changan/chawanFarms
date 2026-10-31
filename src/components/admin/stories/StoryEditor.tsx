@@ -36,12 +36,48 @@ export function StoryEditor({ initial, cloudName, listPath = "/admin/stories" }:
   const photoMediaIds = (useWatch({ control: form.control, name: "photoMediaIds" }) ?? []) as string[];
   const getMedia = (id: string | undefined) => uploadedPhotoMedia.find((media) => media.id === id) ?? initial?.media.find((media) => media.id === id);
 
+  async function saveWithStatus(values: StoryFormData, status: "DRAFT" | "SCHEDULED" | "PUBLISHED", scheduledAt: string | null = null) {
+    const saved = await saveStoryAction(values);
+    if (!saved.ok) { setMessage(saved.error.message); return null; }
+    const updated = await setStoryStatusAction({ id: saved.data.id, status, publishAt: scheduledAt });
+    if (!updated.ok) { setMessage(updated.error.message); return null; }
+    return saved.data.id;
+  }
+
   function save(values: StoryFormData) {
-    startTransition(async () => { setMessage(""); const result = await saveStoryAction(values); if (!result.ok) { setMessage(result.error.message); return; } setMessage("Draft saved."); router.push(`/admin/stories/${result.data.id}`); router.refresh(); });
+    startTransition(async () => {
+      setMessage("");
+      const saved = await saveStoryAction(values);
+      if (!saved.ok) { setMessage(saved.error.message); return; }
+      const id = saved.data.id;
+      if (initial?.id && initial.status !== "DRAFT") {
+        const drafted = await setStoryStatusAction({ id, status: "DRAFT", publishAt: null });
+        if (!drafted.ok) { setMessage(`Changes saved, but the story could not be moved to draft: ${drafted.error.message}`); return; }
+      }
+      setMessage("Draft saved.");
+      router.push(`/admin/stories/${id}`);
+      router.refresh();
+    });
   }
   function status(value: "DRAFT" | "SCHEDULED" | "PUBLISHED") {
-    if (!initial?.id) { setMessage("Save the story before changing its status."); return; }
-    startTransition(async () => { const result = await setStoryStatusAction({ id: initial.id, status: value, publishAt: value === "SCHEDULED" && publishAt ? new Date(publishAt).toISOString() : null }); if (!result.ok) { setMessage(result.error.message); return; } if (value === "PUBLISHED") { router.push(`${listPath}/`); router.refresh(); return; } setMessage(`Story set to ${value.toLowerCase()}.`); router.refresh(); });
+    if (!initial?.id && value !== "PUBLISHED") { setMessage("Save the story before changing its status."); return; }
+    if (value === "SCHEDULED" && !publishAt) { setMessage("Choose a publish time before scheduling."); return; }
+    startTransition(async () => {
+      setMessage("");
+      await form.handleSubmit(async (values) => {
+        const scheduledAt = value === "SCHEDULED" ? new Date(publishAt).toISOString() : null;
+        const id = await saveWithStatus(values, value, scheduledAt);
+        if (!id) return;
+        if (value === "PUBLISHED") {
+          setMessage("Story published.");
+          router.push(`${listPath}/`);
+          router.refresh();
+          return;
+        }
+        setMessage(value === "DRAFT" ? "Draft saved." : "Story scheduled.");
+        router.refresh();
+      }, () => setMessage("Please review the story fields before saving."))();
+    });
   }
   function changePhoto(index: number, id: string) { const next = [...photoMediaIds]; if (index >= next.length) next.push(id); else next.splice(index, 1, id); form.setValue("photoMediaIds", next, { shouldDirty: true }); }
   function removePhoto(index: number) { const removedId = photoMediaIds.at(index); setUploadedPhotoMedia((current) => current.filter((media) => media.id !== removedId)); form.setValue("photoMediaIds", photoMediaIds.filter((_, itemIndex) => itemIndex !== index), { shouldDirty: true }); }

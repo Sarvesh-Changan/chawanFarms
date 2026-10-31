@@ -23,14 +23,14 @@ const cmsSection = {
 };
 
 describe("home hero", () => {
-  it("renders Settings copy and the two hero actions", () => {
+  it("renders Settings copy and the primary Plan your stay action", () => {
     render(<HomeHero section={cmsSection} media={null} settings={emptySettings} />);
 
     expect(screen.getByRole("heading", { name: "Settings headline" })).toBeInTheDocument();
     expect(screen.getByText("CMS eyebrow")).toBeInTheDocument();
     expect(screen.getByText("Settings subhead")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Settings CTA" })).toHaveAttribute("href", "/book");
-    expect(screen.getByRole("link", { name: "Explore experiences" })).toHaveAttribute("href", "/experiences");
+    expect(screen.getByRole("link", { name: "Plan your stay" })).toHaveAttribute("href", "/book");
+    expect(screen.queryByRole("link", { name: "Explore experiences" })).toBeNull();
   });
 
   it("hides the optional facts bar when settings are empty", () => {
@@ -40,11 +40,11 @@ describe("home hero", () => {
     expect(screen.queryByRole("link", { name: /Call / })).toBeNull();
   });
 
-  it("shows only configured address and phone facts", () => {
+  it("keeps address out of the hero and shows only configured call action", () => {
     render(<HomeHero section={{ content: { heading: { en: "Sample heading" } } }} media={null} settings={{ ...emptySettings, address: "Baitwadi, Kolad", phones: ["9821502956"] }} />);
 
-    expect(screen.getByText("Baitwadi, Kolad")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Call 9821502956" })).toHaveAttribute("href", "tel:9821502956");
+    expect(screen.queryByText("Baitwadi, Kolad")).toBeNull();
+    expect(screen.getByRole("link", { name: "Call the farm" })).toHaveAttribute("href", "tel:9821502956");
   });
 
   it("keeps the hero static when reduced motion is preferred", async () => {

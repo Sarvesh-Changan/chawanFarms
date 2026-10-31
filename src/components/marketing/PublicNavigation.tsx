@@ -85,6 +85,21 @@ export function PublicNavigation({ accountHref, accountLabel, phone, whatsappNum
   const closeMobile = () => { setMobileOpen(false); menuButtonRef.current?.focus(); };
 
   useEffect(() => {
+    const header = document.querySelector<HTMLElement>("[data-public-site-header]");
+    if (!header) return;
+    let previousY = window.scrollY;
+    const updateHeader = () => {
+      const currentY = window.scrollY;
+      header.dataset.scrolled = String(currentY > 8);
+      header.dataset.scrollDirection = currentY < previousY ? "up" : "down";
+      previousY = currentY;
+    };
+    updateHeader();
+    window.addEventListener("scroll", updateHeader, { passive: true });
+    return () => window.removeEventListener("scroll", updateHeader);
+  }, []);
+
+  useEffect(() => {
     // The pathname is external navigation state; close the menu after a route transition.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpenGroup(null);
@@ -127,7 +142,7 @@ export function PublicNavigation({ accountHref, accountLabel, phone, whatsappNum
     <button ref={menuButtonRef} type="button" aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={mobileOpen} aria-controls="mobile-navigation" onClick={() => setMobileOpen((value) => !value)} className="ml-auto inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-forest-900/15 xl:hidden focus-visible:outline-2 focus-visible:outline-turmeric-500">
       {mobileOpen ? <X aria-hidden="true" className="size-5" /> : <Menu aria-hidden="true" className="size-5" />}
     </button>
-    {mobileOpen ? <div id="mobile-navigation" role="dialog" aria-modal="true" aria-label="Site navigation" className="bg-cream-50 fixed inset-0 z-50 overflow-y-auto p-5 xl:hidden">
+    {mobileOpen ? <div id="mobile-navigation" role="dialog" aria-modal="true" aria-label="Site navigation" className="bg-cream-50 fixed inset-0 z-50 overflow-y-auto p-5 motion-safe:animate-[nav-drop-in_180ms_ease-out] motion-reduce:animate-none xl:hidden">
       <div className="mx-auto flex max-w-7xl justify-end"><button type="button" aria-label="Close navigation menu" onClick={closeMobile} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-forest-900/15 focus-visible:outline-2 focus-visible:outline-turmeric-500"><X aria-hidden="true" className="size-5" /></button></div>
       <nav aria-label="Mobile navigation" className="mx-auto flex max-w-7xl flex-col gap-1 py-8 text-2xl font-medium">
         <NavLink {...publicNavHome} pathname={pathname} onClick={() => setMobileOpen(false)}>{publicNavHome.label}</NavLink>

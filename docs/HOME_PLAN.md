@@ -1,8 +1,28 @@
-# Home page plan
+﻿# Home page plan
 
-This plan combines source inspection with screenshots of the confirmed DEV environment. Home was captured on desktop and mobile, and its live DEV content was reviewed. Lighthouse data and per-route browser metrics are in the ignored `docs/qa/ui-audit/` directory. Do not treat this file as approval to change code.
+## Implementation status (2026-11-01)
 
-## Current sections and verdicts
+The implementation follows the visitor-first order below. A section is omitted when its required source data, image quality or scene-specific curation is absent; missing content does not leave a blank heading. `docs/OPEN_QUESTIONS.md` D-14 lists the original approved photos and captions still needed. The 2–4 full-bleed feature scenes require gallery assets tagged `home-scene`, at least 1920×1080, a meaningful alt text, no provisional PDF tag, and a distinct media record. Only the hero photo is prioritized. Touch, reduced-motion, and Save-Data users receive static imagery.
+
+| Rendered order | Verdict | Treatment | Data and fallback |
+|---|---|---|---|
+| Hero | KEEP | Full viewport with photo, contrast overlay and image parallax; otherwise layered gradient and farm-line illustration. | Settings headline/subline; `/book` primary action; configured WhatsApp and phone actions. No photo card placeholder. |
+| Stay choices | KEEP | Up to three image-led package cards, no filters on Home. | Published package, attached public image and active adult rate required. Full inventory on Packages and Accommodation. |
+| Farm feature scenes | MERGE | 2–4 sticky clipped full-bleed photo scenes between content blocks, with one short approved caption each. | `GalleryItem.media.tags` includes `home-scene`; 1920×1080 minimum; hide without suitable photos. Native sticky/clip-path, never `background-attachment: fixed`. |
+| Experiences | MERGE | Existing scroll-snap `ExperienceCarousel`, maximum three photo cards; no autoplay. | Published Experience with attached public image. Full list remains under Activities. |
+| Stories | SHORTEN | Up to two consented story cards with photo crop and excerpt. | Existing public story consent/status gate plus attached public cover image. Empty section hidden; full content at Stories. |
+| Food preview | SHORTEN | One split image/text block with up to four real menu items. | Published menu category and featured photo tagged `home-food`; otherwise hidden. Full menu on Food. |
+| Gallery proof | KEEP | Three approved image tiles, first larger, with View all. | Featured public images only; excludes hero, scenes, food, and shown story covers to avoid reuse. Hide when empty. |
+| Location | SHORTEN | Compact address/contact and configured map search, below proof. | Settings address/phone only. No guessed coordinates or repeated directions. Hide when empty. |
+| Closing action | KEEP | Quiet full-width CTA band with Plan your stay, configured WhatsApp and Call. | Existing Settings copy where present; no invented stats, reviews, or offers. |
+
+Removed from Home usage: Owner feature (belongs on About), the hardcoded 19-item NatureFeature claims (unverified/duplicative), separate Accommodation list (merged into stay choices), the open Food menu accordion (reduced to conditional image-backed preview), extra Activities list (merged with Experiences), and Rewards video teaser (dedicated Rewards route). Gallery and final CTA, previously declared but not rendered, now render only when their requirements are met. No page/data component or file was deleted.
+
+Desktop keeps side-by-side cards and full-bleed scenes. Mobile stacks stay choices, uses touch swipe on the existing snap carousel, crops images with reserved aspect ratios, and disables parallax. Forms and account flows stay motion-light.
+
+This plan was applied to the Home composition during the UI improvement task. Lighthouse data and per-route browser metrics are in the ignored `docs/qa/ui-audit/` directory. The "Current sections and verdicts" table below preserves the pre-change audit snapshot; the implemented order and runtime DEV composition are recorded above and in `docs/UI_IMPROVEMENT_REPORT.md`.
+
+## Pre-change sections and verdicts
 
 Actual order is HomeHero → optional owner feature → location → story cards → NatureFeature → packages → accommodation → food → activities → rewards → footer. Gallery and FinalCta are named in the declared order but omitted by the render switch.
 
@@ -70,3 +90,5 @@ Target is 6–8 purposeful blocks plus global chrome. The two strongest visual m
 - Whether any real guest stories/reviews can be published, with source, date and permissions (D-19).
 - Final cancellation, payment, ID, safety and policy wording (D-1/2/15).
 - Active reward values/rules and publish-video consent before any Home reward claim (D-8/9).
+
+

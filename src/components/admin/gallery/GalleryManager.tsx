@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { CldImage } from "@/components/media/CldImage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GALLERY_CATEGORIES } from "@/config/gallery";
@@ -11,16 +12,18 @@ import { bulkUpdateGalleryAction, reorderGalleryItemAction, updateGalleryFlagsAc
 
 import { GalleryCategoryManagerModal } from "./GalleryCategoryManagerModal";
 
-type Row = { id: string; category: string; status: string; sortOrder: number; isFeatured: boolean; media: { publicId: string; format: string | null; bytes: number | null; contentHash: string | null; isPublic: boolean } };
+type Row = { id: string; category: string; status: string; sortOrder: number; isFeatured: boolean; media: { publicId: string; kind: "IMAGE" | "VIDEO"; format: string | null; bytes: number | null; contentHash: string | null; isPublic: boolean; width: number | null; height: number | null; focalX: number | null; focalY: number | null; altText: unknown } };
 
 export function GalleryManager({
   rows,
+  cloudName,
   categories = [...GALLERY_CATEGORIES],
   categoryCounts,
   filters,
   canWrite,
 }: {
   rows: Row[];
+  cloudName: string;
   categories?: string[];
   categoryCounts: Array<{ category: string; count: number }>;
   filters: { q: string; status: string; category: string; duplicatesOnly: boolean };
@@ -227,6 +230,7 @@ export function GalleryManager({
                   }
                 />
               </th>
+              <th className="p-3">Preview</th>
               <th className="p-3">Media Public ID</th>
               <th className="p-3">Category</th>
               <th className="p-3">Format / size</th>
@@ -252,6 +256,21 @@ export function GalleryManager({
                       )
                     }
                   />
+                </td>
+                <td className="p-3">
+                  <div className="relative size-14 overflow-hidden rounded-md border border-border/70 bg-muted">
+                    {cloudName ? <CldImage
+                      cloudName={cloudName}
+                      publicId={row.media.publicId}
+                      resourceType={row.media.kind === "VIDEO" ? "video" : "image"}
+                      alt={`Preview of ${row.media.publicId.split("/").at(-1) ?? "gallery media"}`}
+                      focalX={row.media.focalX}
+                      focalY={row.media.focalY}
+                      fill
+                      sizes="56px"
+                      className="object-cover"
+                    /> : <span className="grid size-full place-items-center text-[10px] text-muted-foreground">No preview</span>}
+                  </div>
                 </td>
                 <td className="max-w-56 truncate p-3 font-medium">
                   {row.media.publicId}

@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 
 import { GalleryViewer } from "@/components/gallery/GalleryViewer";
-import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
+import { PublicClosing } from "@/components/marketing/PublicClosing";
+import { PublicPageHeader } from "@/components/marketing/PublicPageHeader";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { env } from "@/config/env";
+import { filterPublicGalleryItems } from "@/lib/marketing-media";
 import { getPublicGallery } from "@/server/services/public-content";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +20,8 @@ export const metadata: Metadata = {
 };
 
 export default async function GalleryPage() {
-  const items = await getPublicGallery();
+  const gallery = await getPublicGallery();
+  const items = filterPublicGalleryItems(gallery);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -33,14 +36,15 @@ export default async function GalleryPage() {
     <>
       <JsonLd data={jsonLd} />
       <Header />
-      <Breadcrumbs items={[{ label: "Gallery" }]} />
-      <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
+      <PublicPageHeader currentPage="Gallery" eyebrow="A look around" title="The farm, in pictures." description="Photographs selected by the farm team." />
+      <main className="bg-cream-50/60 pb-20 pt-12 sm:pt-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           
           {/* Interactive Masonry Gallery with Lightbox */}
           <GalleryViewer items={items} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? ""} />
         </div>
       </main>
+      <PublicClosing />
       <StickyCtaBar />
       <Footer />
     </>

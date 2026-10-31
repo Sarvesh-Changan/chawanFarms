@@ -1,9 +1,10 @@
-import { ArrowLeft, Shield } from "lucide-react";
 import Link from "next/link";
 
 import { SafeHtml } from "@/components/admin/SafeHtml";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
+import { PublicClosing } from "@/components/marketing/PublicClosing";
+import { PublicPageHeader } from "@/components/marketing/PublicPageHeader";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { getPolicyVersionsForPublic } from "@/server/services/cms/policies";
 
@@ -30,33 +31,9 @@ export async function PublishedPolicyDocument({
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
+      <PublicPageHeader currentPage={title} eyebrow="Chawan Farms · Legal and policies" title={title} description="Review the published visitor, booking and privacy information." />
+      <main className="min-h-screen bg-cream-50/60 pb-20 pt-12 sm:pt-16">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          {/* Breadcrumb / Back Navigation */}
-          <div className="mb-8">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-forest-700 transition hover:text-laterite-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back to Home
-            </Link>
-          </div>
-
-          {/* Page Header */}
-          <header className="mb-12 border-b border-border/80 pb-8">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-laterite-600">
-              <Shield className="h-4 w-4" />
-              <span>Chawan Farms Legal &amp; Policies</span>
-            </div>
-            <h1 className="mt-2 font-heading text-4xl text-forest-900 sm:text-5xl">
-              {title}
-            </h1>
-            <p className="mt-3 text-base text-muted-foreground">
-              Please review these guidelines and terms applicable to visits,
-              bookings, stays, and privacy at Chawan Farms.
-            </p>
-          </header>
-
           {/* Documents Content */}
           {documents.length ? (
             <div className="space-y-12">
@@ -115,6 +92,7 @@ export async function PublishedPolicyDocument({
           )}
         </div>
       </main>
+      <PublicClosing />
       <StickyCtaBar />
       <Footer />
     </>

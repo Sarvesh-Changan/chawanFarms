@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { headers } from "next/headers";
 
 import { CMS_MUTATION_RATE_LIMIT } from "@/config/cms";
@@ -30,8 +30,8 @@ async function gate(key: string, permission: "cms.read" | "cms.write" | "cms.pub
 async function record(actorId: string, action: string, entityId: string, before: unknown, after: unknown) {
   const requestHeaders = await headers();
   const result = await audit({ actor: { id: actorId, type: "STAFF" }, action, entityType: "Post", entityId, before, after, ip: requestHeaders.get("cf-connecting-ip")?.slice(0, 128), userAgent: requestHeaders.get("user-agent")?.slice(0, 512), requestId: requestHeaders.get("x-request-id")?.slice(0, 128) });
-  revalidateTag("cms:post", "max");
-  revalidateTag("cms:all", "max");
+  updateTag("cms:post");
+  updateTag("cms:all");
   revalidatePath("/"); revalidatePath("/stories"); revalidatePath("/sitemap.xml"); revalidatePath("/admin/stories");
   return result;
 }

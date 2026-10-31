@@ -7,6 +7,15 @@ import * as React from "react";
 import type { ParallaxImageProps } from "@/components/motion/ParallaxImage";
 import { cn } from "@/lib/utils";
 
+type NavigatorWithConnection = Navigator & { connection?: { saveData?: boolean } };
+
+function prefersStaticMotion(): boolean {
+  if (typeof window === "undefined") return true;
+  if (typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
+  if (typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches) return true;
+  return (navigator as NavigatorWithConnection).connection?.saveData === true;
+}
+
 export function ParallaxImageMotion({
   alt,
   className,
@@ -17,15 +26,12 @@ export function ParallaxImageMotion({
 }: ParallaxImageProps) {
   const [offset, setOffset] = React.useState(0);
   const [isVisible, setIsVisible] = React.useState(false);
-  const [reducedMotion, setReducedMotion] = React.useState(() =>
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-  );
+  const [reducedMotion, setReducedMotion] = React.useState(prefersStaticMotion);
   const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotionPreference = () => setReducedMotion(mediaQuery.matches);
+    const updateMotionPreference = () => setReducedMotion(prefersStaticMotion());
     updateMotionPreference();
     mediaQuery.addEventListener("change", updateMotionPreference);
 

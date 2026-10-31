@@ -1,6 +1,8 @@
 import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
+import { HeroBackground } from "@/components/marketing/HomeHeroMotion";
 import { CldImage } from "@/components/media/CldImage";
 import { env } from "@/config/env";
+import { isMarketingPhoto, isPublicImage } from "@/lib/marketing-media";
 import type { PublicMedia } from "@/server/services/public-content";
 
 export function localized(value: unknown): string {
@@ -11,7 +13,10 @@ export function localized(value: unknown): string {
 }
 
 export function DetailHero({ eyebrow, title, summary, media }: { eyebrow: string; title: string; summary?: string; media: PublicMedia | null }) {
-  return <section className="bg-forest-900 text-cream-50"><Breadcrumbs items={[{ label: title }]} className="text-cream-50/65"/><div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-8 sm:py-16 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:px-12 lg:py-20"><div><p className="text-paddy-300 text-xs font-semibold tracking-[0.2em] uppercase"><span aria-hidden="true">{"// "}</span>{eyebrow}</p><h1 className="font-heading mt-4 text-[clamp(2.75rem,7vw,5.5rem)] leading-[0.95]">{title}</h1>{summary ? <p className="text-cream-50/80 mt-6 max-w-2xl text-lg leading-8">{summary}</p> : null}</div><div className="bg-clay-100 relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)]">{media && env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? <CldImage cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME} publicId={media.publicId} resourceType={media.kind === "VIDEO" ? "video" : "image"} alt={localized(media.altText)} fill priority sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover"/> : null}</div></div></section>;
+  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const displayMedia = isPublicImage(media) && cloudName ? media : null;
+  const heroImage = displayMedia ? <CldImage cloudName={cloudName} publicId={displayMedia.publicId} resourceType="image" alt={localized(displayMedia.altText)} fill priority sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover transition-transform duration-[280ms] ease-[var(--motion-ease-standard)] group-hover:scale-[1.02] motion-reduce:transform-none"/> : null;
+  return <section className="bg-forest-900 text-cream-50 rounded-b-[2rem] sm:rounded-b-[3rem]"><Breadcrumbs items={[{ label: title }]} className="text-cream-50/65"/><div className={`mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-8 sm:py-16 lg:items-center lg:px-12 lg:py-20 ${displayMedia ? "lg:grid-cols-[1fr_0.9fr]" : "lg:grid-cols-1"}`}><div><p className="text-paddy-300 text-xs font-semibold tracking-[0.18em] uppercase">{eyebrow}</p><h1 className="font-heading mt-4 max-w-4xl text-[clamp(2.5rem,7vw,5.5rem)] leading-[0.98] tracking-[-0.035em]">{title}</h1>{summary ? <p className="text-cream-50/80 mt-5 max-w-2xl text-base leading-7 sm:text-lg sm:leading-8">{summary}</p> : null}</div>{heroImage ? <div className="group relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)]">{isMarketingPhoto(displayMedia) ? <HeroBackground rate={0.72}>{heroImage}</HeroBackground> : heroImage}</div> : null}</div></section>;
 }
 
 export function DetailBody({ children }: { children: React.ReactNode }) {
@@ -23,8 +28,9 @@ export function DetailPanel({ title, children }: { title: string; children: Reac
 }
 
 export function MediaGallery({ media, label }: { media: PublicMedia[]; label: string }) {
-  if (!media.length || !env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) return null;
-  return <section aria-label={`${label} images`} className="grid grid-cols-2 gap-3">{media.map((item) => <div key={item.id} className="bg-clay-100 relative aspect-[4/3] overflow-hidden rounded-xl"><CldImage cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} publicId={item.publicId} resourceType={item.kind === "VIDEO" ? "video" : "image"} alt={localized(item.altText)} fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover"/></div>)}</section>;
+  const photos = media.filter(isPublicImage);
+  if (!photos.length || !env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) return null;
+  return <section aria-label={`${label} images`} className="grid grid-cols-2 gap-3">{photos.map((item) => <div key={item.id} className="bg-clay-100 relative aspect-[4/3] overflow-hidden rounded-xl"><CldImage cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} publicId={item.publicId} resourceType="image" alt={localized(item.altText)} fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover"/></div>)}</section>;
 }
 
 export function EmptyCatalogue({ label }: { label: string }) {

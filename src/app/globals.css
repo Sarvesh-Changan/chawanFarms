@@ -11,6 +11,18 @@ body {
   color: var(--ink-900);
 }
 
+.public-site-header {
+  transition: background-color 180ms var(--motion-ease-standard), box-shadow 180ms var(--motion-ease-standard);
+}
+
+.public-site-header[data-scrolled="true"] {
+  box-shadow: 0 8px 28px rgb(18 48 31 / 0.12);
+}
+
+body:has(nav[aria-label="Quick contact"]) main {
+  padding-bottom: max(6rem, calc(5.5rem + env(safe-area-inset-bottom)));
+}
+
 @theme inline {
   --font-devanagari: var(--font-deva);
   --font-heading: var(--font-display);
@@ -141,86 +153,51 @@ body {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes hero-line-in {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes hero-copy-in {
+@keyframes reveal-in {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes experience-slide-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes nature-mosaic-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes stay-card-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes guest-story-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes closing-cta-drift {
-  from { transform: translate3d(-2%, 0, 0) scale(1); }
-  to { transform: translate3d(2%, 3%, 0) scale(1.06); }
 }
 
 .hero-line-in,
-.hero-copy-in {
+.hero-copy-in,
+.experience-slide-reveal,
+.nature-mosaic-reveal,
+.stay-card-reveal,
+.guest-story-reveal {
   animation-timing-function: var(--motion-ease-standard);
+  animation-duration: var(--motion-duration-reveal);
+  animation-name: reveal-in;
   animation-fill-mode: both;
-}
-
-.hero-line-in {
-  animation-name: hero-line-in;
-  animation-duration: var(--motion-duration-reveal);
-  animation-delay: var(--hero-line-delay, 0ms);
-}
-
-.hero-copy-in {
-  animation-name: hero-copy-in;
-  animation-duration: var(--motion-duration-reveal);
-  animation-delay: var(--hero-copy-delay, 0ms);
 }
 
 .experience-slide {
   flex: 0 0 calc(100% - 1.5rem);
 }
 
-.experience-slide-reveal {
-  animation: experience-slide-in var(--motion-duration-reveal) var(--motion-ease-standard) both;
-}
-
-.nature-mosaic-reveal {
-  animation: nature-mosaic-in var(--motion-duration-reveal) var(--motion-ease-standard) both;
-}
-
-.stay-card-reveal {
-  animation: stay-card-in var(--motion-duration-reveal) var(--motion-ease-standard) both;
-}
-
 .guest-story-slide {
   flex: 0 0 calc(100% - 1.5rem);
 }
 
-.guest-story-reveal {
-  animation: guest-story-in var(--motion-duration-reveal) var(--motion-ease-standard) both;
-}
+  [data-reveal-state="hidden"] {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-distance, 12px), 0);
+  }
 
-.closing-cta-effect {
-  animation: closing-cta-drift 9s var(--motion-ease-standard) alternate infinite;
-}
+  [data-reveal-state="visible"] {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition: opacity var(--reveal-duration, 500ms) var(--motion-ease-standard) var(--reveal-delay, 0ms),
+      transform var(--reveal-duration, 500ms) var(--motion-ease-standard) var(--reveal-delay, 0ms);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal-state="hidden"],
+    [data-reveal-state="visible"] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
 
 @media (min-width: 1024px) {
   .experience-slide {

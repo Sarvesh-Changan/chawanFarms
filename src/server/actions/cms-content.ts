@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
 
@@ -43,8 +43,8 @@ function cmsPath(type: CmsContentType): string {
 async function record(actorId: string, action: string, type: CmsContentType, id: string, before: unknown, after: unknown) {
   const requestHeaders = await headers();
   const result = await audit({ actor: { id: actorId, type: "STAFF" }, action, entityType: type, entityId: id, before, after, ip: requestHeaders.get("cf-connecting-ip")?.slice(0, 128), userAgent: requestHeaders.get("user-agent")?.slice(0, 512), requestId: requestHeaders.get("x-request-id")?.slice(0, 128) });
-  revalidateTag(`cms:${type}`, "max");
-  revalidateTag("cms:all", "max");
+  updateTag(`cms:${type}`);
+  updateTag("cms:all");
   revalidatePath(`/admin/${cmsPath(type)}`);
   return result;
 }

@@ -24,10 +24,10 @@
   --leading-display: 1.08;
   --leading-body: 1.6;
   --motion-ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --motion-duration-fast: 180ms;
-  --motion-duration-ui: 280ms;
-  --motion-duration-reveal: 550ms;
-  --motion-duration-slow: 700ms;
+  --motion-duration-fast: 160ms;
+  --motion-duration-ui: 220ms;
+  --motion-duration-reveal: 500ms;
+  --motion-duration-slow: 550ms;
   --motion-duration-counter: 800ms;
   --motion-ease-counter: cubic-bezier(0.22, 0.61, 0.36, 1);
   --radius-card: 1.5rem;

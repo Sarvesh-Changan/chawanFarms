@@ -199,8 +199,10 @@ export function GalleryViewer({ items, cloudName: propCloudName }: GalleryViewer
 
   return (
     <div className="w-full">
+      {!items.length ? <div role="status" className="mx-auto my-8 max-w-2xl rounded-2xl border border-dashed border-border/80 bg-card/50 p-8 text-center"><p className="font-heading text-xl text-forest-900">No gallery photos are published yet</p><p className="mt-2 text-sm text-muted-foreground">Photos will appear after the farm team selects suitable, approved images.</p></div> : null}
+
       {/* Category Filter Chips */}
-      {categories.length > 1 && (
+      {items.length > 0 && categories.length > 1 && (
         <div
           role="toolbar"
           aria-label="Filter gallery by category"
@@ -228,7 +230,7 @@ export function GalleryViewer({ items, cloudName: propCloudName }: GalleryViewer
       )}
 
       {/* Masonry Grid */}
-      {filteredItems.length === 0 ? (
+      {items.length > 0 && filteredItems.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/80 p-12 text-center">
           <p className="font-heading text-xl text-forest-900">
             No items in this category
@@ -237,7 +239,7 @@ export function GalleryViewer({ items, cloudName: propCloudName }: GalleryViewer
             Try choosing another category or check back soon.
           </p>
         </div>
-      ) : (
+      ) : items.length > 0 ? (
         <div className="columns-1 gap-6 space-y-6 sm:columns-2 lg:columns-3 xl:columns-4">
           {filteredItems.map((item) => {
             const caption =
@@ -312,7 +314,7 @@ export function GalleryViewer({ items, cloudName: propCloudName }: GalleryViewer
             );
           })}
         </div>
-      )}
+      ) : null}
 
       {/* Accessible Lightbox Modal */}
       {activeItem && (
@@ -384,7 +386,6 @@ export function GalleryViewer({ items, cloudName: propCloudName }: GalleryViewer
               <div className="relative flex flex-col items-center">
                 <video
                   controls
-                  autoPlay
                   playsInline
                   src={`https://res.cloudinary.com/${encodeURIComponent(
                     cloudName,

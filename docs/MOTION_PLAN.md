@@ -1,6 +1,14 @@
-# Site motion plan
+﻿# Site motion plan
 
-This proposes one site-wide motion language based on source inspection and the 1 November 2026 DEV browser capture. It is a plan only; no application code was changed.
+## Applied motion system (2026-11-01)
+
+The shared CSS reveal styles now use the same 500 ms fade + 12 px translate with `cubic-bezier(.22,.61,.36,1)` and once-only IntersectionObserver triggers. The new `Reveal` and `Stagger` wrappers keep content visible in server HTML, animate only after hydration, cap stagger delay at two increments (60 ms), and skip movement for reduced-motion and Save-Data. Existing hero reveals use the same easing/distance family. Card/image hover is 220–280 ms and only transforms the card/image. Dropdown and mobile menu open with a short opacity/transform transition. Native document View Transitions are disabled because they can abort with InvalidStateError when a tab becomes hidden; public route navigation stays immediate. No library was added.
+
+`ParallaxScene` uses a sticky viewport layer clipped inside a tall section and an rAF scroll listener attached only while near the viewport. Its rate is `0.12`; it uses `transform` only. The hero image uses the existing `HeroBackground` scroll transform at rate `0.82`, and eligible catalogue detail photos use it at rate `0.72`. Parallax requires sufficient dimensions, non-provisional media, and descriptive alt text; Home scenes also require the `home-scene` curation tag. The Home feature-scene rate and image movement could not be measured because the confirmed DEV data has no eligible tagged photos; the Playwright run recorded no rendered scene or slider. The hero illustration is static. Parallax is disabled for coarse/touch pointers, reduced motion, and Save-Data.
+
+**Not verified:** real-device iOS Safari and Android sticky/clip-path behavior; no physical devices were available in this run. Playwright Chromium mobile emulation is not a substitute for those devices. The script records browser evidence for wide/touch emulation, parallax transforms, reveal states, snap type, reduced motion, menu and header states, and horizontal overflow.
+
+This motion plan was applied as a shared site motion language. Runtime checks and their limits are listed in `docs/UI_IMPROVEMENT_REPORT.md`; raw evidence is in the ignored `docs/qa/ui-audit/after/` directory.
 
 ## Motion tokens
 
@@ -27,7 +35,7 @@ This proposes one site-wide motion language based on source inspection and the 1
 
 ## Existing implementation against the plan
 
-The repository has CSS entrance animations for hero lines/copy, experiences, nature mosaics, stay cards, guest stories and closing CTA, plus Motion-powered `Reveal` and `ParallaxImage`, hero scroll parallax, CountUp, hover/focus transforms and scroll-snapping carousel interactions. Existing tokens use 180/280/550/700/800 ms. This is broader than needed and no route-transition pattern was found. On captured Home desktop, `hero-line-in`, `hero-copy-in`, `bounce`, `nature-mosaic-in` and `stay-card-in` were observed; utility transition durations included 150, 200 and 280 ms. The hero copy entered from 18 px above and settled. No continuous scroll parallax was observed on Home. Home's hero media was absent, so its background parallax effect was not active; touch/mobile Home was static. Runtime samples are in `docs/qa/ui-audit/metrics.json`.
+The repository previously had CSS entrance animations, Motion-powered `Reveal` and `ParallaxImage`, hero scroll parallax, CountUp, hover/focus transforms and scroll-snapping carousel interactions. The shared reveal and route transition patterns have since been consolidated and reduced-motion/Save-Data behavior added. The confirmed DEV data has no eligible Home photo, scene or slider, so Home parallax, slider movement and card-image hover could not be measured at runtime. Raw final checks are in `docs/qa/ui-audit/after/motion-verification.json`.
 
 Home-specific observed-in-source note: `HeroBackground` is the only active parallax candidate in current Home JSX. `ParallaxImage` is used on design showcases, not the Home route. `Reveal` is not currently mounted by Home section components. The Home gallery and final CTA do not render, so their associated styles are not active in the current Home composition.
 
@@ -37,4 +45,5 @@ The Home hero could use subtle parallax only after Settings contains a high-reso
 
 ## Audit follow-up
 
-The DEV route/viewport browser pass and Home scroll recordings are complete. Authenticated account behavior was not available without DEV customer credentials. A dedicated reduced-motion browser pass was not performed; reduced-motion behavior remains source-verified only. Do not treat source support as runtime verification.
+The DEV route/viewport browser pass and Home scroll recordings are complete. Authenticated account behavior was not available without DEV customer credentials. Reduced-motion was checked in Playwright Chromium and rendered no hidden reveals or parallax scenes; real iOS Safari and Android remain unverified.
+

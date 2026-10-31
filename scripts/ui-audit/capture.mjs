@@ -35,16 +35,25 @@ async function collectMetrics(page) {
     const rgb = (color) => {
       const match = color.match(/rgba?\(([^)]+)\)/);
       if (!match) return null;
-      const channels = match[1].split(/[ ,/]+/).filter(Boolean).slice(0, 3).map(Number);
+      const channels = (match.at(1) ?? "").split(/[ ,/]+/).filter(Boolean).slice(0, 3).map(Number);
       return channels.length === 3 ? channels.map((value) => value / 255).map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4) : null;
     };
-    const luminance = (color) => { const c = rgb(color); return c ? 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2] : null; };
+    const luminance = (color) => {
+      const channels = rgb(color);
+      if (!channels) return null;
+      const [red, green, blue] = channels;
+      if (red === undefined || green === undefined || blue === undefined) return null;
+      return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+    };
     const contrast = (a, b) => { const x = luminance(a), y = luminance(b); return x === null || y === null ? null : (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
     const sections = [...document.querySelectorAll("main section, main > article, main > div[id]")].map((node) => {
       const rect = node.getBoundingClientRect();
       return { id: node.id || null, label: (node.querySelector("h1,h2,h3")?.textContent || "").trim().replace(/\s+/g, " ").slice(0, 120), top: Math.round(rect.top + scrollY), bottom: Math.round(rect.bottom + scrollY), height: Math.round(rect.height) };
     });
-    const gaps = sections.slice(1).map((item, index) => ({ before: sections[index].label, after: item.label, px: Math.max(0, item.top - sections[index].bottom) }));
+    const gaps = sections.slice(1).flatMap((item, index) => {
+      const previous = sections.at(index);
+      return previous ? [{ before: previous.label, after: item.label, px: Math.max(0, item.top - previous.bottom) }] : [];
+    });
     const images = [...document.images].map((image) => ({ src: image.currentSrc, alt: image.alt, loaded: image.complete && image.naturalWidth > 0, naturalWidth: image.naturalWidth }));
     const emptyMediaFrameCandidates = [...document.querySelectorAll("div[class*='aspect-']")].filter((node) => {
       const classes = typeof node.className === "string" ? node.className : "";
@@ -109,7 +118,9 @@ try {
     const routeQueue = [...ROUTES];
     const seenRoutes = new Set(routeQueue.map(([, route]) => route));
     for (let routeIndex = 0; routeIndex < routeQueue.length; routeIndex++) {
-      const [name, route] = routeQueue[routeIndex];
+      const routeEntry = routeQueue.at(routeIndex);
+      if (!routeEntry) continue;
+      const [name, route] = routeEntry;
       pageErrors = [];
       failedRequests = [];
       const record = { name, route, viewport: viewport.name, screenshots: [], pageErrors, failedRequests };
@@ -224,7 +235,11 @@ try {
         if (video) {
           const generatedVideo = await video.path();
           const finalVideo = path.join(OUTPUT, `home-${viewport.name}-slow-scroll.webm`);
+          // The existing target is a fixed filename inside the ignored audit directory.
+          // eslint-disable-next-line security/detect-non-literal-fs-filename
           await unlink(finalVideo).catch(() => {});
+          // Playwright owns this generated path; the destination is fixed above.
+          // eslint-disable-next-line security/detect-non-literal-fs-filename
           await rename(generatedVideo, finalVideo);
           report.videos ??= [];
           report.videos.push(path.basename(finalVideo));

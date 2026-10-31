@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
+import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
 
 import { FaqAccordion, type FaqItem } from "@/components/cms/FaqAccordion";
@@ -6,6 +7,13 @@ import { GalleryViewer, type GalleryViewerItem } from "@/components/gallery/Gall
 import { publicCmsWhere } from "@/lib/cms-public-policy";
 
 describe("public pages accessibility & components", () => {
+  it("shows a compact, accessible empty state when there are no curated gallery photos", async () => {
+    const { container } = render(<GalleryViewer items={[]} />);
+    expect(screen.getByRole("status")).toHaveTextContent("No gallery photos are published yet");
+    expect(screen.queryByRole("toolbar", { name: "Filter gallery by category" })).toBeNull();
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
   it("FaqAccordion renders accessible buttons with aria-expanded and expands on click", () => {
     const mockFaqs: FaqItem[] = [
       {
@@ -66,6 +74,7 @@ describe("public pages accessibility & components", () => {
           focalY: null,
           width: 1200,
           height: 800,
+          tags: [],
           durationSec: null,
         },
       },
@@ -86,6 +95,7 @@ describe("public pages accessibility & components", () => {
           focalY: null,
           width: 1920,
           height: 1080,
+          tags: [],
           durationSec: 15,
         },
       },

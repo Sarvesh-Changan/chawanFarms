@@ -13,6 +13,7 @@ import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { CldImage } from "@/components/media/CldImage";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { env } from "@/config/env";
+import { isPublicImage, isPublicMedia } from "@/lib/marketing-media";
 import { getPublicSeoForSlug, metadataFromSeo } from "@/server/services/cms/seo";
 import { getPublicStoryBySlug, localizedString } from "@/server/services/public-content";
 
@@ -70,6 +71,9 @@ export default async function StoryDetailPage({
   const body = localizedString(story.body);
   const formattedDate = formatDate(story.publishAt ?? story.createdAt);
   const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? "";
+  const coverMedia = isPublicImage(story.coverMedia) ? story.coverMedia : null;
+  const photoMedia = story.photoMedia.filter(isPublicImage);
+  const videoMedia = isPublicMedia(story.videoMedia) && story.videoMedia.kind === "VIDEO" ? story.videoMedia : null;
   const pageUrl = `${env.NEXT_PUBLIC_SITE_URL}/stories/${story.slug}`;
 
   const jsonLd = {
@@ -146,14 +150,14 @@ export default async function StoryDetailPage({
           </header>
 
           {/* Featured Cover Media */}
-          {story.coverMedia && (
+          {coverMedia && (
             <div className="my-10 overflow-hidden rounded-2xl border border-border/70 bg-muted/30 shadow-sm">
               <CldImage
                 cloudName={cloudName}
-                publicId={story.coverMedia.publicId}
-                alt={title}
-                width={story.coverMedia.width ?? 1200}
-                height={story.coverMedia.height ?? 700}
+                publicId={coverMedia.publicId}
+                alt={localizedString(coverMedia.altText)}
+                width={coverMedia.width ?? 1200}
+                height={coverMedia.height ?? 700}
                 className="h-auto w-full object-cover"
                 sizes="(max-width: 896px) 100vw, 896px"
                 priority
@@ -170,9 +174,9 @@ export default async function StoryDetailPage({
             )}
           </div>
 
-          {story.photoMedia.length ? <section className="mt-12" aria-labelledby="story-photos-heading"><h2 id="story-photos-heading" className="font-heading text-2xl text-forest-900">Photos</h2><div className="mt-5"><GalleryViewer cloudName={cloudName} items={story.photoMedia.map((media, index) => ({ id: media.id, category: "Story", caption: media.altText, sortOrder: index, isFeatured: false, media }))}/></div></section> : null}
+          {photoMedia.length ? <section className="mt-12" aria-labelledby="story-photos-heading"><h2 id="story-photos-heading" className="font-heading text-2xl text-forest-900">Photos</h2><div className="mt-5"><GalleryViewer cloudName={cloudName} items={photoMedia.map((media, index) => ({ id: media.id, category: "Story", caption: media.altText, sortOrder: index, isFeatured: false, media }))}/></div></section> : null}
 
-          {story.videoMedia ? <section className="mt-12" aria-labelledby="story-video-heading"><h2 id="story-video-heading" className="font-heading text-2xl text-forest-900">Video</h2><video className="mt-5 w-full rounded-2xl bg-black" controls preload="none" poster={storyVideoPoster(cloudName, story.videoMedia.publicId)} aria-label={`${title} video`}><source src={storyVideoUrl(cloudName, story.videoMedia.publicId)} type="video/mp4"/><p className="p-5 text-cream-50">Your browser cannot play this video.</p></video><p className="mt-2 text-xs text-muted-foreground">Captions are provided when available.</p></section> : null}
+          {videoMedia ? <section className="mt-12" aria-labelledby="story-video-heading"><h2 id="story-video-heading" className="font-heading text-2xl text-forest-900">Video</h2><video className="mt-5 w-full rounded-2xl bg-black" controls preload="none" poster={storyVideoPoster(cloudName, videoMedia.publicId)} aria-label={`${title} video`}><source src={storyVideoUrl(cloudName, videoMedia.publicId)} type="video/mp4"/><p className="p-5 text-cream-50">Your browser cannot play this video.</p></video><p className="mt-2 text-xs text-muted-foreground">Captions are provided when available.</p></section> : null}
 
           {/* Share & Engage Section */}
           <footer className="mt-14 border-t border-border/80 pt-8">

@@ -21,6 +21,7 @@ const publicMediaSelect = {
   focalY: true,
   width: true,
   height: true,
+  tags: true,
   durationSec: true,
 } as const;
 

@@ -3,9 +3,11 @@ import { describe, expect, it } from "vitest";
 import { homeSectionOrder } from "@/components/marketing/HomeSections";
 
 describe("public Home composition", () => {
-  it("uses fixed sections, keeps Experiences, and excludes removed Page/Offer/Testimonial blocks", () => {
-    expect(homeSectionOrder).toContain("experiences-grid");
-    expect(homeSectionOrder).not.toContain("stories");
+  it("keeps Home short and excludes duplicate, unsupported and removed blocks", () => {
+    expect(homeSectionOrder).toEqual(["hero", "stays", "feature-scenes", "experiences", "stories", "food", "gallery", "location", "closing-cta"]);
+    expect(homeSectionOrder).not.toContain("rewards-teaser");
+    expect(homeSectionOrder).not.toContain("accommodation");
+    expect(homeSectionOrder).toContain("stories");
     expect(homeSectionOrder).not.toContain("offers");
     expect(homeSectionOrder).not.toContain("testimonials");
   });

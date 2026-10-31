@@ -90,7 +90,7 @@ export function HeroHeadline({ text, className, id }: { text: string; className?
   );
 }
 
-export function HeroBackground({ children, className, rate = 0.95 }: { children: ReactNode; className?: string; rate?: number }) {
+export function HeroBackground({ children, className, rate = 0.82 }: { children: ReactNode; className?: string; rate?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
   const [staticMotion, setStaticMotion] = useState(true);
@@ -137,5 +137,5 @@ export function HeroBackground({ children, className, rate = 0.95 }: { children:
   }, [rate, staticMotion]);
 
   const transform = staticMotion ? "none" : `translate3d(0, ${offset}px, 0) scale(1.04)`;
-  return <div ref={ref} className={cn("absolute inset-[-4%_0] will-change-transform", className)} style={{ transform }}>{children}</div>;
+  return <div ref={ref} data-parallax-layer data-parallax-rate={rate} className={cn("absolute inset-[-4%_0] will-change-transform", className)} style={{ transform }}>{children}</div>;
 }

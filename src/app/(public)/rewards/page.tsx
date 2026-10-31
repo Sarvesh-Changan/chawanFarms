@@ -10,10 +10,10 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
 import { PublicClosing } from "@/components/marketing/PublicClosing";
+import { PublicPageHeader } from "@/components/marketing/PublicPageHeader";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getPublicActiveRewardRule } from "@/server/services/public-content";
@@ -69,24 +69,9 @@ export default async function RewardsPage() {
     <>
       <JsonLd data={jsonLd} />
       <Header />
-      <Breadcrumbs items={[{ label: "Rewards" }]} />
-      <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
+      <PublicPageHeader currentPage="Rewards" eyebrow="Customer rewards" title="Share your farm story, earn rewards" description="See how the published rewards programme works." />
+      <main className="min-h-screen bg-cream-50/60 pb-20 pt-12 sm:pt-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Hero / Intro */}
-          <div className="mb-14 text-center sm:mb-20">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-laterite-600">
-              Customer Loyalty &amp; Video Rewards
-            </span>
-            <h1 className="mt-3 font-heading text-4xl text-forest-900 sm:text-5xl md:text-6xl">
-              Share Your Farm Story, Earn Rewards
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Capture your real memories at Chawan Farms. Every authentic video you
-              share can earn reward points that turn into discount coupons for your
-              next rural getaway.
-            </p>
-          </div>
-
           {/* 4-Step Process Section */}
           <section className="mb-20">
             <h2 className="mb-10 text-center font-heading text-3xl text-forest-900">

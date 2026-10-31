@@ -6,10 +6,10 @@ import {
   ContactForm,
   SchoolGroupForm,
 } from "@/components/forms/LeadCaptureForms";
-import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
 import { PublicClosing } from "@/components/marketing/PublicClosing";
+import { PublicPageHeader } from "@/components/marketing/PublicPageHeader";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getPublicSettings } from "@/server/services/public-content";
@@ -21,17 +21,13 @@ export const metadata: Metadata = {
   description: "Contact the Chawan Farms team for stay and group enquiries.",
 };
 
-const FARM_LOCATION_NAME = "Chawan Farms (Agricultural Farming Centre)";
-const GOOGLE_MAPS_URL = "https://www.google.com/maps/@18.4381634,73.2249314,17z?entry=ttu&g_ep=EgoyMDI2MTAyOC4wIKXMDSoASAFQAw%3D%3D";
-
 export default async function ContactPage() {
   const settings = await getPublicSettings();
-  const howToReach = "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra";
   const phones = settings.phones;
-  const address = settings.address || FARM_LOCATION_NAME;
+  const address = settings.address;
   const whatsappNumber = settings.whatsappNumber;
   const whatsappMessage = settings.whatsappMessage;
-  const googleMapsUrl = GOOGLE_MAPS_URL;
+  const googleMapsUrl = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -40,9 +36,9 @@ export default async function ContactPage() {
     description: "Contact information, phone numbers, address, and map for Chawan Farms.",
     mainEntity: {
       "@type": "TouristAttraction",
-      name: FARM_LOCATION_NAME,
-      address: { "@type": "PostalAddress", streetAddress: address },
-      hasMap: googleMapsUrl,
+      name: "Chawan Farms",
+      ...(address ? { address: { "@type": "PostalAddress", streetAddress: address } } : {}),
+      ...(googleMapsUrl ? { hasMap: googleMapsUrl } : {}),
       ...(phones[0] ? { telephone: phones[0] } : {}),
     },
   };
@@ -51,30 +47,14 @@ export default async function ContactPage() {
     <>
       <JsonLd data={jsonLd} />
       <Header />
-      <Breadcrumbs items={[{ label: "Contact" }]} />
-      <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
+      <PublicPageHeader currentPage="Contact" eyebrow="Get in touch" title="Plan your visit with us" description="Send a stay or group enquiry to the farm team." />
+      <main className="min-h-screen bg-cream-50/60 pb-20 pt-12 sm:pt-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-12 text-center sm:mb-16">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-laterite-600">
-              Get in Touch
-            </span>
-            <h1 className="mt-3 font-heading text-4xl text-forest-900 sm:text-5xl md:text-6xl">
-              Plan Your Visit With Us
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Reach out for weekend family stays, school educational visits, or
-              group camp reservations. Our farm team personally handles all
-              inquiries.
-            </p>
-            <a href="#find-us" className="text-forest-700 mt-4 inline-flex min-h-11 items-center font-semibold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-turmeric-500">Find the farm</a>
-          </div>
-
           <div className="grid gap-12 lg:grid-cols-12">
             {/* Contact Info & Map Column (Settings-driven) */}
             <div id="find-us" aria-labelledby="find-us-heading" className="scroll-mt-24 space-y-8 lg:col-span-5">
               {/* Contact Details Card */}
-              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
+              {(phones.length || whatsappNumber || address) ? <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
                 <h2 id="find-us-heading" className="font-heading text-2xl text-forest-900">
                   Farm Contacts
                 </h2>
@@ -129,7 +109,7 @@ export default async function ContactPage() {
                   )}
 
                   {/* Farm Location Card */}
-                  <div className="flex items-start gap-4">
+                  {address ? <div className="flex items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-900/10 text-forest-900">
                       <MapPin className="h-5 w-5" />
                     </div>
@@ -138,15 +118,10 @@ export default async function ContactPage() {
                         Farm Location
                       </h3>
                       <p className="mt-1 text-sm font-medium leading-relaxed text-foreground">
-                        {FARM_LOCATION_NAME}
+                        {address}
                       </p>
-                      {settings.address && settings.address !== FARM_LOCATION_NAME ? (
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          {settings.address}
-                        </p>
-                      ) : null}
                       <a
-                        href={googleMapsUrl}
+                        href={googleMapsUrl ?? "#find-us"}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-laterite-600 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-700"
@@ -154,7 +129,7 @@ export default async function ContactPage() {
                         Open in Google Maps <ExternalLink className="h-3 w-3" />
                       </a>
                     </div>
-                  </div>
+                  </div> : null}
 
                   {/* Timings from PDF */}
                   <div className="flex items-start gap-4">
@@ -172,10 +147,10 @@ export default async function ContactPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> : null}
 
               {/* Map Embed Card */}
-              <div className="overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
+              {googleMapsUrl ? <div className="overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h3 className="font-heading text-lg text-forest-900">
                     Location &amp; Directions
@@ -194,7 +169,7 @@ export default async function ContactPage() {
                 <div className="mt-4 flex h-48 w-full flex-col items-center justify-center rounded-xl border border-border/80 bg-gradient-to-br from-forest-900/5 via-clay-100/40 to-laterite-600/10 p-6 text-center">
                   <MapPin className="h-8 w-8 text-laterite-600" />
                   <p className="mt-2 font-heading text-base text-forest-900">
-                    {FARM_LOCATION_NAME}
+                    {address}
                   </p>
                   <a
                     href={googleMapsUrl}
@@ -205,8 +180,7 @@ export default async function ContactPage() {
                     Get Driving Directions
                   </a>
                 </div>
-              </div>
-              {howToReach ? <section className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm"><h2 className="font-heading text-2xl text-forest-900">How to reach us</h2><p className="mt-4 whitespace-pre-line text-sm leading-7 text-muted-foreground">{howToReach}</p></section> : null}
+              </div> : null}
             </div>
 
             {/* Forms Column */}

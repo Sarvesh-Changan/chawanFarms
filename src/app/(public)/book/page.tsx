@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { BookingFlow, type StayTypeOption, type ActivityOption } from "@/components/booking/BookingFlow";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
+import { PublicClosing } from "@/components/marketing/PublicClosing";
+import { PublicPageHeader } from "@/components/marketing/PublicPageHeader";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { getSession } from "@/server/auth";
 import { db } from "@/server/db";
@@ -237,18 +239,8 @@ export default async function BookPage({
   return (
     <>
       <Header />
+      <PublicPageHeader currentPage="Book" eyebrow="Reservations & enquiries" title="Plan your stay at Chawan Farms" description="Send a booking enquiry. Availability and final details are confirmed by the farm team." />
       <main className="min-h-screen bg-clay-100/60 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center mb-8">
-          <p className="text-laterite-600 text-xs font-semibold tracking-[0.2em] uppercase">
-            Reservations &amp; Enquiries
-          </p>
-          <h1 className="font-heading text-forest-900 mt-2 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Book your stay at Chawan Farms
-          </h1>
-          <p className="text-mist-500 mt-3 max-w-2xl mx-auto text-base sm:text-lg">
-            Experience unhurried farm living in Kolad. Complete the steps below to calculate your estimate and send a booking request.
-          </p>
-        </div>
 
         <BookingFlow
           stayTypes={stayTypes}
@@ -272,6 +264,7 @@ export default async function BookPage({
           }}
         />
       </main>
+      <PublicClosing />
       <StickyCtaBar />
       <Footer />
     </>

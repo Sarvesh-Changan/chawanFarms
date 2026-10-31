@@ -4,6 +4,7 @@ import { GalleryManager } from "@/components/admin/gallery/GalleryManager";
 import { NoAccess } from "@/components/admin/NoAccess";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
+import { env } from "@/config/env";
 import { can } from "@/server/authz";
 import { listGalleryAdmin } from "@/server/services/cms/content";
 import { getGalleryCategories } from "@/server/services/cms/gallery-categories";
@@ -34,6 +35,7 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
       />
       <GalleryManager
         rows={rows}
+        cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""}
         categories={categories}
         categoryCounts={data.categoryCounts}
         filters={filters}
