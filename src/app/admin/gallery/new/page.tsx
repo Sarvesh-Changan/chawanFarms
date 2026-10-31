@@ -5,7 +5,6 @@ import { GalleryBatchUploader } from "@/components/admin/gallery/GalleryBatchUpl
 import { NoAccess } from "@/components/admin/NoAccess";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
-import { env } from "@/config/env";
 import { getGalleryCategories } from "@/server/services/cms/gallery-categories";
 import { getCmsPageStaff } from "@/server/services/cms/page-access";
 
@@ -32,13 +31,16 @@ export default async function NewGalleryItemPage({
             <Link href="/admin/gallery/new">Switch to Multiple Upload</Link>
           </Button>
         </div>
-        <NewCmsContentPage entityType="gallery-item" title="Gallery item" basePath="/admin/gallery" />
+        <NewCmsContentPage
+          entityType="gallery-item"
+          title="Gallery item"
+          basePath="/admin/gallery"
+        />
       </div>
     );
   }
 
   const categories = await getGalleryCategories();
-  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? "";
 
   return (
     <section className="space-y-6">
@@ -48,7 +50,9 @@ export default async function NewGalleryItemPage({
         actions={
           <div className="flex items-center gap-2">
             <Button asChild variant="outline">
-              <Link href="/admin/gallery/new?mode=single">Single item form</Link>
+              <Link href="/admin/gallery/new?mode=single">
+                Single item form
+              </Link>
             </Button>
             <Button asChild variant="ghost">
               <Link href="/admin/gallery">Back to gallery</Link>
@@ -56,7 +60,7 @@ export default async function NewGalleryItemPage({
           </div>
         }
       />
-      <GalleryBatchUploader initialCategories={categories} cloudName={cloudName} />
+      <GalleryBatchUploader initialCategories={categories} />
     </section>
   );
 }
