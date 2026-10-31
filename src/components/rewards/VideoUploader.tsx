@@ -71,6 +71,13 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState("Choose a video to begin.");
   const [error, setError] = useState("");
+  const [uploadError, setUploadError] = useState<{
+    code: string;
+    message: string;
+    retryAfter?: number;
+    submissionId?: string;
+  } | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [complete, setComplete] = useState(false);
   const [busy, setBusy] = useState(false);
   const idempotencyKeyRef = useRef(generateIdempotencyKey());
@@ -125,10 +132,9 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
     return null;
   }
 
-  async function startIntent(): Promise<UploadIntent | null> {
+  async function startIntent(options?: { resume?: boolean }): Promise<UploadIntent | null> {
     const isoDate = getEffectiveIsoDate();
     if (!isoDate) return null;
-    // Ensure fresh idempotency key
     if (!idempotencyKeyRef.current) {
       idempotencyKeyRef.current = generateIdempotencyKey();
     }
@@ -142,13 +148,32 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
         description: description.trim() || undefined,
         consentOwnership: true,
         consentPublish,
+        resume: options?.resume,
       }),
     });
-    const body = (await response.json()) as UploadIntent & { error?: string; fieldErrors?: Record<string, string[]> };
+    const body = (await response.json()) as UploadIntent & {
+      code?: string;
+      message?: string;
+      error?: string;
+      retryAfter?: number;
+      submissionId?: string;
+      fieldErrors?: Record<string, string[]>;
+    };
     if (!response.ok) {
+      // Generate a NEW key after a failed start attempt (Requirement 3)
+      idempotencyKeyRef.current = generateIdempotencyKey();
       const fieldErrorMsg = body.fieldErrors ? Object.values(body.fieldErrors).flat().join(" ") : null;
-      throw new Error(fieldErrorMsg || body.error || "Unable to start the upload.");
+      const errorObj = {
+        code: body.code ?? "UNKNOWN_ERROR",
+        message: fieldErrorMsg || body.message || body.error || "Unable to start the upload.",
+        retryAfter: body.retryAfter,
+        submissionId: body.submissionId,
+      };
+      setUploadError(errorObj);
+      setError(errorObj.message);
+      throw new Error(errorObj.message);
     }
+    setUploadError(null);
     return body;
   }
 
@@ -204,6 +229,74 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
     });
   }
 
+  async function cancelUpload(submissionIdToCancel: string) {
+    setIsCancelling(true);
+    try {
+      const response = await fetch("/api/account/videos/withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId: submissionIdToCancel }),
+      });
+      if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error || "Unable to cancel the previous upload.");
+      }
+      setUploadError(null);
+      setError("");
+      setIntent(null);
+      idempotencyKeyRef.current = generateIdempotencyKey();
+      setStatus("Previous upload cancelled. You can now submit your video.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unable to cancel the previous upload.";
+      setError(msg);
+      setUploadError({
+        code: "CANCEL_FAILED",
+        message: msg,
+      });
+    } finally {
+      setIsCancelling(false);
+    }
+  }
+
+  async function resumeUpload() {
+    if (!file) {
+      setError("Please choose a video file first to resume.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    setUploadError(null);
+    setComplete(false);
+    setProgress(0);
+    try {
+      setStatus("Resuming your upload…");
+      const currentIntent = await startIntent({ resume: true });
+      if (!currentIntent) throw new Error("Unable to resume the upload.");
+      setIntent(currentIntent);
+      setStatus("Uploading video securely…");
+      await uploadToCloudinary(currentIntent, file);
+      setProgress(95);
+      setStatus("Verifying video asset…");
+      const response = await fetch("/api/account/videos/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submissionId: currentIntent.submissionId }),
+      });
+      const body = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(body.error ?? "Video verification failed. The upload was removed.");
+      setProgress(100);
+      setStatus("Video submitted for review.");
+      setComplete(true);
+    } catch (caught) {
+      const msg = caught instanceof Error ? caught.message : "The upload could not be resumed.";
+      setError(msg);
+      setUploadError((prev) => prev ?? { code: "UPLOAD_FAILED", message: msg });
+      setStatus("Upload needs attention.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function submitUpload() {
     const validationError = validateForm();
     if (validationError) {
@@ -212,6 +305,7 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
     }
     setBusy(true);
     setError("");
+    setUploadError(null);
     setComplete(false);
     setProgress(0);
     try {
@@ -234,7 +328,9 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
       setStatus("Video submitted for review.");
       setComplete(true);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "The upload could not be completed.");
+      const msg = caught instanceof Error ? caught.message : "The upload could not be completed.";
+      setError(msg);
+      setUploadError((prev) => prev ?? { code: "UPLOAD_FAILED", message: msg });
       setStatus("Upload needs attention.");
     } finally {
       setBusy(false);
@@ -247,6 +343,7 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
     setIntent(null);
     setComplete(false);
     setError("");
+    setUploadError(null);
     setProgress(0);
     setStatus(value ? `Selected ${value.name} (${formatMediaBytes(value.size)}).` : "Choose a video to begin.");
   }
@@ -354,10 +451,11 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
 
         {/* Video File Field */}
         <div className="grid gap-2">
-          <label className="text-sm font-medium">
+          <label htmlFor="video-file-input" className="text-sm font-medium">
             Video file <span className="text-destructive">*</span>
           </label>
           <Input
+            id="video-file-input"
             type="file"
             accept={accept}
             disabled={busy}
@@ -456,10 +554,80 @@ export function VideoUploader({ acceptedFormats, maxBytes, maxDurationSeconds, f
           </div>
         ) : null}
 
-        {error ? (
-          <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-            {error}
-          </p>
+        {uploadError || error ? (
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+          >
+            <div className="flex flex-col gap-2">
+              <p className="font-medium text-destructive-900 leading-5">
+                {uploadError?.message || error}
+              </p>
+
+              {uploadError?.code === "UPLOAD_IN_PROGRESS" && (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => void resumeUpload()}
+                    disabled={busy || isCancelling || !file}
+                    className="bg-forest-900 text-cream-50 hover:bg-forest-700 font-semibold"
+                  >
+                    {busy ? <Loader2 className="size-3 mr-1 animate-spin" /> : null}
+                    Resume upload
+                  </Button>
+                  {uploadError.submissionId ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => {
+                        if (uploadError.submissionId) {
+                          void cancelUpload(uploadError.submissionId);
+                        }
+                      }}
+                      className="border-destructive/40 text-destructive hover:bg-destructive/10"
+                    >
+                      {isCancelling ? <Loader2 className="size-3 mr-1 animate-spin" /> : null}
+                      Cancel previous upload
+                    </Button>
+                  ) : null}
+                </div>
+              )}
+
+              {uploadError?.code === "EMAIL_NOT_VERIFIED" && (
+                <div className="mt-1">
+                  <Link
+                    href="/account"
+                    className="inline-flex items-center text-xs font-semibold text-forest-800 underline hover:text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-700 rounded"
+                  >
+                    Go to your account to verify your email →
+                  </Link>
+                </div>
+              )}
+
+              {uploadError &&
+                uploadError.code !== "UPLOAD_IN_PROGRESS" &&
+                uploadError.code !== "EMAIL_NOT_VERIFIED" &&
+                uploadError.code !== "DAILY_LIMIT_EXCEEDED" &&
+                uploadError.code !== "REWARDS_DISABLED" &&
+                uploadError.code !== "PERIOD_LIMIT_EXCEEDED" &&
+                uploadError.code !== "PENDING_CAP_REACHED" && (
+                  <div className="mt-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void submitUpload()}
+                      disabled={busy}
+                      className="font-medium"
+                    >
+                      Retry
+                    </Button>
+                  </div>
+                )}
+            </div>
+          </div>
         ) : null}
 
         {complete ? (

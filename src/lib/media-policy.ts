@@ -1,6 +1,7 @@
 import { mediaPolicy, type MediaPurpose } from "@/config/media";
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const userIdPattern = /^[a-zA-Z0-9_-]{1,128}$/;
+const assetIdPattern = /^[a-zA-Z0-9_-]{1,128}$/;
 
 export type CloudinaryUploadParams = {
   timestamp: number;
@@ -29,7 +30,7 @@ export function buildCloudinaryUploadParams(input: {
   notificationUrl: string;
   folderMode?: "dynamic" | "fixed";
 }): CloudinaryUploadParams | null {
-  if (!uuidPattern.test(input.userId) || !uuidPattern.test(input.assetId)) return null;
+  if (!userIdPattern.test(input.userId) || !assetIdPattern.test(input.assetId)) return null;
   const policy = mediaPolicy(input.purpose);
   const folder = policy.folder(input.userId);
   const folderMode = input.folderMode ?? "fixed";
@@ -60,10 +61,10 @@ export function buildCloudinaryUploadParams(input: {
 
 export function identifyMediaPurpose(publicId: string): { purpose: MediaPurpose; userId: string } | null {
   const parts = publicId.split("/");
-  if (parts.length === 4 && parts[0] === "customers" && parts[2] === "videos" && uuidPattern.test(parts[1] ?? "") && uuidPattern.test(parts[3] ?? "")) {
+  if (parts.length === 4 && parts[0] === "customers" && parts[2] === "videos" && userIdPattern.test(parts[1] ?? "") && assetIdPattern.test(parts[3] ?? "")) {
     return { purpose: "customer_video", userId: parts[1] as string };
   }
-  if (parts.length === 5 && parts[0] === "admin" && parts[1] === "media" && uuidPattern.test(parts[3] ?? "") && uuidPattern.test(parts[4] ?? "")) {
+  if (parts.length === 5 && parts[0] === "admin" && parts[1] === "media" && userIdPattern.test(parts[3] ?? "") && assetIdPattern.test(parts[4] ?? "")) {
     if (parts[2] === "images") return { purpose: "admin_image", userId: parts[3] as string };
     if (parts[2] === "videos") return { purpose: "admin_video", userId: parts[3] as string };
   }

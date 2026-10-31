@@ -29,8 +29,51 @@ export async function POST(request: Request) {
   }
   const result = await startUpload(session.user.id, input);
   if (!result.ok) {
-    const status = result.error.code === "RATE_LIMITED" ? 429 : result.error.code === "FORBIDDEN" ? 403 : result.error.code === "CONFLICT" ? 409 : result.error.code === "UNAVAILABLE" ? 503 : 422;
-    return NextResponse.json({ error: result.error.message, fieldErrors: result.error.fieldErrors }, { status, headers: status === 429 ? { "Retry-After": "3600" } : undefined });
+    const code = result.error.code;
+    let status = 422;
+    if (code === "UPLOAD_IN_PROGRESS" || code === "CONFLICT") {
+      status = 409;
+    } else if (
+      code === "DAILY_LIMIT_EXCEEDED" ||
+      code === "PERIOD_LIMIT_EXCEEDED" ||
+      code === "PENDING_CAP_REACHED" ||
+      code === "RATE_LIMITED"
+    ) {
+      status = 429;
+    } else if (
+      code === "EMAIL_NOT_VERIFIED" ||
+      code === "ACCOUNT_INELIGIBLE" ||
+      code === "FORBIDDEN"
+    ) {
+      status = 403;
+    } else if (
+      code === "REWARDS_DISABLED" ||
+      code === "SERVICE_UNAVAILABLE" ||
+      code === "UNAVAILABLE"
+    ) {
+      status = 503;
+    } else if (code === "NOT_FOUND") {
+      status = 404;
+    }
+
+    console.warn(`[startUpload rejected] code=${code}`);
+
+    const headers: Record<string, string> = { "Cache-Control": "no-store" };
+    if (result.error.retryAfter !== undefined) {
+      headers["Retry-After"] = String(result.error.retryAfter);
+    }
+
+    return NextResponse.json(
+      {
+        code: result.error.code,
+        message: result.error.message,
+        error: result.error.message,
+        ...(result.error.retryAfter !== undefined ? { retryAfter: result.error.retryAfter } : {}),
+        ...(result.error.submissionId ? { submissionId: result.error.submissionId } : {}),
+        ...(result.error.fieldErrors ? { fieldErrors: result.error.fieldErrors } : {}),
+      },
+      { status, headers }
+    );
   }
   return NextResponse.json(result.data, { headers: { "Cache-Control": "no-store" } });
 }

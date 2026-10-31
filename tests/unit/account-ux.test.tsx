@@ -4,7 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AccountNav } from "@/components/account/AccountNav";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/account" }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/account",
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+}));
 
 describe("account navigation", () => {
   it("has no basic accessibility violations on mobile and desktop navigation", async () => {

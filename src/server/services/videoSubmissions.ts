@@ -34,6 +34,7 @@ const startUploadSchema = z.object({
   description: z.string().trim().max(2_000).optional().transform((value) => value || null),
   consentOwnership: z.literal(true),
   consentPublish: z.boolean().default(false),
+  resume: z.boolean().optional(),
 }).strict();
 
 const completeUploadSchema = z.object({ submissionId: submissionIdSchema }).strict();
@@ -73,10 +74,21 @@ function uploadSignature(userId: string, assetId: string): UploadSignature {
 }
 
 async function lockProfile(transaction: Prisma.TransactionClient, userId: string) {
+  let profile = await transaction.customerProfile.findUnique({ where: { userId } });
+  if (!profile) {
+    profile = await transaction.customerProfile.create({
+      data: {
+        userId,
+        referralCode: `CF${userId.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toUpperCase()}`,
+        pointsBalance: 0,
+        lifetimePointsEarned: 0,
+      },
+    });
+  }
   await transaction.$queryRaw<{ id: string }[]>(Prisma.sql`
     SELECT "id" FROM "CustomerProfile" WHERE "userId" = ${userId} FOR UPDATE
   `);
-  return transaction.customerProfile.findUnique({ where: { userId } });
+  return profile;
 }
 
 async function removeCloudinaryAsset(publicId: string): Promise<void> {
@@ -102,38 +114,42 @@ function visitDateIsValid(value: string): boolean {
   return value <= todayInKolkata;
 }
 
-async function accountIsEligible(transaction: Prisma.TransactionClient, userId: string): Promise<boolean> {
+async function checkAccountEligibility(transaction: Prisma.TransactionClient, userId: string): Promise<Result<true>> {
   const account = await transaction.user.findUnique({
     where: { id: userId },
     select: { type: true, status: true, emailVerified: true, deletedAt: true },
   });
-  return Boolean(account && account.type === "CUSTOMER" && account.status === "ACTIVE" && account.emailVerified && !account.deletedAt);
+  if (!account || account.deletedAt || account.status !== "ACTIVE" || account.type !== "CUSTOMER") {
+    return err("ACCOUNT_INELIGIBLE", "A verified customer account is required to upload videos.");
+  }
+  if (!account.emailVerified) {
+    return err("EMAIL_NOT_VERIFIED", "Please verify your email first.");
+  }
+  return ok(true);
 }
 
-export async function startUpload(userId: string, rawInput: unknown): Promise<Result<{
+export type StartUploadResult = {
   submissionId: string;
   uploadPublicId: string;
   uploadExpiresAt: string;
   signature: UploadSignature;
-}>> {
+};
+
+export async function startUpload(userId: string, rawInput: unknown): Promise<Result<StartUploadResult>> {
   const parsedUserId = userIdSchema.safeParse(userId);
   const parsed = startUploadSchema.safeParse(rawInput);
   if (!parsedUserId.success || !parsed.success) {
-    console.error("[startUpload validation error]", {
-      userIdError: parsedUserId.success ? null : parsedUserId.error.flatten(),
-      inputError: parsed.success ? null : parsed.error.flatten(),
-      rawInput,
-      userId,
-    });
     return err("VALIDATION", "Please check the video submission details.", parsed.success ? undefined : parsed.error.flatten().fieldErrors);
   }
-  if (!visitDateIsValid(parsed.data.visitDate)) return err("VALIDATION", "Visit date must be a real date and cannot be in the future.", { visitDate: ["Enter a valid past or current date."] });
+  if (!visitDateIsValid(parsed.data.visitDate)) {
+    return err("VALIDATION", "Visit date must be a real date and cannot be in the future.", { visitDate: ["Enter a valid past or current date."] });
+  }
 
   try {
     const rate = await limit(`media:signature:user:${parsedUserId.data}`, CUSTOMER_UPLOAD_RATE_LIMIT.max, CUSTOMER_UPLOAD_RATE_LIMIT.windowSeconds);
-    if (!rate.allowed) return err("RATE_LIMITED", "Upload limit reached. Try again later.");
+    if (!rate.allowed) return err("RATE_LIMITED", "Upload limit reached. Try again later.", { retryAfter: 3600 });
   } catch {
-    return err("UNAVAILABLE", "Upload service is temporarily unavailable.");
+    return err("SERVICE_UNAVAILABLE", "Upload service is temporarily unavailable. Please try again shortly.");
   }
 
   const assetId = deterministicAssetId(parsedUserId.data, parsed.data.idempotencyKey);
@@ -143,15 +159,40 @@ export async function startUpload(userId: string, rawInput: unknown): Promise<Re
 
   try {
     return await db.$transaction(async (transaction) => {
-      if (!(await accountIsEligible(transaction, parsedUserId.data))) return err("FORBIDDEN", "A verified customer account is required to upload videos.");
+      const eligibility = await checkAccountEligibility(transaction, parsedUserId.data);
+      if (!eligibility.ok) return eligibility;
 
       const profile = await lockProfile(transaction, parsedUserId.data);
-      if (!profile) return err("FORBIDDEN", "Customer profile is unavailable.");
+      if (!profile) return err("ACCOUNT_INELIGIBLE", "Customer profile is unavailable.");
 
+      const activeRule = await transaction.rewardRule.findFirst({
+        where: { isActive: true },
+        select: { id: true, maxSubmissionsPerPeriod: true, periodDays: true },
+        orderBy: { version: "desc" },
+      });
+      if (!activeRule) {
+        return err("REWARDS_DISABLED", "Video reward submissions are currently paused. Please check back later.");
+      }
+
+      // Lazily expire stale UPLOADING rows (>1 hour) for this user so they never block new submissions
+      await transaction.videoSubmission.updateMany({
+        where: {
+          userId: parsedUserId.data,
+          status: "UPLOADING",
+          uploadExpiresAt: { lte: now },
+        },
+        data: {
+          status: "REMOVED",
+          rejectionReason: "Upload intent expired.",
+        },
+      });
+
+      // Check if this exact idempotency key was already created
       const existing = await transaction.videoSubmission.findUnique({ where: { uploadPublicId: publicId } });
       if (existing) {
         if (existing.userId !== parsedUserId.data) return err("NOT_FOUND", "Upload intent not found.");
         if (existing.status === "UPLOADING" && existing.uploadExpiresAt && existing.uploadExpiresAt > now) {
+          // Idempotent resume of existing intent
           return ok({
             submissionId: existing.id,
             uploadPublicId: existing.uploadPublicId as string,
@@ -160,6 +201,31 @@ export async function startUpload(userId: string, rawInput: unknown): Promise<Re
           });
         }
         return err("CONFLICT", "This upload intent can no longer be resumed. Start a new upload.");
+      }
+
+      // Check for any unexpired UPLOADING submission for the same user
+      const activeUpload = await transaction.videoSubmission.findFirst({
+        where: {
+          userId: parsedUserId.data,
+          status: "UPLOADING",
+          uploadExpiresAt: { gt: now },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (activeUpload) {
+        if (parsed.data.resume) {
+          const activeAssetId = activeUpload.uploadPublicId?.split("/").pop() ?? assetId;
+          return ok({
+            submissionId: activeUpload.id,
+            uploadPublicId: activeUpload.uploadPublicId as string,
+            uploadExpiresAt: activeUpload.uploadExpiresAt?.toISOString() ?? expiresAt.toISOString(),
+            signature: uploadSignature(parsedUserId.data, activeAssetId),
+          });
+        }
+        return err("UPLOAD_IN_PROGRESS", "You already have an upload in progress. Resume or cancel it.", {
+          submissionId: activeUpload.id,
+        });
       }
 
       const pendingCount = await transaction.videoSubmission.count({
@@ -171,22 +237,61 @@ export async function startUpload(userId: string, rawInput: unknown): Promise<Re
           ],
         },
       });
-      if (pendingCount >= VIDEO_PENDING_SUBMISSION_LIMIT) return err("VALIDATION", `You can have at most ${VIDEO_PENDING_SUBMISSION_LIMIT} pending video submissions.`);
+      if (pendingCount >= VIDEO_PENDING_SUBMISSION_LIMIT) {
+        return err("PENDING_CAP_REACHED", `You have reached the maximum of ${VIDEO_PENDING_SUBMISSION_LIMIT} pending video submissions. Please wait for them to be reviewed.`, { retryAfter: 3600 });
+      }
 
-      const dailyCount = await transaction.videoSubmission.count({
-        where: { userId: parsedUserId.data, createdAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) } },
+      // Daily limit: 3 submissions in rolling 24 hours. Withdrawn submissions still count.
+      const rollingDayStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const dailySubmissions = await transaction.videoSubmission.findMany({
+        where: {
+          userId: parsedUserId.data,
+          createdAt: { gte: rollingDayStart },
+        },
+        select: { createdAt: true },
+        orderBy: { createdAt: "asc" },
       });
-      if (dailyCount >= VIDEO_DAILY_SUBMISSION_LIMIT) return err("VALIDATION", `You can submit at most ${VIDEO_DAILY_SUBMISSION_LIMIT} videos in a rolling 24-hour period.`);
 
-      const activeRule = await transaction.rewardRule.findFirst({ where: { isActive: true }, select: { maxSubmissionsPerPeriod: true, periodDays: true }, orderBy: { version: "desc" } });
-      if (activeRule?.maxSubmissionsPerPeriod !== null && activeRule?.maxSubmissionsPerPeriod !== undefined && activeRule.periodDays) {
-        const periodCount = await transaction.videoSubmission.count({
+      const oldest = dailySubmissions[0]?.createdAt;
+      if (dailySubmissions.length >= VIDEO_DAILY_SUBMISSION_LIMIT && oldest) {
+        const resetAt = new Date(oldest.getTime() + 24 * 60 * 60 * 1000);
+        const retryAfter = Math.max(1, Math.ceil((resetAt.getTime() - now.getTime()) / 1000));
+        const timeFormatted = new Intl.DateTimeFormat("en-IN", {
+          timeZone: "Asia/Kolkata",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }).format(resetAt);
+
+        return err(
+          "DAILY_LIMIT_EXCEEDED",
+          `You have reached today's upload limit; you can upload again after ${timeFormatted} IST.`,
+          { retryAfter },
+        );
+      }
+
+      // Period limit from active reward rule
+      if (activeRule.maxSubmissionsPerPeriod !== null && activeRule.maxSubmissionsPerPeriod !== undefined && activeRule.periodDays) {
+        const periodStart = new Date(now.getTime() - activeRule.periodDays * 24 * 60 * 60 * 1000);
+        const periodSubmissions = await transaction.videoSubmission.findMany({
           where: {
             userId: parsedUserId.data,
-            createdAt: { gte: new Date(now.getTime() - activeRule.periodDays * 24 * 60 * 60 * 1000) },
+            createdAt: { gte: periodStart },
           },
+          select: { createdAt: true },
+          orderBy: { createdAt: "asc" },
         });
-        if (periodCount >= activeRule.maxSubmissionsPerPeriod) return err("VALIDATION", `The current reward period allows ${activeRule.maxSubmissionsPerPeriod} video submissions.`);
+
+        const oldestInPeriod = periodSubmissions[0]?.createdAt;
+        if (periodSubmissions.length >= activeRule.maxSubmissionsPerPeriod && oldestInPeriod) {
+          const periodResetAt = new Date(oldestInPeriod.getTime() + activeRule.periodDays * 24 * 60 * 60 * 1000);
+          const retryAfter = Math.max(1, Math.ceil((periodResetAt.getTime() - now.getTime()) / 1000));
+          return err(
+            "PERIOD_LIMIT_EXCEEDED",
+            `The current reward period allows ${activeRule.maxSubmissionsPerPeriod} video submissions.`,
+            { retryAfter },
+          );
+        }
       }
 
       const signature = uploadSignature(parsedUserId.data, assetId);
@@ -201,11 +306,11 @@ export async function startUpload(userId: string, rawInput: unknown): Promise<Re
           consentOwnership: parsed.data.consentOwnership,
           consentPublish: parsed.data.consentPublish,
           status: "UPLOADING",
+          rewardRuleId: activeRule.id,
         },
         select: { id: true, uploadPublicId: true, uploadExpiresAt: true },
       });
 
-      void profile;
       return ok({
         submissionId: intent.id,
         uploadPublicId: intent.uploadPublicId as string,
@@ -213,8 +318,21 @@ export async function startUpload(userId: string, rawInput: unknown): Promise<Re
         signature,
       });
     }, { isolationLevel: "Serializable" });
-  } catch {
-    return err("CONFLICT", "Unable to start this upload. Please try again.");
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const existing = await db.videoSubmission.findUnique({ where: { uploadPublicId: publicId } });
+      if (existing && existing.userId === parsedUserId.data && existing.status === "UPLOADING" && existing.uploadExpiresAt && existing.uploadExpiresAt > now) {
+        return ok({
+          submissionId: existing.id,
+          uploadPublicId: existing.uploadPublicId as string,
+          uploadExpiresAt: existing.uploadExpiresAt.toISOString(),
+          signature: uploadSignature(parsedUserId.data, assetId),
+        });
+      }
+    }
+    const errorCode = error instanceof Prisma.PrismaClientKnownRequestError ? error.code : "INTERNAL_ERROR";
+    console.error(`[startUpload error code] ${errorCode}`);
+    return err("SERVICE_UNAVAILABLE", "Upload service is temporarily unavailable. Please try again shortly.");
   }
 }
 
@@ -226,7 +344,8 @@ export async function completeUpload(userId: string, rawInput: unknown): Promise
   let intent: UploadIntent | null = null;
   try {
     intent = await db.$transaction(async (transaction) => {
-      if (!(await accountIsEligible(transaction, parsedUserId.data))) return null;
+      const eligibility = await checkAccountEligibility(transaction, parsedUserId.data);
+      if (!eligibility.ok) return null;
       const locks = await transaction.$queryRaw<{ id: string }[]>(Prisma.sql`
         SELECT "id" FROM "VideoSubmission" WHERE "id" = ${parsed.data.submissionId} AND "userId" = ${parsedUserId.data} FOR UPDATE
       `);
@@ -338,21 +457,32 @@ export async function withdrawSubmission(userId: string, rawInput: unknown): Pro
 
   try {
     const removed = await db.$transaction(async (transaction) => {
-      if (!(await accountIsEligible(transaction, parsedUserId.data))) return null;
+      const eligibility = await checkAccountEligibility(transaction, parsedUserId.data);
+      if (!eligibility.ok) return null;
       const locks = await transaction.$queryRaw<{ id: string }[]>(Prisma.sql`
         SELECT "id" FROM "VideoSubmission" WHERE "id" = ${parsed.data.submissionId} AND "userId" = ${parsedUserId.data} FOR UPDATE
       `);
       if (!locks[0]) return null;
-      const submission = await transaction.videoSubmission.findUnique({ where: { id: parsed.data.submissionId }, select: { id: true, mediaId: true, uploadPublicId: true, status: true } });
-      if (!submission || submission.status !== "PENDING") return null;
-      await transaction.videoSubmission.update({ where: { id: submission.id }, data: { status: "REMOVED", rejectionReason: "Withdrawn by customer." } });
-      if (submission.mediaId) await transaction.media.update({ where: { id: submission.mediaId }, data: { isPublic: false, deletedAt: new Date() } });
+      const submission = await transaction.videoSubmission.findUnique({
+        where: { id: parsed.data.submissionId },
+        select: { id: true, mediaId: true, uploadPublicId: true, status: true },
+      });
+      if (!submission || (submission.status !== "PENDING" && submission.status !== "UPLOADING")) return null;
+      await transaction.videoSubmission.update({
+        where: { id: submission.id },
+        data: { status: "REMOVED", rejectionReason: "Withdrawn by customer." },
+      });
+      if (submission.mediaId) {
+        await transaction.media.update({ where: { id: submission.mediaId }, data: { isPublic: false, deletedAt: new Date() } });
+      }
       return submission;
     }, { isolationLevel: "Serializable" });
-    if (!removed) return err("NOT_FOUND", "Pending video submission not found.");
+    if (!removed) return err("NOT_FOUND", "Video submission not found or cannot be cancelled.");
     if (removed.uploadPublicId) await removeCloudinaryAsset(removed.uploadPublicId);
     return ok({ submissionId: removed.id });
-  } catch {
+  } catch (error) {
+    const errorCode = error instanceof Prisma.PrismaClientKnownRequestError ? error.code : "INTERNAL_ERROR";
+    console.error(`[withdrawSubmission error code] ${errorCode}`);
     return err("CONFLICT", "Unable to withdraw this submission.");
   }
 }

@@ -8,6 +8,13 @@ export const ERROR_CODES = [
   "UNAVAILABLE",
   "REWARDS_DISABLED",
   "INTERNAL",
+  "UPLOAD_IN_PROGRESS",
+  "DAILY_LIMIT_EXCEEDED",
+  "PERIOD_LIMIT_EXCEEDED",
+  "PENDING_CAP_REACHED",
+  "EMAIL_NOT_VERIFIED",
+  "ACCOUNT_INELIGIBLE",
+  "SERVICE_UNAVAILABLE",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -16,6 +23,8 @@ export type ResultError = {
   code: ErrorCode;
   message: string;
   fieldErrors?: Record<string, string[]>;
+  retryAfter?: number;
+  submissionId?: string;
 };
 
 export type Result<T> =
@@ -29,10 +38,20 @@ export function ok<T>(data: T): Result<T> {
 export function err(
   code: ErrorCode,
   message: string,
-  fieldErrors?: Record<string, string[]>,
+  extra?: { fieldErrors?: Record<string, string[]>; retryAfter?: number; submissionId?: string } | Record<string, string[]>,
 ): Result<never> {
+  const extraObj = extra && !("fieldErrors" in extra || "retryAfter" in extra || "submissionId" in extra)
+    ? { fieldErrors: extra as Record<string, string[]> }
+    : (extra as { fieldErrors?: Record<string, string[]>; retryAfter?: number; submissionId?: string } | undefined);
+
   return {
     ok: false,
-    error: fieldErrors ? { code, message, fieldErrors } : { code, message },
+    error: {
+      code,
+      message,
+      ...(extraObj?.fieldErrors ? { fieldErrors: extraObj.fieldErrors } : {}),
+      ...(extraObj?.retryAfter !== undefined ? { retryAfter: extraObj.retryAfter } : {}),
+      ...(extraObj?.submissionId ? { submissionId: extraObj.submissionId } : {}),
+    },
   };
 }

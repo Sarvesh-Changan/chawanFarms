@@ -6,7 +6,10 @@ import AccountLayout from "@/app/account/layout";
 import { AccountNav } from "@/components/account/AccountNav";
 import { resolvePostLoginDestination } from "@/lib/auth/post-login-destination";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/account" }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/account",
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+}));
 
 const layoutMocks = vi.hoisted(() => ({ requireCustomer: vi.fn(), getCustomerIdentity: vi.fn() }));
 vi.mock("@/server/auth", () => ({ requireCustomer: layoutMocks.requireCustomer }));

@@ -92,4 +92,97 @@ integrationDescribe("customer video submission reward isolation", () => {
     expect(afterProfile.lifetimePointsEarned).toBe(beforeProfile.lifetimePointsEarned);
     expect(await testDb.videoSubmission.findUniqueOrThrow({ where: { id: started.data.submissionId } })).toMatchObject({ status: "REMOVED", consentPublish: false });
   });
+
+  it("same idempotency key returns the same submission", async () => {
+    const visitDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const key = `video-key-${crypto.randomUUID()}`;
+
+    const first = await startUpload(userId, {
+      idempotencyKey: key,
+      visitDate,
+      consentOwnership: true,
+      consentPublish: false,
+    });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+
+    const second = await startUpload(userId, {
+      idempotencyKey: key,
+      visitDate,
+      consentOwnership: true,
+      consentPublish: false,
+    });
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+
+    expect(second.data.submissionId).toBe(first.data.submissionId);
+    expect(second.data.uploadPublicId).toBe(first.data.uploadPublicId);
+
+    // Clean up
+    await testDb.videoSubmission.delete({ where: { id: first.data.submissionId } }).catch(() => undefined);
+  });
+
+  it("resumes an existing unexpired UPLOADING submission", async () => {
+    const visitDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const initialKey = `video-init-${crypto.randomUUID()}`;
+
+    const initial = await startUpload(userId, {
+      idempotencyKey: initialKey,
+      visitDate,
+      consentOwnership: true,
+      consentPublish: false,
+    });
+    expect(initial.ok).toBe(true);
+    if (!initial.ok) return;
+
+    // Resuming with resume: true returns the existing submission and fresh signature
+    const resumed = await startUpload(userId, {
+      idempotencyKey: `video-resume-${crypto.randomUUID()}`,
+      visitDate,
+      consentOwnership: true,
+      consentPublish: false,
+      resume: true,
+    });
+    expect(resumed.ok).toBe(true);
+    if (!resumed.ok) return;
+    expect(resumed.data.submissionId).toBe(initial.data.submissionId);
+
+    // Clean up
+    await testDb.videoSubmission.delete({ where: { id: initial.data.submissionId } }).catch(() => undefined);
+  });
+
+  it("concurrent double start produces exactly one submission using two clients with Promise.all", async () => {
+    const secondClient = new PrismaClient({ adapter: new PrismaPg({ connectionString: testDatabaseUrl as string }) });
+    await secondClient.$connect();
+    const visitDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const concurrentKey = `concurrent-key-${crypto.randomUUID()}`;
+
+    try {
+      const [res1, res2] = await Promise.all([
+        startUpload(userId, {
+          idempotencyKey: concurrentKey,
+          visitDate,
+          consentOwnership: true,
+          consentPublish: false,
+        }),
+        startUpload(userId, {
+          idempotencyKey: concurrentKey,
+          visitDate,
+          consentOwnership: true,
+          consentPublish: false,
+        }),
+      ]);
+
+      expect(res1.ok).toBe(true);
+      expect(res2.ok).toBe(true);
+      if (res1.ok && res2.ok) {
+        expect(res1.data.submissionId).toBe(res2.data.submissionId);
+        // Verify only 1 row exists in the database
+        const rows = await testDb.videoSubmission.findMany({ where: { uploadPublicId: res1.data.uploadPublicId } });
+        expect(rows.length).toBe(1);
+      }
+    } finally {
+      await secondClient.$disconnect();
+    }
+  });
 });

@@ -9,6 +9,10 @@ vi.mock("@/server/auth/actions", () => ({
   logoutAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+}));
+
 vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
