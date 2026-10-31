@@ -3,10 +3,14 @@ import Link from "next/link";
 import { CallButton, WhatsAppButton } from "@/components/marketing/ContactButtons";
 import { PublicNavigation } from "@/components/marketing/PublicNavigation";
 import { getSession } from "@/server/auth";
+import { getPostLoginIdentity } from "@/server/auth/post-login";
 import { getPublicSettings } from "@/server/services/public-content";
 
 export async function Header() {
   const [settings, session] = await Promise.all([getPublicSettings(), getSession()]);
+  const identity = session ? await getPostLoginIdentity(session.user.id) : null;
+  const accountHref = !session ? "/login" : identity?.userType === "STAFF" ? "/admin" : "/account";
+  const accountLabel = !session ? "Login" : identity?.userType === "STAFF" ? "Admin" : "Account";
   return (
     <header className="bg-cream-50/95 text-forest-900 sticky top-0 z-40 border-b border-forest-900/10 backdrop-blur">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-3 px-4 sm:px-8 lg:px-12">
@@ -18,7 +22,7 @@ export async function Header() {
           </span>
         </Link>
         <div className="min-w-0 flex-1">
-          <PublicNavigation isSignedIn={Boolean(session)} phone={settings.phones[0]} whatsappNumber={settings.whatsappNumber} whatsappMessage={settings.whatsappMessage} />
+          <PublicNavigation accountHref={accountHref} accountLabel={accountLabel} phone={settings.phones[0]} whatsappNumber={settings.whatsappNumber} whatsappMessage={settings.whatsappMessage} />
         </div>
         <div className="hidden shrink-0 items-center gap-2 xl:flex">
           {settings.phones[0] ? <CallButton number={settings.phones[0]} aria-label={`Call ${settings.phones[0]}`} title={settings.phones[0]} className="text-mist-500 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-xs hover:text-laterite-600 focus-visible:outline-2 focus-visible:outline-turmeric-500"><span className="hidden 2xl:inline">{settings.phones[0]}</span></CallButton> : null}

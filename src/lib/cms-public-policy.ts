@@ -6,7 +6,7 @@ export function publicCmsWhere(type: CmsContentType, now: Date) {
     case "testimonial": return { ...published, consentConfirmed: true };
     case "gallery-item": return { ...published, media: { origin: "ADMIN" as const, isPublic: true, deletedAt: null } };
     case "offer": return { ...published, startsAt: { lte: now }, endsAt: { gte: now } };
-    case "post": return { ...published, OR: [{ publishAt: null }, { publishAt: { lte: now } }] };
+    case "post": return { ...published, OR: [{ publishAt: null }, { publishAt: { lte: now } }], AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }] };
     case "menu-item": return { ...published, isPublished: true, category: { status: "PUBLISHED" as const, deletedAt: null } };
     case "faq": return { ...published, isPublished: true };
     default: return published;

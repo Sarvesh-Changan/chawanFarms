@@ -22,7 +22,7 @@
 | 3 | Database: Neon + Prisma | — |
 | 4 | Authentication | D-12 |
 | 5 | Authorization & admin shell | D-17 |
-| 6 | Cloudinary & media library | D-9 |
+| 6 | Cloudinary & local media uploads | D-9 |
 | 7 | CMS | D-6, D-7 |
 | 8 | Lead management & enquiry forms | D-11, D-13 |
 | 9 | Public website | D-6, D-14, D-19 |
@@ -439,7 +439,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 ```
 Act as a senior full-stack engineer. Build the admin shell using the already-created authz and audit modules.
 
-1. Create `src/app/admin/` layout with permission-filtered left navigation (Dashboard, CMS, Bookings, Enquiries, Leads, Customers, Rewards, Media, SEO, Settings, Security), a mobile-friendly top bar, breadcrumbs, and a 'no access' page.
+1. Create `src/app/admin/` layout with permission-filtered left navigation (Dashboard, Activity, Stories, Gallery, Menu, FAQ, Packages, Accommodation, Bookings, Enquiries, Leads, Rewards, Media, SEO, Settings, Security), a mobile-friendly top bar, breadcrumbs, and a 'no access' page. Do not recreate a CMS hub; preserve existing `cms.*` permissions.
 2. Build reusable admin components in `src/components/admin/`: DataTable (TanStack Table with server-side pagination/sorting/filtering), PageHeader, StatCard, FilterBar, ConfirmDialog, StatusBadge.
 3. Build the Dashboard with real aggregate queries (leads today/7d/30d, enquiries and bookings by status, pending videos count, recent audit activity) and graceful empty states.
 4. Build Security pages: Staff list, invite staff (token email, invite-only, no public staff signup), assign/remove roles, disable staff (revokes sessions), Roles & Permissions matrix, Audit log viewer with filters, and the user's own Sessions list with revoke.
@@ -463,7 +463,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 
 ## PHASE 6 – Cloudinary & Media Library
 
-**Objective:** Safe image and video uploads plus an admin media library that CMS and customer videos will reuse.
+**Objective:** Safe image and video uploads owned by each CMS form; customer videos remain a separate private moderation flow. There is no central media library.
 
 ### Step 1 — Configure Cloudinary (manual)
 
@@ -479,21 +479,21 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 * Expected Output: Two signed presets and credentials ready.
 
 
-### Step 2 — Cloudinary integration and media library
+### Step 2 — Cloudinary integration and local form uploaders
 
 * AI Tool: Claude Code
 * Documents to Attach: `SECURITY.md` (section 8), `ARCHITECTURE.md` (sections 8.6, 9), `DATABASE.md` (Media), `DESIGN.md` (section 9)
 * Prompt:
 
 ```
-Act as a senior full-stack engineer with security focus. Implement Cloudinary integration and the admin media library.
+Act as a senior full-stack engineer with security focus. Implement Cloudinary integration and reusable local form uploaders.
 
 1. Install `cloudinary` (and `next-cloudinary` only if useful). Add CLOUDINARY_* and preset names to `src/config/env.ts` and `.env.example`. The API secret must never be exposed to the client.
 2. Create `src/server/integrations/cloudinary.ts`: server-side signing with purpose-scoped folder, preset and allowed formats, public_id generated server-side, asset verification via the Admin API (exists, resource type, format, bytes, duration, folder), and delete.
 3. Create `POST /api/upload-signature` (auth + rate limit 5/hour per user for customers, staff permission `media.write` for admin purposes) and `POST /api/webhooks/cloudinary` (verify `X-Cld-Signature` and timestamp; idempotent; 401 on invalid).
 4. Create `src/server/services/media.ts` for Media/MediaUsage CRUD: alt text required for public images, usage tracking, delete blocked while in use.
-5. Build the admin Media page (`/admin/media`): grid with search, tag/category filters, kind filter, uploader with progress, detail drawer (alt text per locale, caption, focal point, tags, 'where used'), soft-delete.
-6. Build components in `src/components/media/`: `CldImage` (f_auto, q_auto, responsive sizes, blur placeholder), `HeroVideo` (poster-first, lazy, disabled for reduced-motion/Save-Data), `MediaPicker` dialog, `Uploader`.
+5. Build `LocalImageUploader` and `LocalVideoUploader` in `src/components/media/`: choose/drag, client UX checks, progress, preview, required accessibility text, replace/remove, pending-upload tracking and server verification. Forms attach Media and MediaUsage atomically on save.
+6. Keep `CldImage` (f_auto, q_auto, responsive sizes, blur placeholder), `HeroVideo` (poster-first, lazy, disabled for reduced-motion/Save-Data), Media services, where-used and delete protection. Do not build a central browser, picker or generic library uploader.
 7. Update the CSP/headers allow-list for `res.cloudinary.com` images/media and the Cloudinary upload API in connect-src.
 8. Write tests: signature scoped to folder/purpose; forged webhook rejected; oversize/wrong format rejected server-side; delete-in-use blocked.
 9. Before writing code, inspect the existing repository (structure, package.json, prisma/, git log, /docs) and briefly explain your plan and the files you will touch. If something is ambiguous or needs a client decision, ask instead of guessing.
@@ -581,7 +581,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 Act as a senior full-stack engineer. Finish the CMS with page builder-style sections, SEO fields and policies.
 
 1. Define typed section schemas (Zod) for the Home funnel: hero, why-chawan, experiences-grid, accommodation, packages, food, activities, gallery, stories, rewards-teaser, location, final-cta, plus generic rich-text and image+text sections for About.
-2. Build `/admin/cms/pages` with section list, add/remove/reorder, per-section form generated from its schema, visibility toggle, preview and publish.
+2. Page/PageSection models and seed data remain preserved, but step 1 removes the Page editor, Page preview, and public Page readers. Home/About are fixed-code compositions with Settings overrides until a future approved Pages migration.
 3. Add an SEO panel (title, description, keywords, canonical, robots, OG image picker, JSON-LD override) saved to SeoMetadata for pages, packages, experiences, activities, accommodation and posts.
 4. Add Policies management (PolicyVersion create-new-version; never edit published versions) for stay rules, cancellation, privacy and terms. Seeded PDF rules stay flagged pending decision D-2.
 5. Seed the Home page and About page structures with the PDF's wording only (taglines such as 'Come live, experience & rediscover yourself & nature at its best').
@@ -732,7 +732,7 @@ Show me a summary of every file you created or changed, any env/DB changes, and 
 Act as a senior Next.js engineer. Build the remaining public pages.
 
 1. `/gallery`: masonry, category chips, accessible lightbox (keyboard, swipe, ESC), video tiles, deep-linkable items.
-2. `/stories` (+`[slug]`), `/offers` (active offers only, with validity dates), `/faqs` (accordion), `/about`, `/contact` (contact form, phones/address/map from Settings), `/rewards` (how it works: share video → admin approves → earn points → redeem coupon; show numeric values only if read from the active RewardRule, otherwise no numbers), `/privacy`, `/terms`, `/policies` (stay rules from PolicyVersion; show cancellation text as configured).
+2. `/stories` (+`[slug]`), `/faqs` (accordion), `/about`, `/contact` (contact form, phones/address/map from Settings), `/rewards` (how it works: share video → admin approves → earn points → redeem coupon; show numeric values only if read from the active RewardRule, otherwise no numbers), `/privacy`, `/terms`, `/policies` (stay rules from PolicyVersion; show cancellation text as configured). `/offers` permanently redirects to `/packages`; Offer booking/coupon/reward logic remains server-side.
 3. Create `not-found.tsx` and `error.tsx` with friendly designs and a Contact CTA.
 4. Run axe and fix issues; verify no layout shift and no hard-coded business data.
 5. Before writing code, inspect the existing repository (structure, package.json, prisma/, git log, /docs) and briefly explain your plan and the files you will touch. If something is ambiguous or needs a client decision, ask instead of guessing.

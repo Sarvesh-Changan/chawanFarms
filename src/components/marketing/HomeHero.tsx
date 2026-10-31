@@ -11,9 +11,6 @@ import type { PublicHomeData, PublicMedia } from "@/server/services/public-conte
 type HeroSection = { content: unknown };
 type Content = Record<string, unknown>;
 
-const DEFAULT_HEADLINE = "Come live, experience & rediscover yourself & nature at its best";
-const DEFAULT_SUPPORTING_LINE = "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens.";
-
 function record(value: unknown): Content {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Content : {};
 }
@@ -22,10 +19,6 @@ function text(value: unknown): string {
   if (!value || typeof value !== "object" || Array.isArray(value)) return "";
   const english = (value as Record<string, unknown>).en;
   return typeof english === "string" ? english : "";
-}
-
-function validPath(value: unknown, fallback: string): string {
-  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : fallback;
 }
 
 function mediaAlt(media: PublicMedia): string {
@@ -42,12 +35,12 @@ function HeroPoster({ media, cloudName }: { media: PublicMedia; cloudName: strin
 
 export function HomeHero({ section, media, settings }: { section: HeroSection; media: PublicMedia | null; settings: PublicHomeData["settings"] }) {
   const content = record(section.content);
-  const heading = text(content.heading) || DEFAULT_HEADLINE;
-  const body = text(content.body) || DEFAULT_SUPPORTING_LINE;
+  const heading = settings.home.hero.headline;
+  const body = settings.home.hero.subhead;
   const eyebrow = text(content.eyebrow);
-  const primaryLabel = text(content.ctaLabel) || "Plan your stay";
-  const primaryHref = validPath(content.ctaHref, "/book");
-  const secondaryLabel = "Explore experiences";
+  const primaryLabel = settings.home.hero.cta;
+  const primaryHref = "/book";
+  const secondaryLabel = settings.home.hero.secondaryCta || "Explore experiences";
   const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const hasFacts = Boolean(settings.address || settings.phones.length);
 

@@ -1,14 +1,14 @@
 import { RedeemButton } from "@/components/account/AccountActions";
 import { AccountFrame, EmptyState } from "@/components/account/AccountFrame";
 import { formatINR } from "@/lib/money";
-import { requireUser } from "@/server/auth";
+import { requireCustomer } from "@/server/auth";
 import { getRewardsPageData } from "@/server/services/account";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function RewardsPage() {
-  const session = await requireUser();
+  const session = await requireCustomer();
   const data = await getRewardsPageData(session.user.id);
   if (!data) return <AccountFrame title="Rewards"><EmptyState title="Rewards unavailable" body="Your customer profile could not be loaded." /></AccountFrame>;
   return <AccountFrame title="Rewards" description="Points are awarded only after an approved video review. The active rule controls redemption eligibility.">

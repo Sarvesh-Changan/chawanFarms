@@ -33,6 +33,12 @@ enum PublishStatus {
   ARCHIVED
 }
 
+enum StoryKind {
+  EXPERIENCE
+  STORY
+  GUEST
+}
+
 enum AccommodationType {
   TENT
   DORMITORY
@@ -841,6 +847,7 @@ model Media {
   updatedAt    DateTime      @updatedAt
   usages       MediaUsage[]
   galleryItems GalleryItem[]
+  postVideos   Post[]       @relation("PostVideo")
   videoSubmission VideoSubmission?
 
   @@index([kind, category])
@@ -904,6 +911,7 @@ model VideoSubmission {
   user             User           @relation(fields: [userId], references: [id], onDelete: Restrict)
   media            Media?         @relation(fields: [mediaId], references: [id], onDelete: Restrict)
   ledger           PointsLedger[]
+  guestStories     Post[]        @relation("GuestStorySource")
 
   @@index([status, submittedAt])
   @@index([userId, createdAt])
@@ -1142,22 +1150,33 @@ model PostCategory {
 }
 
 model Post {
-  id           String        @id @default(uuid())
-  slug         String        @unique
-  title        Json
-  excerpt      Json?
-  body         Json
-  categoryId   String?
-  authorName   String?
-  coverMediaId String?
-  status       PublishStatus @default(DRAFT)
-  publishAt    DateTime?
-  deletedAt    DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  category     PostCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  id                 String        @id @default(uuid())
+  slug               String        @unique
+  title              Json
+  excerpt            Json?
+  body               Json
+  categoryId         String?
+  authorName         String?
+  coverMediaId       String?
+  kind               StoryKind     @default(STORY)
+  videoMediaId       String?
+  sourceSubmissionId String?       @unique
+  sourceExperienceId String?       @unique
+  photoMediaIds      Json?
+  sortOrder          Int           @default(0)
+  featured           Boolean       @default(false)
+  status             PublishStatus @default(DRAFT)
+  publishAt          DateTime?
+  deletedAt          DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  category           PostCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  videoMedia         Media?        @relation("PostVideo", fields: [videoMediaId], references: [id], onDelete: Restrict)
+  sourceSubmission   VideoSubmission? @relation("GuestStorySource", fields: [sourceSubmissionId], references: [id], onDelete: Restrict)
 
+  @@index([kind, status, sortOrder])
   @@index([status, publishAt])
+  @@index([sourceSubmissionId])
 }
 
 model Faq {

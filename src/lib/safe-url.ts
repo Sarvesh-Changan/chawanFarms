@@ -1,26 +1,36 @@
-import { z } from "zod";
+const MAX_CALLBACK_URL_LENGTH = 1024;
 
-const relativePathSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(2048)
-  .refine((value) => value.startsWith("/") && !value.startsWith("//"), {
-    message: "Only relative paths are allowed.",
-  })
-  .refine((value) => !/[\\\r\n]/.test(value), {
-    message: "The callback URL is invalid.",
-  });
+function isSafeRelativePath(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const path = value.trim();
+  if (!path || path.length > MAX_CALLBACK_URL_LENGTH || !path.startsWith("/") || path.startsWith("//")) return false;
+  if (/[\\\u0000-\u001f\u007f]/.test(path)) return false;
+
+  let decoded = path;
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (decoded.startsWith("//") || /[\\\u0000-\u001f\u007f]/.test(decoded) || /%(?:25)*(?:2f|5c)/i.test(decoded)) return false;
+    if (!/%[0-9a-f]{2}/i.test(decoded)) break;
+    try {
+      decoded = decodeURIComponent(decoded);
+    } catch {
+      return false;
+    }
+  }
+
+  try {
+    const url = new URL(path, "https://same-site.invalid");
+    if (url.origin !== "https://same-site.invalid" || !url.pathname.startsWith("/") || url.pathname.startsWith("//")) return false;
+  } catch {
+    return false;
+  }
+  return true;
+}
 
 export function safeCallbackUrl(value: unknown, fallback = "/account"): string {
-  const parsed = relativePathSchema.safeParse(value);
-  if (parsed.success) return parsed.data;
-
-  const fallbackResult = relativePathSchema.safeParse(fallback);
-  if (!fallbackResult.success) return "/";
-  return fallbackResult.data;
+  if (isSafeRelativePath(value)) return value.trim();
+  return isSafeRelativePath(fallback) ? fallback.trim() : "/";
 }
 
 export function isSafeCallbackUrl(value: unknown): value is string {
-  return relativePathSchema.safeParse(value).success;
+  return isSafeRelativePath(value);
 }

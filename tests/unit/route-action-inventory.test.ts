@@ -69,4 +69,44 @@ describe("route and server-action authorization inventory", () => {
 
     expect(failures).toEqual([]);
   });
+
+  it("keeps canonical admin editor URLs permission-gated and removes obsolete route files", () => {
+    const canonicalRoutes = [
+      "src/app/admin/activities/page.tsx",
+      "src/app/admin/stories/page.tsx",
+      "src/app/admin/gallery/page.tsx",
+      "src/app/admin/menu/page.tsx",
+      "src/app/admin/faqs/page.tsx",
+      "src/app/admin/packages/page.tsx",
+      "src/app/admin/accommodation/page.tsx",
+      "src/app/admin/settings/policies/page.tsx",
+      "src/app/admin/experiences-legacy/page.tsx",
+    ];
+    const missingGuards = canonicalRoutes.filter((relativePath) => {
+      const path = join(sourceRoot, ...relativePath.split("/"));
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const source = readFileSync(path, "utf8");
+      return !source.includes("getCmsPageStaff") && !source.includes("CmsContentAdminPage");
+    });
+    expect(missingGuards).toEqual([]);
+    expect(existsSync(join(sourceRoot, "src", "app", "admin", "cms", "page.tsx"))).toBe(false);
+    expect(existsSync(join(sourceRoot, "src", "app", "admin", "cms", "pages", "page.tsx"))).toBe(false);
+    expect(existsSync(join(sourceRoot, "src", "app", "(public)", "offers", "page.tsx"))).toBe(false);
+    expect(existsSync(join(sourceRoot, "src", "app", "(public)", "preview", "page", "[token]", "page.tsx"))).toBe(false);
+  });
+
+  it("keeps the removed media library out of source while preserving its legacy redirect", () => {
+    const files = sourceFiles(join(sourceRoot, "src"));
+    const forbiddenReferences = files.flatMap((path) => {
+      const relativePath = relativeSourcePath(path);
+      if (relativePath === "src/config/media.ts") return [];
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const source = readFileSync(path, "utf8");
+      return /MediaPicker|MediaLibrary|\/admin\/media/.test(source) ? [relativePath] : [];
+    });
+    expect(forbiddenReferences).toEqual([]);
+
+    const legacyRoute = join(sourceRoot, "src", "app", "admin", "media", "page.tsx");
+    expect(readFileSync(legacyRoute, "utf8")).toContain('permanentRedirect("/admin")');
+  });
 });

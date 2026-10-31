@@ -1,4 +1,7 @@
+# Superseded by the admin simplification on 2026-10-27. Retained as a historical QA record.
+
 # Design QA record
+
 
 ## Content provenance
 
@@ -19,3 +22,4 @@
 ## Verification
 
 The repository test suite and jest-axe checks are the executable accessibility baseline. A manual screen-reader/TalkBack pass, a real throttled Android run, and Lighthouse measurements remain release QA tasks because the required browser runner/content environment was unavailable in this workspace.
+

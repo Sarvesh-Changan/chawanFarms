@@ -2,25 +2,27 @@ import { z } from "zod";
 
 import { optionalIdListSchema, optionalLocalizedTextSchema, slugSchema, localizedTextSchema } from "./common";
 
-const optionalCount = z.string().trim().regex(/^\d*$/).max(6)
-  .transform((value) => value === "" ? null : Number(value))
-  .pipe(z.number().int().min(0).max(100_000).nullable());
+const optionalCount = z.union([
+  z.number().int().min(0).max(100_000),
+  z.string().trim().regex(/^\d*$/).max(6).transform((value) => value === "" ? null : Number(value)),
+  z.null(),
+]).pipe(z.number().int().min(0).max(100_000).nullable());
 
 export const packageFormSchema = z.object({
   id: z.string().uuid().optional(),
   slug: slugSchema,
-  code: z.union([z.string().trim().max(30), z.literal("")]).transform((value) => value || null),
+  code: z.union([z.string().trim().max(30), z.literal(""), z.null()]).transform((value) => value || null),
   name: localizedTextSchema,
-  summary: optionalLocalizedTextSchema,
-  description: optionalLocalizedTextSchema,
-  inclusions: optionalLocalizedTextSchema,
-  conditions: optionalLocalizedTextSchema,
+  summary: optionalLocalizedTextSchema.nullable().optional(),
+  description: optionalLocalizedTextSchema.nullable().optional(),
+  inclusions: optionalLocalizedTextSchema.nullable().optional(),
+  conditions: optionalLocalizedTextSchema.nullable().optional(),
   minGuests: optionalCount,
   maxGuests: optionalCount,
-  timingNote: optionalLocalizedTextSchema,
+  timingNote: optionalLocalizedTextSchema.nullable().optional(),
   isDayVisit: z.boolean(),
   isGroupOnly: z.boolean(),
-  heroMediaId: z.union([z.string().uuid(), z.literal("")]).transform((value) => value || null),
+  heroMediaId: z.union([z.string().uuid(), z.literal(""), z.null()]).transform((value) => value || null),
   accommodationIds: optionalIdListSchema,
   activityIds: optionalIdListSchema,
 }).strict().superRefine((input, context) => {

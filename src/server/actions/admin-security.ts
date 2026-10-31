@@ -6,7 +6,9 @@ import { headers } from "next/headers";
 import { z } from "zod";
 
 import { env } from "@/config/env";
+import { resolvePostLoginDestination } from "@/lib/auth/post-login-destination";
 import { err, ok, type Result } from "@/lib/result";
+import { matchesCurrentSessionToken } from "@/lib/security/sessions";
 import { auth, getSession } from "@/server/auth";
 import { assertSafeStaffRoleChange, requirePermission, type StaffPrincipal } from "@/server/authz";
 import { AuthorizationError } from "@/server/authz/errors";
@@ -177,8 +179,15 @@ export async function acceptStaffInviteAction(rawInput: unknown): Promise<Result
       if (!(await verifyTurnstileToken(parsed.data.turnstileToken, ip))) {
         return err("VALIDATION", "Please complete the security check.");
       }
+      const verificationDestination = resolvePostLoginDestination({
+        userType: "STAFF",
+        callbackUrl: "/admin",
+        needsTwoFactorSetup: false,
+        needsTwoFactorVerify: false,
+        emailVerified: false,
+      });
       const created = await auth.api.signUpEmail({
-        body: { name: parsed.data.name, email, password: parsed.data.password, callbackURL: "/verify-email" },
+        body: { name: parsed.data.name, email, password: parsed.data.password, callbackURL: verificationDestination.redirectTo },
         headers: requestHeaders,
       });
       userId = created.user.id;
@@ -294,7 +303,7 @@ export async function verifyTwoFactorSetupAction(_rawInput?: unknown): Promise<R
   return err("CONFLICT", "Two-factor authentication is disabled for this workspace.");
 }
 
-export async function revokeOwnSessionAction(rawInput: unknown): Promise<Result<{ revoked: true }>> {
+export async function revokeOwnSessionAction(rawInput: unknown): Promise<Result<{ revoked: true; current: boolean }>> {
   const access = await authorizeStaff("staff.read");
   if (!access.ok) return err(access.error.code, access.error.message);
   const actor = access.data;
@@ -302,8 +311,48 @@ export async function revokeOwnSessionAction(rawInput: unknown): Promise<Result<
   if (!parsed.success) return validationError();
   const session = await getSession();
   if (!session || session.user.id !== actor.id) return err("UNAUTHENTICATED", "Please sign in again.");
-  const deleted = await db.session.deleteMany({ where: { id: parsed.data.sessionId, userId: actor.id } });
-  if (!deleted.count) return err("NOT_FOUND", "Session not found.");
+  const target = await db.session.findFirst({
+    where: { id: parsed.data.sessionId, userId: actor.id },
+    select: { id: true, token: true },
+  });
+  if (!target) return err("NOT_FOUND", "Session not found.");
+  const rate = await limit(`admin:session-revoke:${actor.id}`, 10, 3_600);
+  if (!rate.allowed) return err("RATE_LIMITED", "Too many session revocations. Please try again later.");
+
+  const current = matchesCurrentSessionToken(session.session.token, target.token);
+  if (current) {
+    try {
+      await auth.api.signOut({ headers: await headers() });
+    } catch {
+      return err("INTERNAL", "The current session could not be signed out.");
+    }
+  } else {
+    const deleted = await db.session.deleteMany({ where: { id: target.id, userId: actor.id } });
+    if (!deleted.count) return err("NOT_FOUND", "Session not found.");
+  }
   const auditResult = await requestAudit(actor.id, "auth.session.revoke", "Session", parsed.data.sessionId, { active: true }, { active: false });
-  return auditResult.ok ? ok({ revoked: true }) : auditResult;
+  return auditResult.ok ? ok({ revoked: true, current }) : auditResult;
+}
+
+export async function revokeAllOtherSessionsAction(): Promise<Result<{ revoked: number }>> {
+  const access = await authorizeStaff("staff.read");
+  if (!access.ok) return err(access.error.code, access.error.message);
+  const actor = access.data;
+  const session = await getSession();
+  if (!session || session.user.id !== actor.id) return err("UNAUTHENTICATED", "Please sign in again.");
+
+  const current = await db.session.findFirst({
+    where: { userId: actor.id, token: session.session.token },
+    select: { id: true },
+  });
+  if (!current) return err("UNAUTHENTICATED", "Please sign in again.");
+
+  const rate = await limit(`admin:session-revoke:${actor.id}`, 10, 3_600);
+  if (!rate.allowed) return err("RATE_LIMITED", "Too many session revocations. Please try again later.");
+
+  const deleted = await db.session.deleteMany({
+    where: { userId: actor.id, id: { not: current.id }, expiresAt: { gt: new Date() } },
+  });
+  const auditResult = await requestAudit(actor.id, "auth.sessions.revoke_others", "Session", "other-sessions", { activeOtherSessions: deleted.count }, { activeOtherSessions: 0 });
+  return auditResult.ok ? ok({ revoked: deleted.count }) : auditResult;
 }

@@ -6,21 +6,27 @@ import { isAllowedCmsLink } from "@/lib/cms-links";
 
 import { localizedTextSchema, optionalLocalizedTextSchema, slugSchema } from "./common";
 
-const htmlString = z.string().max(50_000).refine((value) => {
+const optionalHtmlString = z.string().max(50_000).refine((value) => {
   const plainText = value.replaceAll("<p></p>", "").replaceAll("<br>", "").trim();
-  return plainText.length > 0;
-}, "Enter some content.");
+  return value === "" || plainText.length > 0;
+}, "Enter some content.").optional();
 
 export const localizedHtmlSchema = z.object({
-  en: htmlString.optional(),
-  mr: htmlString.optional(),
-  hi: htmlString.optional(),
+  en: optionalHtmlString,
+  mr: optionalHtmlString,
+  hi: optionalHtmlString,
 }).strict().superRefine((value, context) => {
-  const hasTranslation = Boolean(value.en || value.mr || value.hi);
-  if (hasTranslation && !value.en) context.addIssue({ code: "custom", path: ["en"], message: "English is required when this field is provided." });
+  const hasEn = Boolean(value.en && value.en.replaceAll("<p></p>", "").replaceAll("<br>", "").trim().length > 0);
+  const hasMr = Boolean(value.mr && value.mr.replaceAll("<p></p>", "").replaceAll("<br>", "").trim().length > 0);
+  const hasHi = Boolean(value.hi && value.hi.replaceAll("<p></p>", "").replaceAll("<br>", "").trim().length > 0);
+  const hasTranslation = hasEn || hasMr || hasHi;
+  if (hasTranslation && !hasEn) context.addIssue({ code: "custom", path: ["en"], message: "English is required when this field is provided." });
 }).transform((value) => {
-  if (![value.en, value.mr, value.hi].some(Boolean)) return undefined;
-  return { en: value.en ?? "", ...(value.mr ? { mr: value.mr } : {}), ...(value.hi ? { hi: value.hi } : {}) };
+  const cleanEn = value.en && value.en.replaceAll("<p></p>", "").replaceAll("<br>", "").trim().length > 0 ? value.en : undefined;
+  const cleanMr = value.mr && value.mr.replaceAll("<p></p>", "").replaceAll("<br>", "").trim().length > 0 ? value.mr : undefined;
+  const cleanHi = value.hi && value.hi.replaceAll("<p></p>", "").replaceAll("<br>", "").trim().length > 0 ? value.hi : undefined;
+  if (!cleanEn && !cleanMr && !cleanHi) return undefined;
+  return { en: cleanEn ?? "", ...(cleanMr ? { mr: cleanMr } : {}), ...(cleanHi ? { hi: cleanHi } : {}) };
 });
 
 export const cmsLinkSchema = z.string().trim().max(2048).refine(isAllowedCmsLink, "Links must use https:, mailto:, or tel:.");
@@ -60,10 +66,10 @@ export const cmsContentFormSchema = z.object({
   entityType: z.enum(CMS_CONTENT_TYPES),
   id: z.string().uuid().optional(),
   slug: optionalSlugSchema,
-  title: localizedTextSchema.optional(),
-  name: localizedTextSchema.optional(),
-  question: localizedTextSchema.optional(),
-  quote: localizedTextSchema.optional(),
+  title: optionalLocalizedTextSchema.optional(),
+  name: optionalLocalizedTextSchema.optional(),
+  question: optionalLocalizedTextSchema.optional(),
+  quote: optionalLocalizedTextSchema.optional(),
   summary: optionalLocalizedTextSchema.optional(),
   description: localizedHtmlSchema.optional(),
   body: localizedHtmlSchema.optional(),
@@ -89,7 +95,7 @@ export const cmsContentFormSchema = z.object({
   authorMeta: optionalString(200),
   consentConfirmed: z.boolean().optional(),
   mediaId: optionalUuid,
-  category: z.enum(GALLERY_CATEGORIES).optional(),
+  category: z.union([z.string().trim().min(1, "Choose a gallery category.").max(80), z.literal("")]).optional(),
   caption: optionalLocalizedTextSchema.optional(),
   isFeatured: z.boolean().optional(),
   authorNameForPost: optionalString(160),

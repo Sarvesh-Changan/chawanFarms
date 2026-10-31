@@ -1,6 +1,7 @@
 import "server-only";
 
 import { Prisma } from "@/generated/prisma/client";
+import { matchesCurrentSessionToken } from "@/lib/security/sessions";
 import { db } from "@/server/db";
 
 function kolkataStartOfDay(date: Date): Date {
@@ -212,13 +213,17 @@ export async function listAudit(page: number, pageSize: number, filters: { actio
   return { rows, total, page, pageSize, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
 }
 
-export async function listCurrentUserSessions(userId: string) {
-  return db.session.findMany({
+export async function listCurrentUserSessions(userId: string, currentSessionToken: string) {
+  const sessions = await db.session.findMany({
     where: { userId, expiresAt: { gt: new Date() } },
     orderBy: { createdAt: "desc" },
     take: 50,
-    select: { id: true, createdAt: true, expiresAt: true, ipAddress: true, userAgent: true },
+    select: { id: true, token: true, createdAt: true, expiresAt: true, ipAddress: true, userAgent: true },
   });
+  return sessions.map(({ token, ...session }) => ({
+    ...session,
+    isCurrent: matchesCurrentSessionToken(currentSessionToken, token),
+  }));
 }
 
 export async function listPendingStaffInvites() {

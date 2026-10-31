@@ -12,7 +12,7 @@ import { Header } from "@/components/marketing/Header";
 import { PublicClosing } from "@/components/marketing/PublicClosing";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getPublicHomePage, getPublicSettings, localizedString } from "@/server/services/public-content";
+import { getPublicSettings } from "@/server/services/public-content";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +22,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ContactPage() {
-  const [settings, home] = await Promise.all([getPublicSettings(), getPublicHomePage()]);
-  const locationSection = home?.sections.find((section) => section.type === "location");
-  const sectionContent = locationSection?.content && typeof locationSection.content === "object" && !Array.isArray(locationSection.content) ? locationSection.content as Record<string, unknown> : {};
-  const howToReach = localizedString(sectionContent.body as never);
+  const settings = await getPublicSettings();
+  const howToReach = "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra";
   const phones = settings.phones;
   const address = settings.address;
   const whatsappNumber = settings.whatsappNumber;

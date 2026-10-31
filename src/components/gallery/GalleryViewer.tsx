@@ -195,7 +195,7 @@ export function GalleryViewer({ items, cloudName: propCloudName }: GalleryViewer
     touchStartYRef.current = null;
   };
 
-  const cloudName = propCloudName ?? process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
+  const cloudName = propCloudName || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "";
 
   return (
     <div className="w-full">
@@ -300,18 +300,12 @@ export function GalleryViewer({ items, cloudName: propCloudName }: GalleryViewer
                     <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
                       <Maximize2 className="h-4 w-4" />
                     </div>
-                  </div>
-
-                  {/* Caption & Category Footer */}
-                  <div className="p-4">
-                    <span className="inline-block rounded-md bg-secondary/80 px-2 py-0.5 text-xs font-medium uppercase tracking-wider text-secondary-foreground">
-                      {item.category}
-                    </span>
-                    {caption && (
-                      <p className="mt-2 line-clamp-2 text-sm text-foreground/90">
-                        {caption}
-                      </p>
-                    )}
+                    {/* Category pill on image (subtle overlay) */}
+                    <div className="absolute left-3 top-3">
+                      <span className="rounded-full bg-black/60 px-2.5 py-0.5 text-[11px] font-medium tracking-wide text-white backdrop-blur-sm">
+                        {item.category}
+                      </span>
+                    </div>
                   </div>
                 </button>
               </div>

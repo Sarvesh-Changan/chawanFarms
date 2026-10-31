@@ -29,13 +29,13 @@ export const CMS_CONTENT_ACTION_PERMISSIONS = {
 
 export const CMS_CONTENT_ROUTES: Record<CmsContentType, string> = {
   activity: "activities",
-  experience: "experiences",
-  "menu-category": "menu-categories",
-  "menu-item": "menu-items",
+  experience: "experiences-legacy",
+  "menu-category": "menu/menu-category",
+  "menu-item": "menu/menu-item",
   faq: "faqs",
   offer: "offers",
-  testimonial: "testimonials",
+  testimonial: "",
   "gallery-item": "gallery",
   post: "stories",
-  "post-category": "story-categories",
+  "post-category": "stories",
 };

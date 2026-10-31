@@ -4,7 +4,6 @@ import { GalleryViewer } from "@/components/gallery/GalleryViewer";
 import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
-import { PublicClosing } from "@/components/marketing/PublicClosing";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { env } from "@/config/env";
@@ -37,26 +36,11 @@ export default async function GalleryPage() {
       <Breadcrumbs items={[{ label: "Gallery" }]} />
       <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Header & Intro */}
-          <div className="mb-12 text-center sm:mb-16">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-laterite-600">
-              Farm Life in Pictures & Video
-            </span>
-            <h1 className="mt-3 font-heading text-4xl text-forest-900 sm:text-5xl md:text-6xl">
-              Moments Where Time Slows Down
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Explore authentic photography and videos from our agri-tourism centre
-              in Baitwadi, Kolad. Real farm activities, nature trails, rustic stays,
-              and open Sahyadri skies.
-            </p>
-          </div>
-
+          
           {/* Interactive Masonry Gallery with Lightbox */}
-          <GalleryViewer items={items} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME} />
+          <GalleryViewer items={items} cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? ""} />
         </div>
       </main>
-      <PublicClosing />
       <StickyCtaBar />
       <Footer />
     </>

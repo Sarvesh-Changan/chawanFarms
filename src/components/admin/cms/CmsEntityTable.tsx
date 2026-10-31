@@ -12,7 +12,7 @@ import type { CmsListRow } from "@/lib/types/cms";
 import { restoreCmsEntityAction, reorderCmsEntityAction } from "@/server/actions/cms";
 import type { CmsEntityType } from "@/server/services/cms/types";
 
-export function CmsEntityTable({ entityType, rows, page, pageCount, pageSize, trash, canWrite, sort, direction }: {
+export function CmsEntityTable({ entityType, rows, page, pageCount, pageSize, trash, canWrite, sort, direction, basePath }: {
   entityType: CmsEntityType;
   rows: CmsListRow[];
   page: number;
@@ -22,10 +22,11 @@ export function CmsEntityTable({ entityType, rows, page, pageCount, pageSize, tr
   canWrite: boolean;
   sort: "sortOrder" | "updatedAt" | "status";
   direction: "asc" | "desc";
+  basePath?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const base = entityType === "package" ? "/admin/cms/packages" : "/admin/cms/accommodations";
+  const base = basePath ?? (entityType === "package" ? "/admin/packages" : "/admin/accommodation");
 
   function reorder(id: string, direction: "up" | "down") {
     startTransition(async () => {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SafeHtml } from "@/components/admin/SafeHtml";
+import { GalleryViewer } from "@/components/gallery/GalleryViewer";
 import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
@@ -24,6 +25,14 @@ function formatDate(date: Date | null): string {
     month: "long",
     year: "numeric",
   }).format(new Date(date));
+}
+
+function storyVideoUrl(cloudName: string, publicId: string) {
+  return `https://res.cloudinary.com/${encodeURIComponent(cloudName)}/video/upload/f_auto,q_auto/${encodeURI(publicId)}`;
+}
+
+function storyVideoPoster(cloudName: string, publicId: string) {
+  return `https://res.cloudinary.com/${encodeURIComponent(cloudName)}/video/upload/so_0,f_jpg,q_auto/${encodeURI(publicId)}.jpg`;
 }
 
 export async function generateMetadata({
@@ -59,14 +68,13 @@ export default async function StoryDetailPage({
   const title = localizedString(story.title);
   const excerpt = localizedString(story.excerpt);
   const body = localizedString(story.body);
-  const categoryName = story.category ? localizedString(story.category.name) : null;
   const formattedDate = formatDate(story.publishAt ?? story.createdAt);
-  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
+  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? env.CLOUDINARY_CLOUD_NAME ?? "";
   const pageUrl = `${env.NEXT_PUBLIC_SITE_URL}/stories/${story.slug}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
+    "@type": "Article",
     headline: title,
     description: excerpt,
     datePublished: story.publishAt ? new Date(story.publishAt).toISOString() : undefined,
@@ -107,11 +115,9 @@ export default async function StoryDetailPage({
 
           {/* Article Header */}
           <header className="space-y-4">
-            {categoryName && (
-              <span className="inline-block rounded-full bg-forest-900/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-forest-900">
-                {categoryName}
-              </span>
-            )}
+            <span className="inline-block rounded-full bg-forest-900/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-forest-900">
+              {story.kind === "GUEST" ? "Guest story" : story.kind === "EXPERIENCE" ? "Farm experience" : "Story"}
+            </span>
 
             <h1 className="font-heading text-3xl text-forest-900 sm:text-4xl md:text-5xl lg:text-6xl">
               {title}
@@ -163,6 +169,10 @@ export default async function StoryDetailPage({
               <p className="text-muted-foreground">No article text provided.</p>
             )}
           </div>
+
+          {story.photoMedia.length ? <section className="mt-12" aria-labelledby="story-photos-heading"><h2 id="story-photos-heading" className="font-heading text-2xl text-forest-900">Photos</h2><div className="mt-5"><GalleryViewer cloudName={cloudName} items={story.photoMedia.map((media, index) => ({ id: media.id, category: "Story", caption: media.altText, sortOrder: index, isFeatured: false, media }))}/></div></section> : null}
+
+          {story.videoMedia ? <section className="mt-12" aria-labelledby="story-video-heading"><h2 id="story-video-heading" className="font-heading text-2xl text-forest-900">Video</h2><video className="mt-5 w-full rounded-2xl bg-black" controls preload="none" poster={storyVideoPoster(cloudName, story.videoMedia.publicId)} aria-label={`${title} video`}><source src={storyVideoUrl(cloudName, story.videoMedia.publicId)} type="video/mp4"/><p className="p-5 text-cream-50">Your browser cannot play this video.</p></video><p className="mt-2 text-xs text-muted-foreground">Captions are provided when available.</p></section> : null}
 
           {/* Share & Engage Section */}
           <footer className="mt-14 border-t border-border/80 pt-8">

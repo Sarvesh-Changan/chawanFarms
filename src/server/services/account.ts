@@ -57,10 +57,11 @@ async function getFeatureFlags(): Promise<FeatureFlags> {
 }
 
 export async function getCustomerIdentity(userId: string): Promise<CustomerIdentity | null> {
-  return db.user.findUnique({
+  const identity = await db.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
+      type: true,
       email: true,
       emailVerified: true,
       name: true,
@@ -76,6 +77,8 @@ export async function getCustomerIdentity(userId: string): Promise<CustomerIdent
       },
     },
   });
+  if (!identity || identity.type !== "CUSTOMER") return null;
+  return identity;
 }
 
 function dateOnly(date: Date): string {

@@ -2,6 +2,7 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { headers } from "next/headers";
+import { z } from "zod";
 
 import { CMS_MUTATION_RATE_LIMIT } from "@/config/cms";
 import { CMS_PREVIEW_TTL_SECONDS, type CmsContentType } from "@/config/cms-content";
@@ -12,7 +13,7 @@ import { AuthorizationError } from "@/server/authz/errors";
 import { createPreviewToken } from "@/server/cms/preview";
 import { limit } from "@/server/integrations/ratelimit";
 import { audit } from "@/server/services/audit";
-import { getCmsContent, listCmsContent, reorderGalleryItems, restoreCmsContent, saveCmsContent, setCmsContentStatus, softDeleteCmsContent } from "@/server/services/cms/content";
+import { bulkUpdateGallery, getCmsContent, listCmsContent, listGalleryAdmin, reorderActivity, reorderGalleryItems, restoreCmsContent, saveCmsContent, setCmsContentStatus, softDeleteCmsContent, updateGalleryFlags } from "@/server/services/cms/content";
 
 async function mutationGate(key: string, permission: "cms.write" | "cms.publish" | "cms.delete" | "cms.read") {
   const requestHeaders = await headers();
@@ -32,10 +33,10 @@ async function mutationGate(key: string, permission: "cms.write" | "cms.publish"
 
 function cmsPath(type: CmsContentType): string {
   switch (type) {
-    case "activity": return "activities"; case "experience": return "experiences";
-    case "menu-category": return "menu-categories"; case "menu-item": return "menu-items";
-    case "faq": return "faqs"; case "offer": return "offers"; case "testimonial": return "testimonials";
-    case "gallery-item": return "gallery"; case "post": return "stories"; case "post-category": return "story-categories";
+    case "activity": return "activities"; case "experience": return "experiences-legacy";
+    case "menu-category": return "menu"; case "menu-item": return "menu";
+    case "faq": return "faqs"; case "offer": return ""; case "testimonial": return "";
+    case "gallery-item": return "gallery"; case "post": return "stories"; case "post-category": return "stories";
   }
 }
 
@@ -44,8 +45,7 @@ async function record(actorId: string, action: string, type: CmsContentType, id:
   const result = await audit({ actor: { id: actorId, type: "STAFF" }, action, entityType: type, entityId: id, before, after, ip: requestHeaders.get("cf-connecting-ip")?.slice(0, 128), userAgent: requestHeaders.get("user-agent")?.slice(0, 512), requestId: requestHeaders.get("x-request-id")?.slice(0, 128) });
   revalidateTag(`cms:${type}`, "max");
   revalidateTag("cms:all", "max");
-  revalidatePath("/admin/cms");
-  revalidatePath(`/admin/cms/${cmsPath(type)}`);
+  revalidatePath(`/admin/${cmsPath(type)}`);
   return result;
 }
 
@@ -64,7 +64,7 @@ export async function saveCmsContentAction(raw: unknown): Promise<Result<{ id: s
   if (!parsed.success) return err("VALIDATION", "Please review the content fields.", parsed.error.flatten().fieldErrors);
   try {
     const before = parsed.data.id ? await getCmsContent(parsed.data.entityType, parsed.data.id) : null;
-    const saved = await saveCmsContent(parsed.data);
+    const saved = await saveCmsContent(parsed.data, gate.actorId);
     const result = await record(gate.actorId, before ? `cms.${parsed.data.entityType}.update` : `cms.${parsed.data.entityType}.create`, parsed.data.entityType, saved.id, before, saved);
     return result.ok ? ok({ id: saved.id }) : result;
   } catch (error) {
@@ -138,4 +138,35 @@ export async function createCmsPreviewAction(raw: unknown): Promise<Result<{ url
   if (!item || ("deletedAt" in item && item.deletedAt)) return err("NOT_FOUND", "Content not found.");
   try { return ok({ url: `/preview/${createPreviewToken(parsed.data)}`, expiresIn: CMS_PREVIEW_TTL_SECONDS }); }
   catch { return err("UNAVAILABLE", "Preview links are unavailable until PREVIEW_SECRET is configured."); }
+}
+
+const galleryFlagsSchema = z.object({ id: z.string().uuid(), isFeatured: z.boolean().optional(), status: z.enum(["DRAFT", "PUBLISHED"]).optional() }).strict().refine((value) => value.isFeatured !== undefined || value.status !== undefined, "Choose a gallery change.");
+const galleryBulkSchema = z.object({ ids: z.array(z.string().uuid()).min(1).max(200), action: z.enum(["publish", "unpublish", "delete", "category"]), category: z.string().trim().min(1).max(80).optional() }).strict().superRefine((value, context) => { if (value.action === "category" && !value.category) context.addIssue({ code: "custom", path: ["category"], message: "Choose a category." }); });
+
+export async function listGalleryAdminAction(raw: unknown) {
+  const gate = await mutationGate("gallery-list", "cms.read"); if (!gate.ok) return gate.error;
+  const parsed = z.object({ q: z.string().trim().max(120).default(""), status: z.enum(["DRAFT", "SCHEDULED", "PUBLISHED", "ARCHIVED"]).optional(), category: z.string().trim().max(80).optional(), duplicatesOnly: z.boolean().default(false) }).strict().safeParse(raw);
+  if (!parsed.success) return err("VALIDATION", "Invalid gallery filters.");
+  return ok(await listGalleryAdmin(parsed.data));
+}
+
+export async function updateGalleryFlagsAction(raw: unknown): Promise<Result<{ id: string }>> {
+  const gate = await mutationGate("gallery-flags", "cms.write"); if (!gate.ok) return gate.error;
+  const parsed = galleryFlagsSchema.safeParse(raw); if (!parsed.success) return err("VALIDATION", "Invalid gallery change.");
+  const before = await getCmsContent("gallery-item", parsed.data.id); if (!before) return err("NOT_FOUND", "Gallery item not found.");
+  try { const after = await updateGalleryFlags(parsed.data.id, parsed.data); const result = await record(gate.actorId, "cms.gallery-item.flags", "gallery-item", parsed.data.id, before, after); revalidatePath("/gallery"); revalidatePath("/"); return result.ok ? ok({ id: parsed.data.id }) : result; } catch { return err("CONFLICT", "Gallery item could not be updated."); }
+}
+
+export async function bulkUpdateGalleryAction(raw: unknown): Promise<Result<{ id: string }>> {
+  const parsed = galleryBulkSchema.safeParse(raw); if (!parsed.success) return err("VALIDATION", "Invalid gallery bulk action.");
+  const permission = parsed.data.action === "delete" ? "cms.delete" : parsed.data.action === "publish" || parsed.data.action === "unpublish" ? "cms.publish" : "cms.write";
+  const gate = await mutationGate(`gallery-bulk-${parsed.data.action}`, permission); if (!gate.ok) return gate.error;
+  try { const before = await Promise.all(parsed.data.ids.map((id) => getCmsContent("gallery-item", id))); const changed = await bulkUpdateGallery(parsed.data); const result = await record(gate.actorId, `cms.gallery-item.bulk.${parsed.data.action}`, "gallery-item", "bulk", before, { ids: changed.map((item) => item.id), action: parsed.data.action }); revalidatePath("/gallery"); revalidatePath("/"); return result.ok ? ok({ id: "bulk" }) : result; } catch { return err("CONFLICT", "The gallery bulk action could not be completed."); }
+}
+
+export async function reorderActivityAction(raw: unknown): Promise<Result<{ id: string }>> {
+  const gate = await mutationGate("activity-reorder", "cms.write"); if (!gate.ok) return gate.error;
+  const parsed = z.object({ id: z.string().uuid(), direction: z.enum(["up", "down"]) }).strict().safeParse(raw); if (!parsed.success) return err("VALIDATION", "Invalid activity reorder request.");
+  const before = await getCmsContent("activity", parsed.data.id); if (!before) return err("NOT_FOUND", "Activity not found.");
+  try { const change = await reorderActivity(parsed.data.id, parsed.data.direction); if (!change.moved) return err("CONFLICT", "This activity cannot move further in the list."); const after = await getCmsContent("activity", parsed.data.id); const result = await record(gate.actorId, "cms.activity.reorder", "activity", parsed.data.id, before, { activity: after, change }); revalidatePath("/activities"); revalidatePath("/"); return result.ok ? ok({ id: parsed.data.id }) : result; } catch { return err("CONFLICT", "Activity order could not be changed."); }
 }

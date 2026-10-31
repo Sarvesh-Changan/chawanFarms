@@ -89,7 +89,7 @@ Blockers:
 - D-17: staff list, role assignments, video approvers, point-adjustment authority and second approver.
 - Auth implementation and seeded permissions from Phase 3/4.
 
-## Phase 6 — Cloudinary and media library
+## Phase 6 — Cloudinary and local media uploads
 
 Tasks:
 
@@ -317,6 +317,10 @@ Blockers:
 - Final account owners, legal text, operating policies and staff assignments.
 
 ## Current safe next step
+
+- [x] Step 1 admin simplification: remove the CMS hub, mount existing editors at canonical routes, preserve permissions and policy versioning, convert Home/About away from Page readers, remove Offers/testimonial public UI, and retain Experience until step 3.
+- [ ] Step 2: build the Settings screen for Home/About copy keys and complete the approved Stories/Gallery/Menu UX.
+- [ ] Step 3: migrate Experiences into Stories and remove the hidden legacy Experience editor.
 
 ## Phase 14 completion note
 

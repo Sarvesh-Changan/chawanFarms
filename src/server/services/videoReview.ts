@@ -380,18 +380,15 @@ export async function previewVideo(actorId: string, rawInput: unknown): Promise<
   }
 }
 
-export async function featureOnWebsite(actorId: string, rawInput: unknown, client: DbOrTx = db): Promise<Result<{ galleryItemId: string }>> {
+export async function featureOnWebsite(actorId: string, rawInput: unknown, client: DbOrTx = db): Promise<Result<{ storyId: string }>> {
   const parsed = featureSchema.safeParse(rawInput);
   if (!parsed.success) return err("VALIDATION", "Invalid feature request.");
   return runWithTx(client, async (tx) => {
     const submission = await lockSubmission(tx, parsed.data.submissionId);
     if (!submission) return err("NOT_FOUND", "Video submission not found.");
     if (submission.status !== "APPROVED" || !submission.consentPublish || !submission.media) return err("FORBIDDEN", "Only approved videos with publish consent can be featured.");
-    const existing = await tx.mediaUsage.findFirst({ where: { entityType: "VideoSubmission", entityId: submission.id, field: "featured-copy" } });
-    if (existing) {
-      const item = await tx.galleryItem.findFirst({ where: { mediaId: existing.mediaId, deletedAt: null }, select: { id: true } });
-      if (item) return ok({ galleryItemId: item.id });
-    }
+    const existing = await tx.post.findUnique({ where: { sourceSubmissionId: submission.id }, select: { id: true, deletedAt: true } });
+    if (existing && !existing.deletedAt) return ok({ storyId: existing.id });
     const publicId = `customer-stories/${submission.id}/${randomUUID()}`;
     let copied: Awaited<ReturnType<typeof copyAuthenticatedVideoToPublic>>;
     try {
@@ -399,27 +396,30 @@ export async function featureOnWebsite(actorId: string, rawInput: unknown, clien
     } catch {
       return err("UNAVAILABLE", "The public video copy could not be created.");
     }
-    const media = await tx.media.create({ data: { kind: "VIDEO", origin: "CUSTOMER", publicId: copied.publicId, resourceType: "video", deliveryType: "upload", format: copied.format, bytes: copied.bytes, durationSec: copied.durationSec, contentHash: submission.contentHash, isPublic: false, uploadedById: actorId, tags: [] } });
-    const galleryItem = await tx.galleryItem.create({ data: { mediaId: media.id, category: "customer-video", caption: submission.title ? { en: submission.title } : undefined, status: "DRAFT", isFeatured: false } });
-    await tx.mediaUsage.create({ data: { mediaId: media.id, entityType: "VideoSubmission", entityId: submission.id, field: "featured-copy" } });
-    await recordAudit(tx, actorId, "VIDEO_FEATURED_COPY_CREATED", submission.id, null, { galleryItemId: galleryItem.id, mediaId: media.id, idempotencyKey: parsed.data.idempotencyKey });
-    return ok({ galleryItemId: galleryItem.id });
+    const media = await tx.media.create({ data: { kind: "VIDEO", origin: "ADMIN", publicId: copied.publicId, resourceType: "video", deliveryType: "upload", format: copied.format, bytes: copied.bytes, durationSec: copied.durationSec, contentHash: submission.contentHash, isPublic: true, uploadedById: actorId, tags: ["guest-story-copy"], meta: safeJson({ sourceSubmissionId: submission.id }) } });
+    const last = await tx.post.findFirst({ orderBy: [{ sortOrder: "desc" }, { createdAt: "desc" }], select: { sortOrder: true } });
+    const story = existing
+      ? await tx.post.update({ where: { id: existing.id }, data: { title: { en: "A guest story" }, excerpt: Prisma.DbNull, body: { en: "" }, authorName: "A guest", kind: "GUEST", videoMediaId: media.id, status: "DRAFT", deletedAt: null, featured: false } })
+      : await tx.post.create({ data: { slug: `guest-${submission.id.slice(0, 12)}`, title: { en: "A guest story" }, excerpt: Prisma.DbNull, body: { en: "" }, authorName: "A guest", kind: "GUEST", sourceSubmissionId: submission.id, videoMediaId: media.id, status: "DRAFT", sortOrder: (last?.sortOrder ?? -1) + 1, featured: false } });
+    await tx.mediaUsage.create({ data: { mediaId: media.id, entityType: "Post", entityId: story.id, field: "video" } });
+    await recordAudit(tx, actorId, "VIDEO_FEATURED_STORY_CREATED", submission.id, null, { storyId: story.id, mediaId: media.id, idempotencyKey: parsed.data.idempotencyKey });
+    return ok({ storyId: story.id });
   });
 }
 
-export async function unfeatureOnWebsite(actorId: string, rawInput: unknown, client: DbOrTx = db): Promise<Result<{ submissionId: string }>> {
+export async function unfeatureOnWebsite(actorId: string, rawInput: unknown, client: DbOrTx = db): Promise<Result<{ submissionId: string; storyId: string }>> {
   const parsed = z.object({ submissionId: submissionIdSchema, idempotencyKey: actionKey }).strict().safeParse(rawInput);
   if (!parsed.success) return err("VALIDATION", "Invalid unfeature request.");
   const result = await runWithTx(client, async (tx) => {
-    const usage = await tx.mediaUsage.findFirst({ where: { entityType: "VideoSubmission", entityId: parsed.data.submissionId, field: "featured-copy" }, include: { media: true } });
-    if (!usage) return err("NOT_FOUND", "This video has no website copy.");
-    await tx.galleryItem.updateMany({ where: { mediaId: usage.mediaId, deletedAt: null }, data: { status: "ARCHIVED", isFeatured: false, deletedAt: new Date() } });
-    await tx.mediaUsage.delete({ where: { id: usage.id } });
-    await tx.media.update({ where: { id: usage.mediaId }, data: { isPublic: false, deletedAt: new Date() } });
-    await recordAudit(tx, actorId, "VIDEO_UNFEATURED", parsed.data.submissionId, { mediaId: usage.mediaId }, { idempotencyKey: parsed.data.idempotencyKey });
-    return ok({ submissionId: parsed.data.submissionId, publicId: usage.media.publicId });
+    const story = await tx.post.findUnique({ where: { sourceSubmissionId: parsed.data.submissionId }, include: { videoMedia: true } });
+    if (!story || !story.videoMedia) return err("NOT_FOUND", "This video has no featured story.");
+    await tx.post.update({ where: { id: story.id }, data: { status: "ARCHIVED", deletedAt: new Date(), featured: false } });
+    await tx.mediaUsage.deleteMany({ where: { entityType: "Post", entityId: story.id } });
+    await tx.media.update({ where: { id: story.videoMedia.id }, data: { isPublic: false, deletedAt: new Date() } });
+    await recordAudit(tx, actorId, "VIDEO_UNFEATURED", parsed.data.submissionId, { storyId: story.id, mediaId: story.videoMedia.id }, { idempotencyKey: parsed.data.idempotencyKey });
+    return ok({ submissionId: parsed.data.submissionId, storyId: story.id, publicId: story.videoMedia.publicId });
   });
   if (!result.ok) return result;
-  const deleted = await deleteCloudinaryAsset({ publicId: result.data.publicId, resourceType: "video", deliveryType: "upload" });
-  return ok({ submissionId: result.data.submissionId, ...(deleted ? {} : {}) });
+  await deleteCloudinaryAsset({ publicId: result.data.publicId, resourceType: "video", deliveryType: "upload" });
+  return ok({ submissionId: result.data.submissionId, storyId: result.data.storyId });
 }

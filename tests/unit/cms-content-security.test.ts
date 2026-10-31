@@ -64,6 +64,27 @@ describe("CMS content validation defaults", () => {
     expect(menuItem.success).toBe(true);
     // Save service explicitly persists DRAFT for every newly-created content type.
   });
+
+  it("validates gallery items with default editor values", () => {
+    const validGallery = cmsContentFormSchema.safeParse({
+      entityType: "gallery-item",
+      mediaId: "00000000-0000-4000-8000-000000000001",
+      category: "Farm",
+      caption: { en: "" },
+      isFeatured: false,
+    });
+    expect(validGallery.success).toBe(true);
+
+    const missingMedia = cmsContentFormSchema.safeParse({
+      entityType: "gallery-item",
+      mediaId: "",
+      category: "Farm",
+    });
+    expect(missingMedia.success).toBe(false);
+    if (!missingMedia.success) {
+      expect(missingMedia.error.flatten().fieldErrors.mediaId).toContain("Choose an image or video.");
+    }
+  });
 });
 
 describe("signed content preview", () => {

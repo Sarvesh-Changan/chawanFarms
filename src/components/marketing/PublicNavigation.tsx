@@ -77,7 +77,7 @@ function Dropdown({ group, pathname, openGroup, setOpenGroup }: { group: (typeof
   </div>;
 }
 
-export function PublicNavigation({ isSignedIn, phone, whatsappNumber, whatsappMessage }: { isSignedIn: boolean; phone?: string; whatsappNumber?: string; whatsappMessage?: string }) {
+export function PublicNavigation({ accountHref, accountLabel, phone, whatsappNumber, whatsappMessage }: { accountHref: string; accountLabel: string; phone?: string; whatsappNumber?: string; whatsappMessage?: string }) {
   const pathname = usePathname() ?? "/";
   const [openGroup, setOpenGroup] = useState<GroupKey | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -122,7 +122,7 @@ export function PublicNavigation({ isSignedIn, phone, whatsappNumber, whatsappMe
       <NavLink {...publicNavHome} pathname={pathname}>{publicNavHome.label}</NavLink>
       {publicNavGroups.map((group) => <Dropdown key={group.label} group={group} pathname={pathname} openGroup={openGroup} setOpenGroup={setOpenGroup} />)}
       {publicNavTopLevel.map((item) => <NavLink key={item.href} {...item} pathname={pathname}>{item.label}</NavLink>)}
-      <NavLink href={isSignedIn ? "/account" : "/login"} pathname={pathname}>{isSignedIn ? "Account" : "Login"}</NavLink>
+      <NavLink href={accountHref} pathname={pathname}>{accountLabel}</NavLink>
     </nav>
     <button ref={menuButtonRef} type="button" aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={mobileOpen} aria-controls="mobile-navigation" onClick={() => setMobileOpen((value) => !value)} className="ml-auto inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-forest-900/15 xl:hidden focus-visible:outline-2 focus-visible:outline-turmeric-500">
       {mobileOpen ? <X aria-hidden="true" className="size-5" /> : <Menu aria-hidden="true" className="size-5" />}
@@ -133,7 +133,7 @@ export function PublicNavigation({ isSignedIn, phone, whatsappNumber, whatsappMe
         <NavLink {...publicNavHome} pathname={pathname} onClick={() => setMobileOpen(false)}>{publicNavHome.label}</NavLink>
         {publicNavGroups.map((group) => <div key={group.label} className="mt-5"><p className="text-mist-500 px-2 text-xs font-semibold tracking-[0.2em] uppercase">{group.label}</p>{group.items.map((item) => <NavLink key={item.href} {...item} pathname={pathname} onClick={() => setMobileOpen(false)}>{item.label}</NavLink>)}</div>)}
         {publicNavTopLevel.map((item) => <NavLink key={item.href} {...item} pathname={pathname} onClick={() => setMobileOpen(false)}>{item.label}</NavLink>)}
-        <NavLink href={isSignedIn ? "/account" : "/login"} pathname={pathname} onClick={() => setMobileOpen(false)}>{isSignedIn ? "Account" : "Login"}</NavLink>
+        <NavLink href={accountHref} pathname={pathname} onClick={() => setMobileOpen(false)}>{accountLabel}</NavLink>
         <NavLink href="/book" pathname={pathname} onClick={() => setMobileOpen(false)}>Plan your stay</NavLink>
       </nav>
       <div className="mx-auto mt-5 flex max-w-7xl gap-3 border-t border-forest-900/10 pt-5">{phone ? <CallButton number={phone} className="text-mist-500 inline-flex min-h-11 items-center gap-2 text-sm font-semibold" aria-label={`Call ${phone}`} title={phone}>Call the farm</CallButton> : null}{whatsappNumber ? <WhatsAppButton number={whatsappNumber} message={whatsappMessage} className="text-mist-500 inline-flex min-h-11 items-center gap-2 text-sm font-semibold" aria-label="Chat on WhatsApp" title="Chat on WhatsApp">WhatsApp</WhatsAppButton> : null}</div>

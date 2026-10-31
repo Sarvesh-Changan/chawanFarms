@@ -1,7 +1,7 @@
 import "server-only";
 
 import { Prisma } from "@/generated/prisma/client";
-import { canPublishPolicy } from "@/lib/cms-page-policy";
+import { canPublishPolicy } from "@/lib/policy-publishing";
 import type { PolicyVersionSaveInput } from "@/lib/schemas/cms/policies";
 import { sanitizeLocalizedHtml } from "@/server/cms/html";
 import { db } from "@/server/db";

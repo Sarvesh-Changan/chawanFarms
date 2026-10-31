@@ -2,6 +2,7 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
+import { siteContentDefaults } from "@/config/site-content";
 import { Prisma } from "@/generated/prisma/client";
 import { normalizeLeadPhone } from "@/lib/lead-phone";
 import { db } from "@/server/db";
@@ -35,6 +36,10 @@ function jsonRecord(value: Prisma.JsonValue | null | undefined): Record<string, 
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
 
+function storiesMigrationPending(error: unknown): boolean {
+  return Boolean(error && typeof error === "object" && "code" in error && (error as { code?: unknown }).code === "P2022");
+}
+
 function socialLinkValues(value: Prisma.JsonValue | null | undefined): Array<{ label: string; url: string }> {
   if (!Array.isArray(value)) return [];
   return value.flatMap((entry) => {
@@ -65,19 +70,21 @@ export type PublicSettings = {
   socialLinks?: Array<{ label: string; url: string }>;
   whatsappNumber: string;
   whatsappMessage: string;
+  home: { hero: { headline: string; subhead: string; cta: string; secondaryCta?: string; media?: PublicMedia | null }; closing: { headline: string } };
+  owner?: { display: boolean; name: string; caption: string; media: PublicMedia | null };
 };
 
 export async function getPublicSettings(): Promise<PublicSettings> {
   return unstable_cache(async () => {
     try {
       const rows = await db.setting.findMany({
-        where: { key: { in: ["business.phones", "business.address", "business.socialLinks", "whatsapp.number", "whatsapp.defaultMessage"] } },
+        where: { key: { in: ["business.phones", "business.address", "business.socialLinks", "whatsapp.number", "whatsapp.defaultMessage", "home.hero.headline", "home.hero.subhead", "home.hero.cta", "home.hero.primaryCta", "home.hero.secondaryCta", "home.hero.mediaId", "home.closing.headline", "owner.display", "owner.mediaId", "owner.name", "owner.caption"] } },
         select: { key: true, value: true },
       });
       const values = new Map(rows.map((row) => [row.key, row.value]));
       const rawPhones = values.get("business.phones");
       const phones = (Array.isArray(rawPhones) ? rawPhones : typeof rawPhones === "string" ? rawPhones.split(/\r?\n/) : [])
-        .filter((value): value is string => typeof value === "string")
+        .flatMap((value) => typeof value === "string" ? [value] : value && typeof value === "object" && !Array.isArray(value) && typeof (value as Record<string, unknown>).number === "string" ? [(value as Record<string, unknown>).number as string] : [])
         .flatMap((value) => {
           try {
             return [normalizeLeadPhone(value)];
@@ -96,12 +103,26 @@ export async function getPublicSettings(): Promise<PublicSettings> {
       } catch {
         whatsappNumber = "";
       }
+      const stringSetting = (key: string, fallback: string) => {
+        const value = values.get(key);
+        const record = jsonRecord(value);
+        return typeof record.en === "string" && record.en.trim() ? record.en : typeof value === "string" && value.trim() ? value : fallback;
+      };
+      const heroMediaId = typeof values.get("home.hero.mediaId") === "string" ? values.get("home.hero.mediaId") as string : null;
+      const ownerMediaId = typeof values.get("owner.mediaId") === "string" ? values.get("owner.mediaId") as string : null;
+      const media = await mediaMap([heroMediaId, ownerMediaId]);
+      const ownerDisplay = values.get("owner.display") === true;
       return {
         phones: [...new Set(phones)],
         address: typeof address.en === "string" ? address.en : "",
         socialLinks,
         whatsappNumber,
         whatsappMessage: typeof whatsappMessage.en === "string" ? whatsappMessage.en : "",
+        home: {
+          hero: { headline: stringSetting("home.hero.headline", siteContentDefaults.home.hero.headline), subhead: stringSetting("home.hero.subhead", siteContentDefaults.home.hero.subhead), cta: stringSetting("home.hero.primaryCta", stringSetting("home.hero.cta", siteContentDefaults.home.hero.cta)), secondaryCta: stringSetting("home.hero.secondaryCta", "Explore experiences"), media: heroMediaId ? media.get(heroMediaId) ?? null : null },
+          closing: { headline: stringSetting("home.closing.headline", siteContentDefaults.home.closing.headline) },
+        },
+        owner: { display: ownerDisplay && Boolean(ownerMediaId && media.get(ownerMediaId)), name: stringSetting("owner.name", ""), caption: stringSetting("owner.caption", ""), media: ownerDisplay && ownerMediaId ? media.get(ownerMediaId) ?? null : null },
       };
     } catch {
       return {
@@ -110,43 +131,13 @@ export async function getPublicSettings(): Promise<PublicSettings> {
         socialLinks: [],
         whatsappNumber: "",
         whatsappMessage: "",
+        home: { hero: { ...siteContentDefaults.home.hero, secondaryCta: "Explore experiences", media: null }, closing: siteContentDefaults.home.closing },
+        owner: { display: false, name: "", caption: "", media: null },
       };
     }
   }, ["public-content:settings"], { tags: ["cms:settings", "cms:all"], revalidate: cacheRevalidateSeconds })();
 }
 
-
-export async function getPublicHomePage() {
-  return unstable_cache(async () => {
-    const page = await db.page.findFirst({
-      where: { slug: "home", status: "PUBLISHED", deletedAt: null },
-      include: { sections: { where: { isVisible: true }, orderBy: { sortOrder: "asc" } } },
-    });
-    if (!page) return null;
-    const imageIds = page.sections.flatMap((section) => {
-      const content = jsonRecord(section.content);
-      return typeof content.imageMediaId === "string" ? [content.imageMediaId] : [];
-    });
-    const images = await mediaMap(imageIds);
-    return { ...page, images: [...images.values()] };
-  }, ["public-content:home-page"], { tags: ["cms:page:home", "cms:pages", "cms:all"], revalidate: cacheRevalidateSeconds })();
-}
-
-export async function getPublicPageBySlug(slug: string) {
-  return unstable_cache(async () => {
-    const page = await db.page.findFirst({
-      where: { slug, status: "PUBLISHED", deletedAt: null },
-      include: { sections: { where: { isVisible: true }, orderBy: { sortOrder: "asc" } } },
-    });
-    if (!page) return null;
-    const imageIds = page.sections.flatMap((section) => {
-      const content = jsonRecord(section.content);
-      return typeof content.imageMediaId === "string" ? [content.imageMediaId] : [];
-    });
-    const images = await mediaMap(imageIds);
-    return { ...page, images: [...images.values()] };
-  }, ["public-content:page", slug], { tags: ["cms:pages", `cms:page:${slug}`, "cms:all"], revalidate: cacheRevalidateSeconds })();
-}
 
 export async function getPublicExperiences() {
   return unstable_cache(async () => {
@@ -169,11 +160,15 @@ export async function getPublicAccommodations() {
   return unstable_cache(async () => {
     const rows = await db.accommodation.findMany({ where: published, orderBy: [{ sortOrder: "asc" }, { slug: "asc" }] });
     const media = await mediaMap(rows.flatMap((row) => [row.heroMediaId, ...row.imageMediaIds]));
-    return rows.map((row) => ({
-      ...row,
-      heroMedia: row.heroMediaId ? media.get(row.heroMediaId) ?? null : null,
-      gallery: row.imageMediaIds.map((id) => media.get(id)).filter((item): item is PublicMedia => Boolean(item)),
-    }));
+    return rows.map((row) => {
+      const heroMedia = row.heroMediaId ? media.get(row.heroMediaId) ?? null : null;
+      const gallery = row.imageMediaIds.map((id) => media.get(id)).filter((item): item is PublicMedia => Boolean(item));
+      return {
+        ...row,
+        heroMedia: heroMedia ?? gallery[0] ?? null,
+        gallery,
+      };
+    });
   }, ["public-content:accommodations"], { tags: ["cms:accommodations", "cms:all"], revalidate: cacheRevalidateSeconds })();
 }
 
@@ -182,10 +177,12 @@ export async function getPublicAccommodationBySlug(slug: string) {
     const row = await db.accommodation.findFirst({ where: { slug, ...published } });
     if (!row) return null;
     const media = await mediaMap([row.heroMediaId, ...row.imageMediaIds]);
+    const heroMedia = row.heroMediaId ? media.get(row.heroMediaId) ?? null : null;
+    const gallery = row.imageMediaIds.map((id) => media.get(id)).filter((item): item is PublicMedia => Boolean(item));
     return {
       ...row,
-      heroMedia: row.heroMediaId ? media.get(row.heroMediaId) ?? null : null,
-      gallery: row.imageMediaIds.map((id) => media.get(id)).filter((item): item is PublicMedia => Boolean(item)),
+      heroMedia: heroMedia ?? gallery[0] ?? null,
+      gallery,
     };
   }, ["public-content:accommodation", slug], { tags: ["cms:accommodations", `cms:accommodation:${slug}`, "cms:all"], revalidate: cacheRevalidateSeconds })();
 }
@@ -281,36 +278,57 @@ export async function getPublicGallery() {
   }), ["public-content:gallery"], { tags: ["cms:gallery-item", "cms:all"], revalidate: cacheRevalidateSeconds })();
 }
 
-export async function getPublicTestimonials() {
-  return unstable_cache(async () => {
-    const rows = await db.testimonial.findMany({ where: { ...published, consentConfirmed: true }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] });
-    const media = await mediaMap(rows.map((row) => row.mediaId));
-    return rows.map((row) => ({ ...row, media: row.mediaId ? media.get(row.mediaId) ?? null : null }));
-  }, ["public-content:testimonials"], { tags: ["cms:testimonial", "cms:all"], revalidate: cacheRevalidateSeconds })();
-}
-
 export async function getPublicStories() {
   return unstable_cache(async () => {
-    const rows = await db.post.findMany({
-      where: { ...published, OR: [{ publishAt: null }, { publishAt: { lte: new Date() } }] },
-      include: { category: true },
-      orderBy: [{ publishAt: "desc" }, { createdAt: "desc" }],
-    });
-    const media = await mediaMap(rows.map((row) => row.coverMediaId));
-    return rows.map((row) => ({ ...row, coverMedia: row.coverMediaId ? media.get(row.coverMediaId) ?? null : null }));
+    try {
+      const now = new Date();
+      const rows = await db.post.findMany({
+        where: {
+          ...published,
+          OR: [{ publishAt: null }, { publishAt: { lte: now } }],
+          AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }],
+        },
+        include: { category: true },
+        orderBy: [{ featured: "desc" }, { sortOrder: "asc" }, { publishAt: "desc" }, { createdAt: "desc" }],
+      });
+      const ids = rows.flatMap((row) => [row.coverMediaId, row.videoMediaId, ...(Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [])]);
+      const media = await db.media.findMany({ where: { id: { in: [...new Set(ids.filter((id): id is string => Boolean(id)))] }, origin: "ADMIN", isPublic: true, deletedAt: null }, select: publicMediaSelect });
+      const mediaById = new Map(media.map((item) => [item.id, item]));
+      return rows.map((row) => {
+        const photoIds = Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [];
+        return { ...row, coverMedia: row.coverMediaId ? mediaById.get(row.coverMediaId) ?? null : null, videoMedia: row.videoMediaId ? mediaById.get(row.videoMediaId) ?? null : null, photoMedia: photoIds.flatMap((id) => { const item = mediaById.get(id); return item ? [item] : []; }) };
+      });
+    } catch (error) {
+      if (storiesMigrationPending(error)) return [];
+      throw error;
+    }
   }, ["public-content:stories"], { tags: ["cms:post", "cms:all"], revalidate: cacheRevalidateSeconds })();
 }
 
 export async function getPublicStoryBySlug(slug: string) {
   return unstable_cache(async () => {
-    const row = await db.post.findFirst({
-      where: { slug, ...published, OR: [{ publishAt: null }, { publishAt: { lte: new Date() } }] },
-      include: { category: true },
-    });
-    if (!row) return null;
-    const media = await mediaMap([row.coverMediaId]);
-    return { ...row, coverMedia: row.coverMediaId ? media.get(row.coverMediaId) ?? null : null };
+    try {
+      const now = new Date();
+      const row = await db.post.findFirst({
+        where: { slug, ...published, OR: [{ publishAt: null }, { publishAt: { lte: now } }], AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }] },
+        include: { category: true },
+      });
+      if (!row) return null;
+      const ids = [row.coverMediaId, row.videoMediaId, ...(Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [])].filter((id): id is string => Boolean(id));
+      const media = await db.media.findMany({ where: { id: { in: [...new Set(ids)] }, origin: "ADMIN", isPublic: true, deletedAt: null }, select: publicMediaSelect });
+      const mediaById = new Map(media.map((item) => [item.id, item]));
+      const photoIds = Array.isArray(row.photoMediaIds) ? row.photoMediaIds.filter((value): value is string => typeof value === "string") : [];
+      return { ...row, coverMedia: row.coverMediaId ? mediaById.get(row.coverMediaId) ?? null : null, videoMedia: row.videoMediaId ? mediaById.get(row.videoMediaId) ?? null : null, photoMedia: photoIds.flatMap((id) => { const item = mediaById.get(id); return item ? [item] : []; }) };
+    } catch (error) {
+      if (storiesMigrationPending(error)) return null;
+      throw error;
+    }
   }, ["public-content:story", slug], { tags: ["cms:post", `cms:post:${slug}`, "cms:all"], revalidate: cacheRevalidateSeconds })();
+}
+
+export async function getPublicStorySlugForExperience(slug: string) {
+  const experience = await db.experience.findUnique({ where: { slug }, select: { id: true } });
+  return experience ? db.post.findUnique({ where: { sourceExperienceId: experience.id }, select: { slug: true } }) : null;
 }
 
 export async function getPublicOffers() {
@@ -348,8 +366,7 @@ export async function getPublicActiveRewardRule() {
 }
 
 export async function getPublicHomeData() {
-  const [page, settings, experiences, accommodations, packages, activities, food, gallery, testimonials, stories, activeRewardRule] = await Promise.all([
-    getPublicHomePage(),
+  const [settings, experiences, accommodations, packages, activities, food, gallery, stories, activeRewardRule] = await Promise.all([
     getPublicSettings(),
     getPublicExperiences(),
     getPublicAccommodations(),
@@ -357,11 +374,10 @@ export async function getPublicHomeData() {
     getPublicActivities(),
     getPublicFood(),
     getPublicGallery(),
-    getPublicTestimonials(),
     getPublicStories(),
     getPublicActiveRewardRule(),
   ]);
-  return { page, settings, experiences, accommodations, packages, activities, food, gallery, testimonials, stories, activeRewardRule };
+  return { settings, experiences, accommodations, packages, activities, food, gallery, stories, activeRewardRule };
 }
 
 export type PublicHomeData = Awaited<ReturnType<typeof getPublicHomeData>>;

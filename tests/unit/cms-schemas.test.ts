@@ -45,6 +45,64 @@ describe("CMS schemas", () => {
     if (result.success) expect([result.data.unitsTotal, result.data.maxGuests]).toEqual([null, null]);
   });
 
+  it("validates existing accommodation with uuid id and cottage type", () => {
+    const rawInitial = {
+      id: "56b33879-95d0-44c2-af48-96d3ebec884a",
+      slug: "dormitory",
+      type: "DORMITORY" as const,
+      name: { en: "Dormitory", mr: "", hi: "" },
+      summary: { en: "", mr: "", hi: "" },
+      description: { en: "Dormitory", mr: "", hi: "" },
+      unitsTotal: "",
+      maxGuests: "",
+      amenities: { en: "", mr: "", hi: "" },
+      heroMediaId: "",
+      imageMediaIds: [],
+      status: "PUBLISHED" as const,
+      publishAt: null,
+    };
+    // Simulating how AccommodationEditor extracts formDefaults without status/publishAt
+    const { status, publishAt, ...formDefaults } = rawInitial;
+    const parsed = accommodationFormSchema.safeParse(formDefaults);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.id).toBe("56b33879-95d0-44c2-af48-96d3ebec884a");
+      expect(parsed.data.type).toBe("DORMITORY");
+    }
+
+    const cottageResult = accommodationFormSchema.safeParse({
+      ...formDefaults,
+      slug: "wooden-cottage",
+      type: "COTTAGE",
+      name: { en: "Wooden Cottage", mr: "", hi: "" },
+    });
+    expect(cottageResult.success).toBe(true);
+  });
+
+  it("validates client-transformed submission payloads with null capacities and undefined optional fields", () => {
+    const transformedClientOutput = {
+      id: "56b33879-95d0-44c2-af48-96d3ebec884a",
+      slug: "dormitory",
+      type: "DORMITORY" as const,
+      name: { en: "Dormitory", mr: "", hi: "" },
+      summary: undefined,
+      description: { en: "Dormitory" },
+      unitsTotal: null,
+      maxGuests: null,
+      amenities: undefined,
+      heroMediaId: null,
+      imageMediaIds: [],
+    };
+    const parsed = accommodationFormSchema.safeParse(transformedClientOutput);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.unitsTotal).toBeNull();
+      expect(parsed.data.maxGuests).toBeNull();
+      expect(parsed.data.heroMediaId).toBeNull();
+      expect([undefined, null]).toContain(parsed.data.summary);
+    }
+  });
+
   it("converts rupees to integer paise without rounding extra precision", () => {
     const input = {
       packageId: "00000000-0000-4000-8000-000000000001",

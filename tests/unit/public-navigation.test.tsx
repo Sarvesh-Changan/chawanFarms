@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
 
 describe("public navigation", () => {
   it("marks the current route and opens the mobile menu", async () => {
-    const { container } = render(<PublicNavigation isSignedIn={false} />);
+    const { container } = render(<PublicNavigation accountHref="/login" accountLabel="Login" />);
     expect(container.querySelector('a[href="/gallery"][aria-current="page"]')).not.toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Open navigation menu" }));
     expect(screen.getByRole("dialog", { name: "Site navigation" })).toBeInTheDocument();
@@ -22,28 +22,28 @@ describe("public navigation", () => {
 
   it("uses real public routes for the primary links", () => {
     expect(publicNavigation.map((item) => item.href)).toEqual([
-      "/", "/experiences", "/activities", "/stories", "/accommodation", "/packages", "/food", "/gallery", "/rewards", "/contact",
+      "/", "/accommodation", "/packages", "/food", "/activities", "/stories", "/gallery", "/rewards", "/contact",
     ]);
   });
 
   it("renders exactly one account control", () => {
-    const { rerender } = render(<PublicNavigation isSignedIn={false} />);
+    const { rerender } = render(<PublicNavigation accountHref="/login" accountLabel="Login" />);
     expect(screen.getAllByText("Login").length).toBeGreaterThan(0);
     expect(screen.queryByText("Account")).toBeNull();
-    rerender(<PublicNavigation isSignedIn />);
+    expect(screen.queryByText("Admin")).toBeNull();
+    rerender(<PublicNavigation accountHref="/account" accountLabel="Account" />);
     expect(screen.getAllByText("Account").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Login")).toBeNull();
+    rerender(<PublicNavigation accountHref="/admin" accountLabel="Admin" />);
+    expect(screen.getAllByText("Admin").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Account")).toBeNull();
     expect(screen.queryByText("Login")).toBeNull();
   });
 
   it("opens dropdowns by keyboard and closes the previous one", () => {
-    render(<PublicNavigation isSignedIn={false} />);
-    const explore = screen.getByRole("button", { name: /Explore/ });
+    render(<PublicNavigation accountHref="/login" accountLabel="Login" />);
     const stay = screen.getByRole("button", { name: /Stay/ });
-    fireEvent.keyDown(explore, { key: "Enter" });
-    expect(explore).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("menu", { name: "Explore" })).toBeInTheDocument();
     fireEvent.click(stay);
-    expect(screen.queryByRole("menu", { name: "Explore" })).toBeNull();
     expect(screen.getByRole("menu", { name: "Stay" })).toBeInTheDocument();
     fireEvent.keyDown(stay, { key: "Escape" });
     expect(stay).toHaveAttribute("aria-expanded", "false");

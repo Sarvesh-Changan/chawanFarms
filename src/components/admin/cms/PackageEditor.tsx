@@ -15,7 +15,7 @@ import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { SUPPORTED_LOCALES, type SupportedLocale } from "@/config/locales";
+import type { SupportedLocale } from "@/config/locales";
 import { formatINR } from "@/lib/money";
 import { packageFormSchema, packageRateFormSchema } from "@/lib/schemas/cms/package";
 import { createPackageRateAction, savePackageAction, softDeleteCmsEntityAction } from "@/server/actions/cms";
@@ -37,6 +37,7 @@ type PackageRateRow = {
   isActive: boolean;
 };
 type MediaOption = { id: string; publicId: string; kind: "IMAGE"; altText: unknown; format: string | null };
+const ADMIN_LOCALES = ["en"] as const satisfies readonly SupportedLocale[];
 
 function localizedForm(value: unknown): LocalizedRecord {
   if (!value || typeof value !== "object" || Array.isArray(value)) return { en: "", mr: "", hi: "" };
@@ -110,7 +111,7 @@ function PackageRateEditor({ packageId, rates }: { packageId: string; rates: Pac
   </section>;
 }
 
-export function PackageEditor({ initial, rates, accommodationOptions, activityOptions, mediaOptions, cloudName, canWrite, canPublish, canDelete }: {
+export function PackageEditor({ initial, rates, accommodationOptions, activityOptions, mediaOptions, cloudName, canWrite, canPublish, canDelete, adminPath = "/admin/packages" }: {
   initial: PackageFormInput & { status?: "DRAFT" | "SCHEDULED" | "PUBLISHED" | "ARCHIVED"; publishAt?: Date | null };
   rates: PackageRateRow[];
   accommodationOptions: Array<{ id: string; slug: string; name: unknown }>;
@@ -120,26 +121,29 @@ export function PackageEditor({ initial, rates, accommodationOptions, activityOp
   canWrite: boolean;
   canPublish: boolean;
   canDelete: boolean;
+  adminPath?: string;
 }) {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [serverErrors, setServerErrors] = useState<Record<string, string[]> | undefined>();
   const [pending, startTransition] = useTransition();
-  const form = useForm<PackageFormInput, unknown, z.output<typeof packageFormSchema>>({ resolver: zodResolver(packageFormSchema), defaultValues: initial });
+  const { status, publishAt, ...formDefaults } = initial;
+  const form = useForm<PackageFormInput, unknown, z.output<typeof packageFormSchema>>({ resolver: zodResolver(packageFormSchema), defaultValues: formDefaults });
   const packageId = initial.id;
   const selectedMediaId = useWatch({ control: form.control, name: "heroMediaId" }) ?? "";
 
   function submit(input: z.output<typeof packageFormSchema>) {
     setServerErrors(undefined);
     startTransition(async () => {
-      const result = await savePackageAction(input);
+      const payload = packageId ? { ...input, id: packageId } : input;
+      const result = await savePackageAction(payload);
       if (!result.ok) {
         setMessage(result.error.message);
         setServerErrors(result.error.fieldErrors);
         return;
       }
       setMessage("Package saved.");
-      router.push(`/admin/cms/packages/${result.data.id}`);
+      router.push(`${adminPath}/${result.data.id}`);
       router.refresh();
     });
   }
@@ -148,23 +152,29 @@ export function PackageEditor({ initial, rates, accommodationOptions, activityOp
     if (!packageId) return;
     const result = await softDeleteCmsEntityAction({ entityType: "package", id: packageId });
     setMessage(result.ok ? "Package moved to trash." : result.error.message);
-    if (result.ok) router.push("/admin/cms/packages");
+    if (result.ok) router.push(adminPath);
   }
 
   return <div className="grid gap-6">
-    <PublishBar entityType="package" id={packageId} status={initial.status ?? "DRAFT"} publishAt={initial.publishAt ?? null} canPublish={canPublish} />
-    <form onSubmit={form.handleSubmit(submit)} className="grid gap-6 rounded-2xl border border-border/70 bg-card p-5 sm:p-7">
+    <PublishBar entityType="package" id={packageId} status={status ?? "DRAFT"} publishAt={publishAt ?? null} canPublish={canPublish} />
+    <form
+      onSubmit={form.handleSubmit(submit, () => {
+        setMessage("Please review the form for errors before saving.");
+      })}
+      className="grid gap-6 rounded-2xl border border-border/70 bg-card p-5 sm:p-7"
+    >
+      <input type="hidden" {...form.register("id")} />
       <div><h1 className="font-heading text-3xl text-forest-900">{packageId ? "Edit package" : "Create package"}</h1><p className="mt-1 text-sm text-muted-foreground">Localised fields require English. Do not add unapproved client content.</p></div>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1 text-xs font-medium">Slug<Input {...form.register("slug")} aria-invalid={Boolean(form.formState.errors.slug)} /><span className="text-destructive">{form.formState.errors.slug?.message}</span></label>
         <label className="grid gap-1 text-xs font-medium">Client package code (optional)<Input {...form.register("code")} /><span className="text-destructive">{form.formState.errors.code?.message}</span></label>
       </div>
-      <LocalizedInputs title="Name" path="name" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.name as LocalizedErrors} required />
-      <LocalizedInputs title="Summary" path="summary" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.summary as LocalizedErrors} />
-      <LocalizedInputs title="Description" path="description" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.description as LocalizedErrors} multiline />
-      <LocalizedInputs title="Inclusions" path="inclusions" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.inclusions as LocalizedErrors} multiline />
-      <LocalizedInputs title="Conditions" path="conditions" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.conditions as LocalizedErrors} multiline />
-      <LocalizedInputs title="Timing note" path="timingNote" register={form.register} locales={SUPPORTED_LOCALES} errors={form.formState.errors.timingNote as LocalizedErrors} />
+      <LocalizedInputs title="Name" path="name" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.name as LocalizedErrors} required />
+      <LocalizedInputs title="Summary" path="summary" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.summary as LocalizedErrors} />
+      <LocalizedInputs title="Description" path="description" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.description as LocalizedErrors} multiline />
+      <LocalizedInputs title="Inclusions" path="inclusions" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.inclusions as LocalizedErrors} multiline />
+      <LocalizedInputs title="Conditions" path="conditions" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.conditions as LocalizedErrors} multiline />
+      <LocalizedInputs title="Timing note" path="timingNote" register={form.register} locales={ADMIN_LOCALES} errors={form.formState.errors.timingNote as LocalizedErrors} />
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1 text-xs font-medium">Minimum guests (optional)<Input inputMode="numeric" {...form.register("minGuests")} /><span className="text-destructive">{form.formState.errors.minGuests?.message}</span></label>
         <label className="grid gap-1 text-xs font-medium">Maximum guests (optional)<Input inputMode="numeric" {...form.register("maxGuests")} /><span className="text-destructive">{form.formState.errors.maxGuests?.message}</span></label>

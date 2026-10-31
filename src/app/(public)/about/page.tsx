@@ -2,15 +2,13 @@ import { ArrowRight, Compass, Sprout, SunMedium, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PageSectionsRenderer } from "@/components/cms/PageSectionsRenderer";
 import { Breadcrumbs } from "@/components/marketing/Breadcrumbs";
 import { Footer } from "@/components/marketing/Footer";
 import { Header } from "@/components/marketing/Header";
 import { PublicClosing } from "@/components/marketing/PublicClosing";
 import { StickyCtaBar } from "@/components/marketing/StickyCtaBar";
-import { JsonLd } from "@/components/seo/JsonLd";
-import { getPublishedPage } from "@/server/services/cms/pages";
-import { getPublicSeoWithImage, metadataFromSeo } from "@/server/services/cms/seo";
+import { siteContentDefaults } from "@/config/site-content";
+import { getPublicSettings } from "@/server/services/public-content";
 
 export const dynamic = "force-dynamic";
 
@@ -21,57 +19,36 @@ const fallbackMetadata: Metadata = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await getPublishedPage("about");
-  return page
-    ? metadataFromSeo(await getPublicSeoWithImage("page", page.id), fallbackMetadata)
-    : fallbackMetadata;
+  return fallbackMetadata;
 }
 
 export default async function AboutPage() {
-  const page = await getPublishedPage("about");
-  const seo = page ? await getPublicSeoWithImage("page", page.id) : null;
+  const settings = await getPublicSettings();
 
   return (
     <>
-      <JsonLd data={seo?.jsonLd} />
       <Header />
       <Breadcrumbs items={[{ label: "About" }]} />
-      {page ? (
-        <PageSectionsRenderer page={page} />
-      ) : (
-        <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
+      <main className="min-h-screen bg-cream-50/60 pb-20 pt-8 sm:pt-12">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             {/* Hero Section */}
             <header className="mb-14 text-center sm:mb-20">
               <span className="text-xs font-semibold uppercase tracking-[0.2em] text-laterite-600">
                 कृषी पर्यटन केंद्र · Agri-Tourism Centre
               </span>
-              <h1 className="mt-3 font-heading text-4xl text-forest-900 sm:text-5xl md:text-6xl">
-                Where Time Slows Down
-              </h1>
+              <h1 className="mt-3 font-heading text-4xl text-forest-900 sm:text-5xl md:text-6xl">{siteContentDefaults.about.headline}</h1>
               <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-                &ldquo;Come live, experience &amp; rediscover yourself &amp; nature
-                at its best.&rdquo;
+                &ldquo;{settings.home.hero.headline || siteContentDefaults.about.subhead}&rdquo;
               </p>
             </header>
 
             {/* Core Philosophy Section */}
             <section className="mb-16 rounded-3xl border border-forest-900/10 bg-card p-8 shadow-sm sm:p-12">
               <h2 className="font-heading text-2xl text-forest-900 sm:text-3xl">
-                Our Purpose &amp; Rural Vision
+                {siteContentDefaults.about.purpose}
               </h2>
               <div className="mt-4 space-y-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
-                <p>
-                  Located at Baitwadi, Kolad (Tal. Roha, Dist. Raigad, Maharashtra),
-                  Chawan Farms was founded to connect people back to the land.
-                </p>
-                <p>
-                  As an authentic agri-tourism centre, our goal is to foster
-                  genuine awareness of rural life and knowledge about agricultural
-                  science among urban school children and citizens alike. We believe
-                  in restoring rural culture and offering an inexpensive, wholesome
-                  gateway to nature.
-                </p>
+                <p>{siteContentDefaults.about.purposeBody}</p>
               </div>
             </section>
 
@@ -168,7 +145,6 @@ export default async function AboutPage() {
             </section>
           </div>
         </main>
-      )}
       <PublicClosing />
       <StickyCtaBar />
       <Footer />

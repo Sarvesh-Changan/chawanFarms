@@ -1,4 +1,9 @@
+# Superseded by the admin simplification on 2026-10-27. Retained as a historical QA record.
+
+Step 4 note: historical central-library observations below are superseded. Verify uploads and replacement from each owning form; the former media URL redirects to `/admin`.
+
 # Admin → public-site propagation test report
+
 
 Run date: 27 October 2026 (Asia/Calcutta)
 Environment: local DEV configuration, DEV database/Cloudinary, production build on `127.0.0.1:3101`
@@ -100,3 +105,4 @@ Media metadata update and media soft-delete call only `revalidatePath("/admin/me
 5. Verify media-only alt/focal/public/delete invalidation on every consuming page and compare production-build versus dev-mode delays.
 
 No application bug was fixed in this step. Stop here pending an explicit decision on which findings to address.
+

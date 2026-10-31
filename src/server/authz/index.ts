@@ -172,10 +172,7 @@ export async function requirePermission(
   return staffUser;
 }
 
-export function requiresTwoFactor(_roleNames?: readonly string[]): boolean {
-  void _roleNames;
-  return false;
-}
+export { requiresTwoFactor } from "./policies";
 
 export function owns(user: AuthzUser, ownerId: string): boolean {
   return user.id === ownerId;

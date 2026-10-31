@@ -62,6 +62,8 @@ Mobile-first; breakpoints 360 / 640 / 768 / 1024 / 1280 / 1536. 12-col grid desk
 
 ## 7. Page blueprints (public)
 
+Primary navigation: Home; Stay (Accommodation, Packages, Food); Activities; Stories; Gallery; Rewards; Contact. FAQ is linked in the footer. Experiences remain a live public route during step 1 but are temporarily not a primary navigation item.
+
 1. **Home** — Hero → Why Chawan Farms (3 pillars: Real farm · Stay close to nature · Food from the farm kitchen* ) → Experiences → Accommodation → Packages → Food → Activities → Gallery → Stories → Rewards → Location → CTA. (*Phrase claims only if client confirms.)
 2. **About** — story, farm philosophy (rural-life awareness & agri-science education from PDF), family/team (client photos), values.
 3. **Experiences** — editorial grid; detail pages with long-form story + gallery + related package CTA.

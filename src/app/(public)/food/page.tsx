@@ -11,7 +11,7 @@ export const dynamicParams = true;
 
 export default async function FoodPage() {
   const categories = await getPublicFood();
-  const menu = categories.map((category) => ({ id: category.id, name: localized(category.name), items: category.items.map((item) => ({ id: item.id, name: localized(item.name), description: localized(item.description), foodPreference: item.foodPreference, isExtraCharge: item.isExtraCharge, extraUnitLabel: item.extraUnitLabel })) }));
+  const menu = categories.map((category) => ({ id: category.id, name: localized(category.name), items: category.items.map((item) => ({ id: item.id, name: localized(item.name), description: localized(item.description), foodPreference: item.foodPreference, isExtraCharge: item.isExtraCharge, extraUnitLabel: item.extraUnitLabel, extraPricePaise: item.extraPricePaise })) }));
   return <CatalogueFrame><CatalogueIntro eyebrow="Chawan Farms · Food" title="Meals from the farm kitchen." description="Browse the published menu. Extra-charge items are marked where the catalogue provides that information."/><section className="mx-auto max-w-7xl px-4 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-24">{menu.length ? <FoodMenu categories={menu}/> : <p className="bg-clay-100 text-mist-500 rounded-2xl p-8 text-center text-sm">No published menu is available yet.</p>}</section></CatalogueFrame>;
 }
 

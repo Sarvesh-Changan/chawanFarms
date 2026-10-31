@@ -39,16 +39,24 @@ Rebuild the Chawan Farms website from an informational brochure into a **lead-ge
 
 ## 4. Sitemap / Information architecture
 
-Public: `/` · `/about` · `/experiences` (+ `/experiences/[slug]`) · `/activities` (+ `[slug]`) · `/accommodation` (+ `[slug]`) · `/packages` (+ `[slug]`) · `/food` · `/gallery` · `/stories` (+ `[slug]`) · `/offers` · `/rewards` (how it works) · `/faqs` · `/contact` · `/book` (enquire/book) · `/login` · `/signup` · `/forgot-password` · `/reset-password` · `/privacy` · `/terms` · `/policies` (stay rules, cancellation) · `/404`.
+The admin information architecture no longer includes a central Media page. Image and video management stays inside the owning Activity, Gallery, Story, Package, Accommodation, Settings and SEO forms; the former media URL only redirects to the admin home. Media and MediaUsage still provide verification, content hashes, where-used checks and deletion protection.
+
+### Current implementation (2026-10-27)
+
+Primary public navigation is Home, Stay (Accommodation, Packages, Food), Activities, Stories, Gallery, Rewards, and Contact; FAQ is in the footer. `/offers` permanently redirects to `/packages`. Experiences remain live but are temporarily omitted from primary navigation until step 3. Admin navigation is Dashboard, Activity, Stories, Gallery, Menu, FAQ, Packages, Accommodation, Bookings, Enquiries, Leads, Rewards, Media, SEO, Settings (including versioned Policies), and Security; the CMS hub is removed.
+
+Public: `/` · `/about` · `/experiences` (+ `/experiences/[slug]`) · `/activities` (+ `[slug]`) · `/accommodation` (+ `[slug]`) · `/packages` (+ `[slug]`) · `/food` · `/gallery` · `/stories` (+ `[slug]`) · `/rewards` (how it works) · `/faqs` · `/contact` · `/book` (enquire/book) · `/login` · `/signup` · `/forgot-password` · `/reset-password` · `/privacy` · `/terms` · `/policies` (stay rules, cancellation) · `/404`. `/offers` permanently redirects to `/packages`.
 
 Customer (`/account/*`): dashboard · profile · bookings & enquiries · points & ledger · coupons · video submissions (+ upload) · favourites · notifications · referrals · privacy (export/delete).
 
-Admin (`/admin/*`): dashboard · CMS · bookings · enquiries · leads · availability/calendar · customers · rewards · media · SEO · settings · security (staff, roles, audit).
+Admin (`/admin/*`): Dashboard · Activity · Stories · Gallery · Menu · FAQ · Packages · Accommodation · Bookings · Enquiries · Leads · Rewards · Media · SEO · Settings (including versioned Policies) · Security. The CMS hub is removed; legacy CMS URLs permanently redirect to the canonical module routes.
 
 Languages: **English at launch**; i18n-ready structure (Marathi/Hindi) — see decision D-7.
 
 ### Homepage funnel
-Hero (video/photo) → Why Chawan Farms → Experiences → Accommodation → Packages → Food → Activities → Gallery → Customer Stories → Rewards → Location (map) → Booking/Enquiry CTA. Sticky mobile CTA bar (Call · WhatsApp · Enquire) on every public page.
+
+The current fixed-code Home funnel uses Settings/PDF fallback copy, live Experiences, Accommodation, Packages, Food, Activities, Gallery, Rewards, and Settings-driven location/closing content. Page readers and the Home testimonial block are removed; Stories return to Home in step 3.
+Hero (Settings/PDF fallback) → Location → Experiences → Why Chawan Farms → Accommodation → Packages → Food → Activities → Gallery → Rewards → Booking/Enquiry CTA. Sticky mobile CTA bar (Call · WhatsApp · Enquire) on every public page. Customer Stories are a separate route and return to the Home funnel in the Stories migration step.
 
 ## 5. Functional requirements
 
@@ -58,11 +66,11 @@ Priority: **P0** = launch blocker, **P1** = launch target, **P2** = post-launch.
 - FR-PUB-1 (P0) All pages in §4 CMS-driven, SEO-ready, responsive, accessible (WCAG 2.2 AA target).
 - FR-PUB-2 (P0) Package pages show admin-managed rates, inclusions, menu, conditions, "Enquire about this package" CTA.
 - FR-PUB-3 (P0) Interactive gallery (filter by category, lightbox, keyboard accessible, lazy-loaded Cloudinary images, video tiles).
-- FR-PUB-4 (P1) Offers page with validity dates; active offers selectable in booking.
+- FR-PUB-4 (P1) Existing offer, coupon and reward-combination logic remains available to booking; the former offers page is not a public destination.
 - FR-PUB-5 (P1) Stories/blog with categories, SEO, share.
 - FR-PUB-6 (P0) Contact page: phone numbers (from Settings), address, embedded/static map, contact form, WhatsApp, click-to-call.
 - FR-PUB-7 (P1) Favourites/wishlist for experiences, activities, packages (login required; guests prompted to sign up).
-- FR-PUB-8 (P1) Approved reviews/testimonials display. Only real, consented testimonials.
+- FR-PUB-8 (P1) Stories use approved Post content. Testimonial records remain preserved but are not rendered on the public site in this migration step.
 
 ### 5.2 Customer accounts
 - FR-ACC-1 (P0) Sign up (email + password; email verification), login, logout, forgot/reset password, session management.
@@ -113,9 +121,11 @@ Hard rules:
 - FR-RW-10 (P1) Referral rewards (optional, same ledger; separate rule set; disabled by default) — decision D-10.
 
 ### 5.6 Admin dashboard
+
+The admin dashboard modules include Stories and Menu but not a central media library. Local uploaders are used in each image/video-bearing form, while customer video originals remain in the private rewards moderation flow.
 Modules and permissions are defined in `DATABASE.md` (RBAC). Dashboard widgets: new leads (today/7d/30d), enquiries & bookings by status, upcoming arrivals, conversion funnel, lead sources, customers, reward activity (points issued/redeemed), pending videos (queue count + oldest age), recent activity (audit feed), revenue/booking metrics (confirmed value, collected, outstanding).
 
-CMS entities: pages, sections, experiences, activities, accommodation, packages & rates, food/menu, gallery, stories, FAQs, testimonials, offers, SEO per entity, global settings. Draft/publish with preview, scheduled publish (P1), revision history (P1), soft delete.
+CMS entities: preserved Page/PageSection, Experience, Activity, Accommodation, Package/PackageRate, Menu, GalleryItem, Post/Story, FAQ, Offer, Testimonial, SEO per entity, global settings. Public Home/About are fixed-code compositions with Settings overrides; the admin Page editor and testimonial/offer UI are removed. Draft/publish with preview, scheduled publish (P1), revision history (P1), soft delete.
 
 Media: Cloudinary library browser, upload, alt text (required), captions, focal point, categories/tags, video thumbnails, usage tracking (where used) to prevent deleting in-use assets.
 

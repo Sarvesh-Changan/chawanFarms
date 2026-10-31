@@ -21,6 +21,7 @@ integrationDescribe("video review workflow", () => {
   let testDb2: PrismaClient;
   let approveVideo: typeof import("../../src/server/services/videoReview").approveVideo;
   let rejectVideo: typeof import("../../src/server/services/videoReview").rejectVideo;
+  let previewVideo: typeof import("../../src/server/services/videoReview").previewVideo;
   const customerId = crypto.randomUUID();
   const reviewerId = crypto.randomUUID();
   const reviewerTwoId = crypto.randomUUID();
@@ -39,7 +40,7 @@ integrationDescribe("video review workflow", () => {
     await testDb1.customerProfile.create({ data: { userId: customerId, referralCode: `REV${customerId.replaceAll("-", "").slice(0, 10)}` } });
     await testDb1.rewardRule.create({ data: { id: ruleId, version: Number(`${Date.now()}`.slice(-8)), isActive: true, pointsPerApprovedVideo: 10, minPointsToRedeem: 10, couponValidityDays: 30 } });
     vi.doMock("@/server/db", () => ({ db: testDb1 }));
-    ({ approveVideo, rejectVideo } = await import("../../src/server/services/videoReview"));
+    ({ approveVideo, rejectVideo, previewVideo } = await import("../../src/server/services/videoReview"));
   });
 
   afterAll(async () => {
@@ -79,6 +80,13 @@ integrationDescribe("video review workflow", () => {
     const result = await rejectVideo(reviewerId, { submissionId: submission.id, idempotencyKey: `reject-${crypto.randomUUID()}`, reason: "The video does not show the visit clearly." }, testDb1);
     expect(result.ok).toBe(true);
     expect(await testDb1.pointsLedger.count({ where: { videoSubmissionId: submission.id } })).toBe(0);
+  });
+
+  it("keeps customer-uploaded authenticated video available to moderation preview", async () => {
+    const submission = await pending();
+    const result = await previewVideo(reviewerId, { submissionId: submission.id });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data).toMatchObject({ url: "https://preview.example.test/signed" });
   });
 
   it("blocks self approval and lets only one concurrent reviewer win", async () => {

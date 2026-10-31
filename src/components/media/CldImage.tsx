@@ -1,9 +1,9 @@
-import Image, { type ImageLoaderProps, type ImageProps } from "next/image";
+import Image, { type ImageProps } from "next/image";
 
 type MediaResource = "image" | "video";
 
 export type CldImageProps = Omit<ImageProps, "src" | "alt" | "loader" | "placeholder" | "blurDataURL"> & {
-  cloudName: string;
+  cloudName?: string;
   publicId: string;
   alt: string;
   resourceType?: MediaResource;
@@ -21,6 +21,7 @@ function cloudinaryUrl({ cloudName, publicId, resourceType, width, quality, foca
   focalX?: number | null;
   focalY?: number | null;
 }) {
+  if (!cloudName) return "";
   const focal = focalX !== null && focalX !== undefined && focalY !== null && focalY !== undefined
     ? `,g_xy_center,x_${Math.round(focalX * 1000)},y_${Math.round(focalY * 1000)}`
     : ",g_auto";
@@ -33,7 +34,12 @@ function cloudinaryUrl({ cloudName, publicId, resourceType, width, quality, foca
 }
 
 export function CldImage({ cloudName, publicId, alt, resourceType = "image", focalX, focalY, blurDataURL, sizes = "100vw", ...props }: CldImageProps) {
-  const loader = ({ width, quality }: ImageLoaderProps) => cloudinaryUrl({ cloudName, publicId, resourceType, width, quality, focalX, focalY });
-  const placeholderUrl = blurDataURL ?? cloudinaryUrl({ cloudName, publicId, resourceType, width: 32, quality: 1 });
-  return <Image {...props} src={publicId} alt={alt} loader={loader} sizes={sizes} placeholder="blur" blurDataURL={placeholderUrl} />;
+  // Keep the Cloudinary URL serializable. Next/Image is a Client Component in
+  // Next 16, so a loader callback cannot cross from a Server Component.
+  const resolvedCloudName = cloudName || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "";
+  const width = typeof props.width === "number" ? props.width : 2000;
+  const src = cloudinaryUrl({ cloudName: resolvedCloudName, publicId, resourceType, width, focalX, focalY });
+  const hasValidBlur = typeof blurDataURL === "string" && blurDataURL.startsWith("data:");
+  if (!src) return null;
+  return <Image {...props} src={src} alt={alt} sizes={sizes} placeholder={hasValidBlur ? "blur" : "empty"} blurDataURL={hasValidBlur ? blurDataURL : undefined} />;
 }

@@ -1,6 +1,11 @@
+# Superseded by the admin simplification on 2026-10-27. Retained as a historical QA record.
+
 # Admin → public-site propagation map
 
+
 QA scope: DEV only. This map is based on the source trace completed on 27 October 2026. The public readers in `src/server/services/public-content.ts` use `unstable_cache` with a 300-second fallback and CMS tags; public route modules are mostly `force-dynamic`, so a request still depends on those reader caches. This document records coverage; it is not evidence that every path has passed an authenticated browser test.
+
+Step 4 note: the central media library is removed. `/admin/media` is a permanent redirect to `/admin`; local uploaders in owning forms create and replace media usages, while the weekly orphan report covers only expired pending admin uploads.
 
 ## Shared propagation rules
 
@@ -10,7 +15,7 @@ QA scope: DEV only. This map is based on the source trace completed on 27 Octobe
 - Settings invalidates `cms:settings` and explicitly revalidates `/`, `/about`, `/packages`, `/book`, and `/contact`.
 - Policy publishing invalidates `cms:policies` and `/policies`, `/privacy`, `/terms`.
 - SEO editing invalidates the global SEO tag and the entity SEO tag. SEO is read by `generateMetadata` and JSON-LD consumers.
-- Media detail editing and soft-delete currently revalidate only `/admin/media`. Public media is nested inside cached CMS readers, so media-only changes have a stale-content risk until the reader cache expires or the owning entity is saved/published.
+- Media is edited only from the owning form. The former media URL redirects to `/admin`; save actions revalidate the owning entity and its public consumers. The remaining risk is no global unused-asset overview, mitigated by the weekly orphan report.
 - `/sitemap.xml` is generated from the public package, accommodation, activity, experience and story readers and is itself revalidated for 5 minutes. It does not enumerate every CMS page or every static public route.
 
 ## Entity coverage
@@ -31,7 +36,7 @@ QA scope: DEV only. This map is based on the source trace completed on 27 Octobe
 | Business settings — `/admin/settings` | `cms:settings`; `/`, `/about`, `/packages`, `/book`, `/contact` | Header/footer, sticky contact buttons, Contact page, phone/address/social/WhatsApp consumers | Organization/contact JSON-LD where present; no sitemap effect | Public reader currently exposes phones, address, social links and WhatsApp. “Business name” is not part of this reader and needs a client decision if expected to be editable. |
 | Policies — `/admin/cms/policies` | `cms:policies`; `/policies`, `/privacy`, `/terms` | Public policy pages; booking policy snapshot | No sitemap entry; booking service stores the selected policy version | Verify a new booking receives the new version and an old booking retains its snapshot. |
 | SEO metadata — `/admin/seo` and per-entity SEO panels | Global `cms:seo` plus `cms:seo:<type>:<id>` | All entity detail metadata consumers | `<title>`, description, canonical, robots, OG image and configured JSON-LD; sitemap inclusion is controlled by public entity status, not SEO alone | Verify entity page and `view-source`, not only hydrated DOM. Media-only OG changes share the media cache risk. |
-| Media — `/admin/media` and upload controls | Upload confirmation creates Media/usage records; update/delete revalidates only `/admin/media` | Every page using a selected public ADMIN image: hero, gallery, page sections, cards, testimonials, story cover and OG image | Cloudinary delivery from `CldImage` uses auto format/quality and width transforms; no direct sitemap entry | High stale-content risk for alt text, focal point, public flag, replace/delete. Verify Cloudinary Admin API, HTTP 200 and no orphan. |
+| Media — owning-form upload controls | Upload confirmation creates Media/usage records; owning saves revalidate the entity and public consumers | Every page using a selected public ADMIN image/video: hero, gallery, page sections, cards, story cover and OG image | Cloudinary delivery from `CldImage` uses auto format/quality and width transforms; no direct sitemap entry | No global unused-asset overview; weekly orphan report covers only expired pending admin uploads and must never remove customer or referenced media. |
 | Availability/blackouts — `/admin/availability` | Admin path only; availability reads are force-dynamic | `/api/availability`, booking date picker and booking stepper | No sitemap/metadata effect | Verify block and unblock immediately, including mobile booking UI. |
 | Reward rule — `/admin/rewards/rules` | `rewards:rule`, `cms:reward-rule`; `/rewards`, `/account`; admin rules | `/rewards`, account dashboard/reward numbers | No sitemap entry | Verify only the active rule is public and provisional-banner state is correct. |
 
@@ -46,3 +51,4 @@ Primary anonymous routes checked by the QA suite: `/`, `/about`, `/accommodation
 ## Evidence boundary
 
 The source map is complete enough to plan coverage, but authenticated admin actions, audit-log assertions, Cloudinary Admin API verification, concurrency, policy snapshots, and every entity’s propagation delay require explicit DEV QA credentials and fixture records. They must remain `Not verified` until those checks are actually run.
+

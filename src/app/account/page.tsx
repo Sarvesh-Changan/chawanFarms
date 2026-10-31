@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { AccountFrame } from "@/components/account/AccountFrame";
 import { Button } from "@/components/ui/button";
-import { requireUser } from "@/server/auth";
+import { requireCustomer } from "@/server/auth";
 import { getAccountOverview } from "@/server/services/account";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ function displayDate(value: Date): string {
 }
 
 export default async function AccountPage() {
-  const session = await requireUser();
+  const session = await requireCustomer();
   const overview = await getAccountOverview(session.user.id);
   if (!overview) return <AccountFrame title="Overview"><div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center"><h2 className="font-heading text-xl text-forest-900">Account unavailable</h2><p className="mt-2 text-sm text-muted-foreground">We could not find your customer profile.</p></div></AccountFrame>;
   const progress = overview.pointsBalance > 0 ? Math.min(100, Math.round((overview.pointsBalance / Math.max(overview.pointsBalance, 1_000)) * 100)) : 0;

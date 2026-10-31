@@ -1,107 +1,79 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import type { z } from "zod";
 
+import { LocalImageUploader } from "@/components/media/LocalImageUploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { SUPPORTED_LOCALES } from "@/config/locales";
-import { settingsFormSchema } from "@/lib/schemas/cms/settings";
-import { saveCmsSettingsAction } from "@/server/actions/cms";
+import { passwordChangeSchema, settingsFormSchema, type SettingsFormValues } from "@/lib/schemas/cms/settings";
+import { changeStaffPasswordAction, saveCmsSettingsAction } from "@/server/actions/cms";
 import type { CmsSettings } from "@/server/services/cms/settings";
 
-type SettingsInput = z.input<typeof settingsFormSchema>;
+type SettingsInput = SettingsFormValues;
+type PasswordInput = z.input<typeof passwordChangeSchema>;
 
-export function SettingsEditor({ initial, canWrite }: { initial: CmsSettings; canWrite: boolean }) {
+export function SettingsEditor({ initial, canWrite, cloudName }: { initial: CmsSettings; canWrite: boolean; cloudName?: string }) {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
-  const form = useForm<SettingsInput, unknown, z.output<typeof settingsFormSchema>>({ resolver: zodResolver(settingsFormSchema), defaultValues: initial });
-  const socialLinks = useFieldArray({ control: form.control, name: "socialLinks" });
-
+  const form = useForm<SettingsInput, unknown, z.output<typeof settingsFormSchema>>({ resolver: zodResolver(settingsFormSchema as never) as never, defaultValues: initial });
+  const phones = useFieldArray({ control: form.control, name: "phones" });
+  const ownerMediaId = useWatch({ control: form.control, name: "ownerMediaId" }) ?? null;
+  const heroMediaId = useWatch({ control: form.control, name: "heroMediaId" }) ?? null;
+  const phoneValues = useWatch({ control: form.control, name: "phones" });
+  const phoneErrors = Array.isArray(form.formState.errors.phones) ? form.formState.errors.phones : [];
   function submit(data: z.output<typeof settingsFormSchema>) {
-    startTransition(async () => {
-      const result = await saveCmsSettingsAction(data);
-      setMessage(result.ok ? "Settings saved." : result.error.message);
-      if (result.ok) router.refresh();
-      if (!result.ok && result.error.fieldErrors) {
-        const fieldErrors = result.error.fieldErrors;
-        if (fieldErrors.businessName?.[0]) form.setError("businessName", { type: "server", message: fieldErrors.businessName[0] });
-        if (fieldErrors.businessPhones?.[0]) form.setError("businessPhones", { type: "server", message: fieldErrors.businessPhones[0] });
-        if (fieldErrors.businessEmail?.[0]) form.setError("businessEmail", { type: "server", message: fieldErrors.businessEmail[0] });
-        if (fieldErrors.address?.[0]) form.setError("address", { type: "server", message: fieldErrors.address[0] });
-        if (fieldErrors.socialLinks?.[0]) form.setError("socialLinks", { type: "server", message: fieldErrors.socialLinks[0] });
-        if (fieldErrors.whatsappNumber?.[0]) form.setError("whatsappNumber", { type: "server", message: fieldErrors.whatsappNumber[0] });
-        if (fieldErrors.whatsappDefaultMessage?.[0]) form.setError("whatsappDefaultMessage", { type: "server", message: fieldErrors.whatsappDefaultMessage[0] });
-        if (fieldErrors.minLeadTimeHours?.[0]) form.setError("minLeadTimeHours", { type: "server", message: fieldErrors.minLeadTimeHours[0] });
-        if (fieldErrors.minimumGroupSize?.[0]) form.setError("minimumGroupSize", { type: "server", message: fieldErrors.minimumGroupSize[0] });
-        if (fieldErrors.checkInTime?.[0]) form.setError("checkInTime", { type: "server", message: fieldErrors.checkInTime[0] });
-        if (fieldErrors.checkOutTime?.[0]) form.setError("checkOutTime", { type: "server", message: fieldErrors.checkOutTime[0] });
-        if (fieldErrors.bookingPolicyText?.[0]) form.setError("bookingPolicyText", { type: "server", message: fieldErrors.bookingPolicyText[0] });
-        if (fieldErrors.notificationRecipients?.[0]) form.setError("notificationRecipients", { type: "server", message: fieldErrors.notificationRecipients[0] });
-        if (fieldErrors.notificationTemplateOverridesJson?.[0]) form.setError("notificationTemplateOverridesJson", { type: "server", message: fieldErrors.notificationTemplateOverridesJson[0] });
-      }
-    });
+    startTransition(async () => { const result = await saveCmsSettingsAction(data); setMessage(result.ok ? "Settings saved." : result.error.message); if (result.ok) router.refresh(); });
   }
+  return <div className="grid gap-6">
+    <form onSubmit={form.handleSubmit(submit)} className="grid gap-6">
+      <SettingsSection title="Company details" description="Contact details are shown only when configured. Keep unknown values empty.">
+        <div className="grid gap-4 sm:grid-cols-2"><LocalizedField title="Business name" path="businessName" form={form} required /><label className="grid gap-1 text-sm font-medium">Email (optional)<Input type="email" {...form.register("businessEmail")} />{error(form.formState.errors.businessEmail)}</label></div>
+        <fieldset className="grid gap-3"><legend className="text-sm font-semibold">Phone numbers</legend>{phones.fields.map((field, index) => <div key={field.id} className="grid gap-2 sm:grid-cols-[1fr_auto_auto]"><label className="grid gap-1 text-sm font-medium">Number<Input {...form.register(`phones.${index}.number`)} /></label><label className="flex min-h-11 items-center gap-2 text-sm"><input type="radio" checked={Boolean(phoneValues?.at(index)?.isPrimary)} onChange={() => phones.fields.forEach((_, phoneIndex) => form.setValue(`phones.${phoneIndex}.isPrimary`, phoneIndex === index, { shouldDirty: true }))} /> Primary</label><Button type="button" variant="outline" onClick={() => phones.remove(index)}>Remove</Button>{error(phoneErrors.at(index)?.number)}</div>)}<Button type="button" variant="outline" className="w-fit" onClick={() => phones.append({ number: "", isPrimary: phones.fields.length === 0 })}>Add phone</Button>{error(form.formState.errors.phones)}</fieldset>
+        <label className="grid gap-1 text-sm font-medium">WhatsApp number (optional)<Input {...form.register("whatsappNumber")} /><span className="text-xs font-normal text-muted-foreground">Leave empty to hide WhatsApp buttons across the site.</span>{error(form.formState.errors.whatsappNumber)}</label>
+        <LocalizedField title="WhatsApp default message" path="whatsappDefaultMessage" form={form} multiline />
+        <LocalizedField title="Address" path="address" form={form} multiline />
+        <SaveButton pending={pending} disabled={!canWrite} label="Save company details" />
+      </SettingsSection>
 
-  return <form onSubmit={form.handleSubmit(submit)} className="grid gap-6">
-    <section className="grid gap-4 rounded-2xl border border-border/70 bg-card p-5 sm:p-7">
-      <div><h2 className="font-heading text-2xl text-forest-900">Business information</h2><p className="mt-1 text-sm text-muted-foreground">Existing PDF-sourced values are shown where available. Keep unconfirmed email and WhatsApp values empty.</p></div>
-      <LocalizedFieldset title="Business name" path="businessName" form={form} required />
-      <LocalizedFieldset title="Address" path="address" form={form} required multiline />
-      <label className="grid gap-1 text-xs font-medium">Phone numbers (one per line)<Textarea rows={4} {...form.register("businessPhones")} aria-invalid={Boolean(form.formState.errors.businessPhones)} /><span className="text-destructive">{form.formState.errors.businessPhones?.message}</span></label>
-      <label className="grid gap-1 text-xs font-medium">Business email (optional)<Input type="email" {...form.register("businessEmail")} aria-invalid={Boolean(form.formState.errors.businessEmail)} /><span className="text-destructive">{form.formState.errors.businessEmail?.message}</span></label>
-      <fieldset className="grid gap-3"><legend className="text-sm font-semibold">Social links</legend>{socialLinks.fields.map((field, index) => <div key={field.id} className="grid items-end gap-2 sm:grid-cols-[1fr_2fr_auto]"><label className="grid gap-1 text-xs font-medium">Label<Input {...form.register(`socialLinks.${index}.label`)} /></label><label className="grid gap-1 text-xs font-medium">HTTPS URL<Input type="url" {...form.register(`socialLinks.${index}.url`)} /></label><Button type="button" variant="outline" onClick={() => socialLinks.remove(index)}>Remove</Button></div>)}<Button type="button" variant="outline" className="w-fit" onClick={() => socialLinks.append({ label: "", url: "" })}>Add social link</Button><p className="text-xs text-muted-foreground">Only add profiles supplied or approved by the client.</p></fieldset>
-    </section>
-    <section className="grid gap-4 rounded-2xl border border-border/70 bg-card p-5 sm:p-7">
-      <div><h2 className="font-heading text-2xl text-forest-900">WhatsApp</h2><p className="mt-1 text-sm text-muted-foreground">These fields are optional; the source PDF does not provide a WhatsApp number or default message.</p></div>
-      <label className="grid gap-1 text-xs font-medium">WhatsApp number (optional)<Input {...form.register("whatsappNumber")} aria-invalid={Boolean(form.formState.errors.whatsappNumber)} /><span className="text-destructive">{form.formState.errors.whatsappNumber?.message}</span></label>
-      <LocalizedFieldset title="Default message (optional)" path="whatsappDefaultMessage" form={form} multiline />
-    </section>
-    <section className="grid gap-4 rounded-2xl border border-border/70 bg-card p-5 sm:p-7">
-      <div><h2 className="font-heading text-2xl text-forest-900">Booking settings</h2><p className="mt-1 text-sm text-muted-foreground">Blank means no value has been configured. This editor does not infer booking defaults or policy from unresolved client questions.</p></div>
-      <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1 text-xs font-medium">Minimum lead time (hours)<Input inputMode="numeric" {...form.register("minLeadTimeHours")} /><span className="text-destructive">{form.formState.errors.minLeadTimeHours?.message}</span></label><label className="grid gap-1 text-xs font-medium">Minimum group size<Input inputMode="numeric" {...form.register("minimumGroupSize")} /><span className="text-destructive">{form.formState.errors.minimumGroupSize?.message}</span></label><label className="grid gap-1 text-xs font-medium">Default check-in time<Input type="time" {...form.register("checkInTime")} /><span className="text-destructive">{form.formState.errors.checkInTime?.message}</span></label><label className="grid gap-1 text-xs font-medium">Default check-out time<Input type="time" {...form.register("checkOutTime")} /><span className="text-destructive">{form.formState.errors.checkOutTime?.message}</span></label></div>
-      <LocalizedFieldset title="Booking policy text (optional)" path="bookingPolicyText" form={form} multiline />
-    </section>
-    <section className="grid gap-4 rounded-2xl border border-border/70 bg-card p-5 sm:p-7">
-      <div><h2 className="font-heading text-2xl text-forest-900">Notifications</h2><p className="mt-1 text-sm text-muted-foreground">Control in-app and email delivery. Optional reward and reminder email is consent-gated for customers.</p></div>
-      <label className="grid gap-1 text-xs font-medium">Email recipients<Textarea rows={4} {...form.register("notificationRecipients")} aria-invalid={Boolean(form.formState.errors.notificationRecipients)} /><span className="text-destructive">{form.formState.errors.notificationRecipients?.message}</span></label>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationEmailEnabled")} /> Email delivery enabled</label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationInAppEnabled")} /> In-app delivery enabled</label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationLeadAlertsEnabled")} /> Enquiry and lead alerts</label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationBookingUpdatesEnabled")} /> Booking updates</label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationRewardUpdatesEnabled")} /> Reward and coupon updates</label>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...form.register("notificationReminderEmailsEnabled")} /> Pre-arrival reminders</label>
-      </div>
-      <label className="grid gap-1 text-xs font-medium">Stuck outbox alert threshold<Input inputMode="numeric" {...form.register("notificationStuckThreshold")} /><span className="text-destructive">{form.formState.errors.notificationStuckThreshold?.message}</span></label>
-      <label className="grid gap-1 text-xs font-medium">Template overrides (JSON)<Textarea rows={8} {...form.register("notificationTemplateOverridesJson")} aria-invalid={Boolean(form.formState.errors.notificationTemplateOverridesJson)} /><span className="text-destructive">{form.formState.errors.notificationTemplateOverridesJson?.message}</span><span className="text-xs font-normal text-muted-foreground">Use event keys such as BOOKING_CONFIRMED with optional subject and body fields. Variables use double braces, for example {'{{reference}}'}; values are escaped.</span></label>
-    </section>
+      <SettingsSection title="Owner portrait" description="This section is hidden by default. Never add owner details unless the client provides them.">
+        <label className="flex min-h-11 items-center gap-3 text-sm font-medium"><input type="checkbox" {...form.register("ownerDisplay")} /> Display section on Home page</label>
+        <LocalImageUploader label="Owner portrait" value={ownerMediaId ?? ""} media={initial.ownerMedia} cloudName={cloudName} onChange={(value) => form.setValue("ownerMediaId", value, { shouldDirty: true })} onRemove={() => form.setValue("ownerMediaId", null, { shouldDirty: true })} helperText="Recommended landscape image, at least 1200px wide." disabled={!canWrite} />
+        <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1 text-sm font-medium">Name (optional)<Input {...form.register("ownerName")} /></label><label className="grid gap-1 text-sm font-medium">Short caption (optional)<Textarea rows={3} {...form.register("ownerCaption")} /></label></div>
+        {error(form.formState.errors.ownerMediaId)}<SaveButton pending={pending} disabled={!canWrite} label="Save owner portrait" />
+      </SettingsSection>
+
+      <SettingsSection title="Hero section content" description="Empty fields fall back to the approved defaults in site-content.ts.">
+        <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1 text-sm font-medium">Headline<Input {...form.register("heroHeadline")} /></label><label className="grid gap-1 text-sm font-medium">Subhead<Textarea rows={4} {...form.register("heroSubhead")} /></label><label className="grid gap-1 text-sm font-medium">Primary CTA text<Input {...form.register("heroPrimaryCta")} /></label><label className="grid gap-1 text-sm font-medium">Secondary CTA text<Input {...form.register("heroSecondaryCta")} /></label></div>
+        <LocalImageUploader label="Home hero image" value={heroMediaId ?? ""} media={initial.heroMedia} cloudName={cloudName} onChange={(value) => form.setValue("heroMediaId", value, { shouldDirty: true })} onRemove={() => form.setValue("heroMediaId", null, { shouldDirty: true })} disabled={!canWrite} />
+        <label className="grid gap-1 text-sm font-medium">Closing statement headline<Input {...form.register("closingHeadline")} /></label><SaveButton pending={pending} disabled={!canWrite} label="Save hero content" />
+      </SettingsSection>
+
+      <SettingsSection title="Social links" description="Only HTTPS links are accepted. Empty fields hide the corresponding link everywhere.">
+        <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1 text-sm font-medium">Instagram<Input type="url" placeholder="https://…" {...form.register("instagramUrl")} />{error(form.formState.errors.instagramUrl)}</label><label className="grid gap-1 text-sm font-medium">Facebook<Input type="url" placeholder="https://…" {...form.register("facebookUrl")} />{error(form.formState.errors.facebookUrl)}</label><label className="grid gap-1 text-sm font-medium">YouTube<Input type="url" placeholder="https://…" {...form.register("youtubeUrl")} />{error(form.formState.errors.youtubeUrl)}</label></div><SaveButton pending={pending} disabled={!canWrite} label="Save social links" />
+      </SettingsSection>
+    </form>
+
+    <PasswordSection canWrite={canWrite} />
+    <section className="grid gap-3 rounded-2xl border border-border/70 bg-card p-5 sm:p-7"><h2 className="font-heading text-2xl text-forest-900">Policies and security</h2><p className="text-sm text-muted-foreground">Review the public policies or manage staff access, sessions, and audit history.</p><div className="flex flex-wrap gap-3"><Button asChild variant="outline"><Link href="/admin/settings/policies">Open policies</Link></Button><Button asChild variant="outline"><Link href="/admin/security">Open security</Link></Button></div></section>
     {message ? <p role="status" className="text-sm text-muted-foreground">{message}</p> : null}
-    <div className="flex flex-wrap items-center gap-3"><Button type="submit" disabled={!canWrite || pending}>{pending ? "Saving settings…" : "Save settings"}</Button>{!canWrite ? <span className="text-xs text-muted-foreground">Settings write permission is required.</span> : null}</div>
-  </form>;
+  </div>;
 }
 
-function LocalizedFieldset({ title, path, form, required = false, multiline = false }: {
-  title: string;
-  path: "businessName" | "address" | "whatsappDefaultMessage" | "bookingPolicyText";
-  form: ReturnType<typeof useForm<SettingsInput, unknown, z.output<typeof settingsFormSchema>>>;
-  required?: boolean;
-  multiline?: boolean;
-}) {
-  const nestedErrors = path === "businessName" ? form.formState.errors.businessName
-    : path === "address" ? form.formState.errors.address
-      : path === "whatsappDefaultMessage" ? form.formState.errors.whatsappDefaultMessage
-        : form.formState.errors.bookingPolicyText;
-  return <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4"><legend className="px-1 text-sm font-semibold">{title}{required ? " · English required" : ""}</legend>{SUPPORTED_LOCALES.map((locale) => {
-    const fieldPath = `${path}.${locale}` as const;
-    const localizedError = locale === "en" ? nestedErrors?.en : locale === "mr" ? nestedErrors?.mr : nestedErrors?.hi;
-    const error = localizedError && "message" in localizedError ? String(localizedError.message ?? "") : undefined;
-    return <label key={locale} className="grid gap-1 text-xs font-medium uppercase">{locale}{required && locale === "en" ? " · required" : ""}{multiline ? <Textarea {...form.register(fieldPath)} required={required && locale === "en"} /> : <Input {...form.register(fieldPath)} required={required && locale === "en"} />}<span className="text-destructive">{error}</span></label>;
-  })}</fieldset>;
+function PasswordSection({ canWrite }: { canWrite: boolean }) {
+  const [message, setMessage] = useState(""); const [pending, startTransition] = useTransition();
+  const [values, setValues] = useState<PasswordInput>({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  function update(key: keyof PasswordInput, value: string) { setValues((current) => ({ ...current, [key]: value })); }
+  return <section className="grid gap-4 rounded-2xl border border-border/70 bg-card p-5 sm:p-7"><div><h2 className="font-heading text-2xl text-forest-900">Change password</h2><p className="mt-1 text-sm text-muted-foreground">Use at least 10 characters. Other sessions are revoked after a successful change; secrets are never audited or logged.</p></div><form className="grid gap-4 sm:grid-cols-2" onSubmit={(event) => { event.preventDefault(); startTransition(async () => { const result = await changeStaffPasswordAction(values); setMessage(result.ok ? "Password changed and other sessions revoked." : result.error.message); if (result.ok) setValues({ currentPassword: "", newPassword: "", confirmPassword: "" }); }); }}><label className="grid gap-1 text-sm font-medium">Current password<Input type="password" autoComplete="current-password" value={values.currentPassword} onChange={(event) => update("currentPassword", event.target.value)} required /></label><label className="grid gap-1 text-sm font-medium">New password<Input type="password" autoComplete="new-password" value={values.newPassword} onChange={(event) => update("newPassword", event.target.value)} minLength={10} required /></label><label className="grid gap-1 text-sm font-medium">Confirm new password<Input type="password" autoComplete="new-password" value={values.confirmPassword} onChange={(event) => update("confirmPassword", event.target.value)} minLength={10} required /></label><div className="flex items-end"><Button disabled={!canWrite || pending}>{pending ? "Changing password…" : "Change password"}</Button></div></form>{message ? <p role="status" className="text-sm text-muted-foreground">{message}</p> : null}</section>;
 }
 
+function SettingsSection({ title, description, children }: { title: string; description: string; children: React.ReactNode }) { return <section className="grid gap-5 rounded-2xl border border-border/70 bg-card p-5 sm:p-7"><div className="border-b border-border/70 pb-4"><h2 className="font-heading text-2xl text-forest-900">{title}</h2><p className="mt-1 text-sm text-muted-foreground">{description}</p></div>{children}</section>; }
+function SaveButton({ pending, disabled, label }: { pending: boolean; disabled: boolean; label: string }) { return <Button type="submit" disabled={disabled || pending} className="w-fit">{pending ? "Saving…" : label}</Button>; }
+function error(value: { message?: string } | { root?: { message?: string } } | undefined) { const message = value && "message" in value ? value.message : value && "root" in value ? value.root?.message : undefined; return message ? <span className="text-xs text-destructive">{message}</span> : null; }
+function LocalizedField({ title, path, form, required = false, multiline = false }: { title: string; path: "businessName" | "address" | "whatsappDefaultMessage"; form: ReturnType<typeof useForm<SettingsInput, unknown, z.output<typeof settingsFormSchema>>>; required?: boolean; multiline?: boolean }) { const name = `${path}.en` as const; return <fieldset className="grid gap-3"><legend className="text-sm font-semibold">{title}</legend><label className="grid gap-1 text-xs font-medium">English{required ? " · required" : ""}{multiline ? <Textarea {...form.register(name)} required={required} /> : <Input {...form.register(name)} required={required} />}</label></fieldset>; }

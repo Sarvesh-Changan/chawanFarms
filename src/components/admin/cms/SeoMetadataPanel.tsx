@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { MediaPicker } from "@/components/media/MediaPicker";
+import { LocalImageUploader } from "@/components/media/LocalImageUploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +10,7 @@ import type { SeoEntityType } from "@/lib/schemas/cms/seo";
 import { seoMetadataSchema } from "@/lib/schemas/cms/seo";
 import { saveSeoMetadataAction } from "@/server/actions/cms-seo";
 
-type SeoImage = { id: string; publicId: string; altText: unknown; format: string | null; kind?: "IMAGE" };
+type SeoImage = { id: string; publicId: string; altText: unknown; format: string | null; kind?: "IMAGE"; tags?: string[] };
 type InitialSeo = { title?: string | null; description?: string | null; keywords?: string | null; canonicalUrl?: string | null; robots?: string | null; ogMediaId?: string | null; jsonLd?: unknown };
 
 export function SeoMetadataPanel({ entityType, entityId, initial, images, cloudName }: { entityType: SeoEntityType; entityId: string; initial?: InitialSeo | null; images: SeoImage[]; cloudName: string }) {
@@ -44,7 +44,7 @@ export function SeoMetadataPanel({ entityType, entityId, initial, images, cloudN
       <Field label="Description" error={errors.description}><Textarea maxLength={160} value={values.description} onChange={(event) => update("description", event.target.value)} /></Field>
       <Field label="Canonical HTTPS URL" error={errors.canonicalUrl}><Input type="url" value={values.canonicalUrl} onChange={(event) => update("canonicalUrl", event.target.value)} /></Field>
       <Field label="Robots" error={errors.robots}><select className="h-10 rounded-md border bg-background px-3" value={values.robots} onChange={(event) => update("robots", event.target.value)}><option value="">Use site default</option><option>index,follow</option><option>noindex,follow</option><option>index,nofollow</option><option>noindex,nofollow</option></select></Field>
-      <Field label="Open Graph image" error={errors.ogMediaId}><div className="flex items-center gap-2"><Input value={ogMediaId} readOnly aria-label="Selected Open Graph image ID"/><MediaPicker cloudName={cloudName} items={images.map((image) => ({ ...image, kind: "IMAGE" as const }))} onSelect={(image) => setOgMediaId(image.id)}><Button type="button" variant="outline">Choose</Button></MediaPicker><Button type="button" variant="ghost" onClick={() => setOgMediaId("")}>Clear</Button></div></Field>
+      <div className="md:col-span-2"><LocalImageUploader label="Open Graph image" value={ogMediaId} media={images.find((image) => image.id === ogMediaId)} cloudName={cloudName} onChange={setOgMediaId} onRemove={() => setOgMediaId("")} disabled={busy} /><span className="text-destructive text-xs">{errors.ogMediaId}</span></div>
       <Field label="JSON-LD override" error={errors.jsonLd}><Textarea className="min-h-40 font-mono text-xs" value={jsonLdText} onChange={(event) => setJsonLdText(event.target.value)} placeholder="{ &quot;@context&quot;: &quot;https://schema.org&quot;, ... }" /></Field>
       <div className="flex items-end"><Button disabled={busy}>{busy ? "Saving…" : "Save SEO metadata"}</Button></div>
     </form>

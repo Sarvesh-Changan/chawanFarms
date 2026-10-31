@@ -31,7 +31,7 @@ export async function saveSeoMetadataAction(raw: unknown): Promise<Result<{ id: 
   if (!parsed.success) return err("VALIDATION", "Please review the SEO fields.", parsed.error.flatten().fieldErrors);
   const before = await getSeoMetadata(parsed.data.entityType, parsed.data.entityId, parsed.data.locale);
   try {
-    const after = await saveSeoMetadata(parsed.data);
+    const after = await saveSeoMetadata(parsed.data, actorId);
     const audited = await audit({ actor: { id: actorId, type: "STAFF" }, action: before ? "cms.seo.update" : "cms.seo.create", entityType: "SeoMetadata", entityId: after.id, before, after, ip, userAgent: requestHeaders.get("user-agent")?.slice(0, 512), requestId: requestHeaders.get("x-request-id")?.slice(0, 128) });
     revalidateTag(SEO_CACHE_TAG, "max");
     revalidateTag(`cms:seo:${parsed.data.entityType}:${parsed.data.entityId}`, "max");

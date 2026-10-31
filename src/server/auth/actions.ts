@@ -5,9 +5,10 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { z } from "zod";
 
-import { safeCallbackUrl } from "@/lib/safe-url";
+import { resolvePostLoginDestination } from "@/lib/auth/post-login-destination";
 import { forgotPasswordSchema, loginSchema, resetPasswordSchema, signupSchema } from "@/lib/schemas/auth";
 import { auth } from "@/server/auth";
+import { resolveUserPostLogin } from "@/server/auth/post-login";
 import { db } from "@/server/db";
 import { limit } from "@/server/integrations/ratelimit";
 
@@ -21,6 +22,18 @@ export type AuthActionResult = {
 
 const genericLoginError = "Unable to sign in. Check your details and try again.";
 const genericResetError = "If the details are valid, you will receive an email shortly.";
+const signupSuccessMessage = "Check your email to verify your account before signing in.";
+
+function safeAuthErrorDetails(error: unknown): { code?: string; status?: number } {
+  if (!error || typeof error !== "object") return {};
+  const value = error as { code?: unknown; status?: unknown; statusCode?: unknown };
+  const code = typeof value.code === "string" && /^[A-Z0-9_]{1,64}$/.test(value.code) ? value.code : undefined;
+  const statusValue = typeof value.status === "number" ? value.status : value.statusCode;
+  const status = typeof statusValue === "number" && Number.isInteger(statusValue) && statusValue >= 400 && statusValue <= 599
+    ? statusValue
+    : undefined;
+  return { code, status };
+}
 
 function fieldErrors(error: z.ZodError): Record<string, string[]> {
   const errors = new Map<string, string[]>();
@@ -99,21 +112,20 @@ export async function loginAction(rawInput: unknown): Promise<AuthActionResult> 
     return { ok: false, message: "This account has been temporarily locked due to failed attempts. Please try again later." };
   }
 
-  const redirectTo = safeCallbackUrl(parsed.data.callbackUrl, "/account");
   try {
     const signInResult = await auth.api.signInEmail({
-      body: { email: parsed.data.email, password: parsed.data.password, callbackURL: redirectTo },
+      body: { email: parsed.data.email, password: parsed.data.password, callbackURL: "/" },
       headers: requestHeaders,
     });
-    if ((signInResult as { twoFactorRedirect?: boolean })?.twoFactorRedirect) {
-      return {
-        ok: false,
-        message: "Two-factor authentication code is required to complete sign-in.",
-      };
-    }
-    return { ok: true, redirectTo };
-  } catch (error) {
-    console.error("[loginAction signInEmail error]:", error);
+    const needsTwoFactorVerify = Boolean((signInResult as { twoFactorRedirect?: boolean })?.twoFactorRedirect);
+    const signInUserId = "user" in signInResult && signInResult.user && "id" in signInResult.user && typeof signInResult.user.id === "string"
+      ? signInResult.user.id
+      : needsTwoFactorVerify ? user?.id : undefined;
+    if (!signInUserId) return { ok: false, message: genericLoginError };
+    const destination = await resolveUserPostLogin(signInUserId, parsed.data.callbackUrl, { needsTwoFactorVerify });
+    if (!destination) return { ok: false, message: genericLoginError };
+    return { ok: true, redirectTo: destination.redirectTo };
+  } catch {
     if (user?.emailVerified) await recordFailedLogin(user.id);
     return { ok: false, message: genericLoginError };
   }
@@ -130,12 +142,33 @@ export async function signupAction(rawInput: unknown): Promise<AuthActionResult>
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
 
   try {
+    const verificationDestination = resolvePostLoginDestination({
+      userType: "CUSTOMER",
+      callbackUrl: parsed.data.callbackUrl,
+      needsTwoFactorSetup: false,
+      needsTwoFactorVerify: false,
+      emailVerified: false,
+    });
     await auth.api.signUpEmail({
-      body: { name: parsed.data.name, email: parsed.data.email, password: parsed.data.password, callbackURL: "/verify-email" },
+      body: { name: parsed.data.name, email: parsed.data.email, password: parsed.data.password, callbackURL: verificationDestination.redirectTo },
       headers: requestHeaders,
     });
-    return { ok: true, message: "Check your email to verify your account before signing in." };
-  } catch {
+    return { ok: true, message: signupSuccessMessage };
+  } catch (error) {
+    const details = safeAuthErrorDetails(error);
+    console.error("[auth] signup request failed", details);
+    try {
+      // Better Auth can finish creating the user and sending verification mail
+      // before a later post-commit hook rejects the API call. Keep the response
+      // generic and successful when the account was persisted.
+      const persistedUser = await db.user.findUnique({
+        where: { email: parsed.data.email },
+        select: { id: true },
+      });
+      if (persistedUser) return { ok: true, message: signupSuccessMessage };
+    } catch {
+      // Preserve the generic failure if the database cannot confirm persistence.
+    }
     return { ok: false, message: "Unable to create your account. Please try again." };
   }
 }

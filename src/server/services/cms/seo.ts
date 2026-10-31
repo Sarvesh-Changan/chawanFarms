@@ -10,6 +10,7 @@ import { SEO_CACHE_TAG } from "@/config/page-builder";
 import { Prisma } from "@/generated/prisma/client";
 import { seoMetadataSchema, type SeoEntityType } from "@/lib/schemas/cms/seo";
 import { db } from "@/server/db";
+import { cleanupUnusedAdminMedia } from "@/server/services/media";
 
 type SeoMetadataData = z.output<typeof seoMetadataSchema>;
 
@@ -38,7 +39,7 @@ export async function getPublishedEntityForSeo(entityType: Exclude<SeoEntityType
     case "accommodation": return db.accommodation.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null }, select: { id: true } });
     case "activity": return db.activity.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null }, select: { id: true } });
     case "experience": return db.experience.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null }, select: { id: true } });
-    case "post": return db.post.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null, OR: [{ publishAt: null }, { publishAt: { lte: new Date() } }] }, select: { id: true } });
+    case "post": return db.post.findFirst({ where: { slug, status: "PUBLISHED", deletedAt: null, OR: [{ publishAt: null }, { publishAt: { lte: new Date() } }], AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }] }, select: { id: true } });
   }
 }
 
@@ -70,26 +71,28 @@ export function metadataFromSeo(seo: Awaited<ReturnType<typeof getPublicSeoWithI
   };
 }
 
-export async function saveSeoMetadata(input: SeoMetadataData) {
+export async function saveSeoMetadata(input: SeoMetadataData, actorId?: string) {
   if (!(await entityExists(input.entityType, input.entityId))) throw new Error("SEO_ENTITY_NOT_FOUND");
-  if (input.ogMediaId) {
-    const media = await db.media.findFirst({ where: { id: input.ogMediaId, kind: "IMAGE", origin: "ADMIN", isPublic: true, deletedAt: null }, select: { id: true } });
-    if (!media) throw new Error("SEO_MEDIA_UNAVAILABLE");
-  }
-  return db.seoMetadata.upsert({
-    where: { entityType_entityId_locale: { entityType: input.entityType, entityId: input.entityId, locale: input.locale } },
-    create: {
-      entityType: input.entityType, entityId: input.entityId, locale: input.locale,
-      title: input.title || null, description: input.description || null, keywords: input.keywords || null,
-      canonicalUrl: input.canonicalUrl || null, robots: input.robots || null, ogMediaId: input.ogMediaId || null,
-      jsonLd: input.jsonLd ?? Prisma.DbNull,
-    },
-    update: {
-      title: input.title || null, description: input.description || null, keywords: input.keywords || null,
-      canonicalUrl: input.canonicalUrl || null, robots: input.robots || null, ogMediaId: input.ogMediaId || null,
-      jsonLd: input.jsonLd ?? Prisma.DbNull,
-    },
-  });
+  const previous = await db.seoMetadata.findUnique({ where: { entityType_entityId_locale: { entityType: input.entityType, entityId: input.entityId, locale: input.locale } }, select: { ogMediaId: true } });
+  const saved = await db.$transaction(async (tx) => {
+    if (input.ogMediaId) {
+      const media = await tx.media.findFirst({ where: { id: input.ogMediaId, kind: "IMAGE", origin: "ADMIN", deletedAt: null }, select: { id: true, isPublic: true, meta: true } });
+      const meta = media?.meta && typeof media.meta === "object" && !Array.isArray(media.meta) ? media.meta as Record<string, unknown> : {};
+      const pendingOwned = meta.pending === true && meta.pendingById === actorId && typeof meta.pendingUntil === "string" && new Date(meta.pendingUntil) > new Date();
+      if (!media || (!media.isPublic && !pendingOwned)) throw new Error("SEO_MEDIA_UNAVAILABLE");
+      if (pendingOwned) await tx.media.update({ where: { id: media.id }, data: { isPublic: true, meta: Prisma.DbNull } });
+    }
+    const saved = await tx.seoMetadata.upsert({
+      where: { entityType_entityId_locale: { entityType: input.entityType, entityId: input.entityId, locale: input.locale } },
+      create: { entityType: input.entityType, entityId: input.entityId, locale: input.locale, title: input.title || null, description: input.description || null, keywords: input.keywords || null, canonicalUrl: input.canonicalUrl || null, robots: input.robots || null, ogMediaId: input.ogMediaId || null, jsonLd: input.jsonLd ?? Prisma.DbNull },
+      update: { title: input.title || null, description: input.description || null, keywords: input.keywords || null, canonicalUrl: input.canonicalUrl || null, robots: input.robots || null, ogMediaId: input.ogMediaId || null, jsonLd: input.jsonLd ?? Prisma.DbNull },
+    });
+    await tx.mediaUsage.deleteMany({ where: { entityType: "SeoMetadata", entityId: `${input.entityType}:${input.entityId}:${input.locale}`, field: "og" } });
+    if (input.ogMediaId) await tx.mediaUsage.create({ data: { mediaId: input.ogMediaId, entityType: "SeoMetadata", entityId: `${input.entityType}:${input.entityId}:${input.locale}`, field: "og" } });
+    return saved;
+  }, { isolationLevel: "Serializable" });
+  if (previous?.ogMediaId && previous.ogMediaId !== input.ogMediaId) await cleanupUnusedAdminMedia(previous.ogMediaId);
+  return saved;
 }
 
 export async function getSeoImageOptions() {

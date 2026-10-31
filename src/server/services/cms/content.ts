@@ -9,6 +9,7 @@ import { hasCmsReferences } from "@/lib/cms-reference-policy";
 import type { CmsContentFormData } from "@/lib/schemas/cms/content";
 import { sanitizeLocalizedHtml } from "@/server/cms/html";
 import { db } from "@/server/db";
+import { cleanupUnusedAdminMedia } from "@/server/services/media";
 
 const statusWhere = (status?: PublishStatus) => status ? { status } : {};
 const html = (value: unknown) => value ? sanitizeLocalizedHtml(value) : undefined;
@@ -35,16 +36,24 @@ function toRecord(input: CmsContentFormData) {
   }
 }
 
-export async function saveCmsContent(input: CmsContentFormData) {
+export async function saveCmsContent(input: CmsContentFormData, actorId?: string) {
   const record = toRecord(input);
-  return db.$transaction(async (tx) => {
+  const before = input.id ? await getCmsContent(input.entityType, input.id) : null;
+  const previousMediaId = before && typeof before === "object" ? input.entityType === "gallery-item" || input.entityType === "testimonial" ? String((before as Record<string, unknown>).mediaId ?? "") : input.entityType === "post" ? String((before as Record<string, unknown>).coverMediaId ?? "") : ["activity", "experience"].includes(input.entityType) ? String((before as Record<string, unknown>).heroMediaId ?? "") : "" : "";
+  const saved = await db.$transaction(async (tx) => {
     if (input.entityType === "gallery-item") {
-      const media = await tx.media.findFirst({ where: { id: input.mediaId, origin: "ADMIN", deletedAt: null }, select: { id: true } });
-      if (!media) throw new Error("CMS_MEDIA_UNAVAILABLE");
+      const media = await tx.media.findFirst({ where: { id: input.mediaId, origin: "ADMIN", deletedAt: null }, select: { id: true, isPublic: true, meta: true } });
+      const meta = media?.meta && typeof media.meta === "object" && !Array.isArray(media.meta) ? media.meta as Record<string, unknown> : {};
+      const pendingOwned = meta.pending === true && meta.pendingById === actorId && typeof meta.pendingUntil === "string" && new Date(meta.pendingUntil) > new Date();
+      if (!media || (!media.isPublic && !pendingOwned)) throw new Error("CMS_MEDIA_UNAVAILABLE");
+      if (pendingOwned) await tx.media.update({ where: { id: media.id }, data: { isPublic: true, meta: Prisma.DbNull } });
     }
     if (["activity", "experience"].includes(input.entityType) && input.heroMediaId) {
-      const media = await tx.media.findFirst({ where: { id: input.heroMediaId, origin: "ADMIN", isPublic: true, deletedAt: null }, select: { id: true } });
-      if (!media) throw new Error("CMS_MEDIA_UNAVAILABLE");
+      const media = await tx.media.findFirst({ where: { id: input.heroMediaId, origin: "ADMIN", deletedAt: null }, select: { id: true, isPublic: true, meta: true } });
+      const meta = media?.meta && typeof media.meta === "object" && !Array.isArray(media.meta) ? media.meta as Record<string, unknown> : {};
+      const pendingOwned = meta.pending === true && meta.pendingById === actorId && typeof meta.pendingUntil === "string" && new Date(meta.pendingUntil) > new Date();
+      if (!media || (!media.isPublic && !pendingOwned)) throw new Error("CMS_MEDIA_UNAVAILABLE");
+      if (pendingOwned) await tx.media.update({ where: { id: media.id }, data: { isPublic: true, meta: Prisma.DbNull } });
     }
     if (input.entityType === "testimonial" && input.mediaId) {
       const media = await tx.media.findFirst({ where: { id: input.mediaId, origin: "ADMIN", isPublic: true, deletedAt: null }, select: { id: true } });
@@ -78,6 +87,9 @@ export async function saveCmsContent(input: CmsContentFormData) {
     }
     return saved;
   }, { isolationLevel: "Serializable" });
+  const nextMediaId = input.entityType === "gallery-item" || input.entityType === "testimonial" ? input.mediaId : input.entityType === "post" ? input.coverMediaId : input.heroMediaId;
+  if (previousMediaId && previousMediaId !== nextMediaId) await cleanupUnusedAdminMedia(previousMediaId);
+  return saved;
 }
 
 const modelByType = {
@@ -122,19 +134,22 @@ export async function listCmsContent(input: { entityType: CmsContentType; page: 
 }
 
 export async function getCmsEditorOptions(type: CmsContentType) {
-  const [menuCategories, postCategories, packages, media] = await Promise.all([
+  const { getGalleryCategories } = await import("./gallery-categories");
+  const [menuCategories, postCategories, packages, media, galleryCategories] = await Promise.all([
     type === "menu-item" ? db.menuCategory.findMany({ where: { deletedAt: null }, orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }) : [],
     type === "post" ? db.postCategory.findMany({ where: { deletedAt: null }, orderBy: { id: "asc" }, select: { id: true, name: true } }) : [],
     type === "offer" ? db.package.findMany({ where: { deletedAt: null }, orderBy: { sortOrder: "asc" }, select: { id: true, slug: true, code: true } }) : [],
     ["gallery-item", "activity", "experience", "post", "testimonial"].includes(type)
       ? db.media.findMany({ where: { origin: "ADMIN", isPublic: true, deletedAt: null }, orderBy: { createdAt: "desc" }, take: 60, select: { id: true, publicId: true, kind: true, altText: true, format: true } })
       : [],
+    type === "gallery-item" ? getGalleryCategories() : Promise.resolve([]),
   ]);
   const label = (value: unknown, fallback: string) => value && typeof value === "object" && "en" in value ? String(value.en ?? fallback) : fallback;
   return {
     options: [...menuCategories, ...postCategories].map((row) => ({ id: row.id, label: label(row.name, row.id) })),
     packageOptions: packages.map((row) => ({ id: row.id, label: `${row.code ?? ""} — ${row.slug}` })),
     media,
+    galleryCategories,
   };
 }
 
@@ -179,6 +194,44 @@ export async function reorderGalleryItems(id: string, direction: "up" | "down") 
   }, { isolationLevel: "Serializable" });
 }
 
+export async function reorderActivity(id: string, direction: "up" | "down") {
+  return db.$transaction(async (tx) => {
+    const rows = await tx.activity.findMany({ where: { deletedAt: null }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], select: { id: true, sortOrder: true } });
+    const currentIndex = rows.findIndex((row) => row.id === id); const targetIndex = currentIndex + (direction === "up" ? -1 : 1);
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= rows.length) return { moved: false };
+    const reordered = [...rows]; const moving = reordered.splice(currentIndex, 1)[0]; if (!moving) return { moved: false };
+    reordered.splice(targetIndex, 0, moving); await Promise.all(reordered.map((row, sortOrder) => tx.activity.update({ where: { id: row.id }, data: { sortOrder } })));
+    return { moved: true };
+  }, { isolationLevel: "Serializable" });
+}
+
+export async function listGalleryAdmin(input: { q: string; status?: PublishStatus; category?: string; duplicatesOnly: boolean }) {
+  const allMedia = await db.media.findMany({ where: { contentHash: { not: null }, deletedAt: null }, select: { contentHash: true } });
+  const counts = new Map<string, number>(); for (const media of allMedia) if (media.contentHash) counts.set(media.contentHash, (counts.get(media.contentHash) ?? 0) + 1);
+  const duplicateHashes = [...counts.entries()].filter(([, count]) => count > 1).map(([hash]) => hash);
+  const rows = await db.galleryItem.findMany({ where: { deletedAt: null, ...(input.status ? { status: input.status } : {}), ...(input.category ? { category: input.category } : {}), ...(input.q ? { OR: [{ category: { contains: input.q, mode: "insensitive" } }, { media: { publicId: { contains: input.q, mode: "insensitive" } } }, { caption: { path: ["en"], string_contains: input.q, mode: "insensitive" } }] } : {}), ...(input.duplicatesOnly ? { media: { contentHash: { in: duplicateHashes } } } : {}) }, orderBy: [{ category: "asc" }, { sortOrder: "asc" }, { id: "asc" }], include: { media: { select: { id: true, publicId: true, format: true, bytes: true, width: true, height: true, contentHash: true, altText: true, tags: true, isPublic: true } } }, take: 500 });
+  const categoryCounts = await db.galleryItem.groupBy({ by: ["category"], where: { deletedAt: null }, _count: { _all: true } });
+  return { rows, duplicateHashes, categoryCounts: categoryCounts.map((item) => ({ category: item.category, count: item._count._all })) };
+}
+
+export async function updateGalleryFlags(id: string, changes: { isFeatured?: boolean; status?: PublishStatus }) {
+  return db.galleryItem.update({ where: { id }, data: { ...(changes.isFeatured === undefined ? {} : { isFeatured: changes.isFeatured }), ...(changes.status ? { status: changes.status, publishAt: null } : {}) } });
+}
+
+export async function bulkUpdateGallery(input: { ids: string[]; action: "publish" | "unpublish" | "delete" | "category"; category?: string }) {
+  const items = await db.$transaction(async (tx) => {
+    const items = await tx.galleryItem.findMany({ where: { id: { in: input.ids }, deletedAt: null }, select: { id: true, mediaId: true } });
+    if (input.action === "delete") {
+      await tx.galleryItem.updateMany({ where: { id: { in: items.map((item) => item.id) } }, data: { deletedAt: new Date(), status: "ARCHIVED", isFeatured: false } });
+      await tx.mediaUsage.deleteMany({ where: { entityType: "GalleryItem", entityId: { in: items.map((item) => item.id) } } });
+    } else if (input.action === "category" && input.category) await tx.galleryItem.updateMany({ where: { id: { in: items.map((item) => item.id) } }, data: { category: input.category } });
+    else await tx.galleryItem.updateMany({ where: { id: { in: items.map((item) => item.id) } }, data: { status: input.action === "publish" ? "PUBLISHED" : "DRAFT", publishAt: null } });
+    return items;
+  }, { isolationLevel: "Serializable" });
+  if (input.action === "delete") for (const item of items) await cleanupUnusedAdminMedia(item.mediaId);
+  return items;
+}
+
 export async function softDeleteCmsContent(type: CmsContentType, id: string) {
   const before = await getCmsContent(type, id);
   if (!before) return null;
@@ -192,12 +245,23 @@ export async function softDeleteCmsContent(type: CmsContentType, id: string) {
   }
   if (type === "experience" && hasCmsReferences(type, { favourites: await db.favourite.count({ where: { entityType: type, entityId: id } }) })) throw new Error("CMS_REFERENCED");
   if (type === "offer" && hasCmsReferences(type, { bookings: await db.booking.count({ where: { offerId: id } }) })) throw new Error("CMS_REFERENCED");
+  if (type === "gallery-item") {
+    const item = await db.$transaction(async (tx) => {
+      const current = await tx.galleryItem.findUnique({ where: { id }, select: { id: true, mediaId: true, deletedAt: true } });
+      if (!current || current.deletedAt) return null;
+      const saved = await tx.galleryItem.update({ where: { id }, data: { deletedAt: new Date(), status: "ARCHIVED", isFeatured: false } });
+      await tx.mediaUsage.deleteMany({ where: { entityType: "GalleryItem", entityId: id } });
+      return { saved, mediaId: current.mediaId };
+    });
+    if (item) await cleanupUnusedAdminMedia(item.mediaId);
+    return item?.saved ?? null;
+  }
   const data = { deletedAt: new Date() };
   switch (type) {
     case "activity": return db.activity.update({ where: { id }, data }); case "experience": return db.experience.update({ where: { id }, data });
     case "menu-category": return db.menuCategory.update({ where: { id }, data }); case "menu-item": return db.menuItem.update({ where: { id }, data });
     case "faq": return db.faq.update({ where: { id }, data }); case "offer": return db.offer.update({ where: { id }, data });
-    case "testimonial": return db.testimonial.update({ where: { id }, data }); case "gallery-item": return db.galleryItem.update({ where: { id }, data });
+    case "testimonial": return db.testimonial.update({ where: { id }, data });
     case "post": return db.post.update({ where: { id }, data }); case "post-category": return db.postCategory.update({ where: { id }, data });
   }
 }
@@ -229,7 +293,7 @@ export async function getPublicCmsContent(type: CmsContentType) {
     switch (type) {
       case "activity": return db.activity.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ sortOrder: "asc" }, { slug: "asc" }] });
       case "experience": return db.experience.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ sortOrder: "asc" }, { slug: "asc" }] });
-      case "menu-category": return db.menuCategory.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ sortOrder: "asc" }, { slug: "asc" }], include: { items: { where: publicCmsWhere("menu-item", now), orderBy: [{ sortOrder: "asc" }, { id: "asc" }] } } });
+      case "menu-category": return db.menuCategory.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ sortOrder: "asc" }, { slug: "asc" }], include: { items: { where: publicCmsWhere("menu-item", now) as never, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] } } });
       case "menu-item": return db.menuItem.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] });
       case "faq": return db.faq.findMany({ where: publicCmsWhere(type, now) as never, orderBy: [{ groupKey: "asc" }, { sortOrder: "asc" }] });
       case "offer": return db.offer.findMany({ where: publicCmsWhere(type, now) as never });
@@ -249,7 +313,7 @@ export async function publishScheduledCms(now = new Date(), take = 100) {
     const menuCategoryIds = (await tx.menuCategory.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null }, take, select: { id: true } })).map((row) => row.id);
     const menuItemIds = (await tx.menuItem.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null }, take, select: { id: true } })).map((row) => row.id);
     const faqIds = (await tx.faq.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null }, take, select: { id: true } })).map((row) => row.id);
-    const postIds = (await tx.post.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null }, take, select: { id: true } })).map((row) => row.id);
+    const postIds = (await tx.post.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null, AND: [{ OR: [{ sourceSubmissionId: null }, { sourceSubmission: { status: "APPROVED", consentPublish: true } }] }] }, take, select: { id: true } })).map((row) => row.id);
     const testimonialIds = (await tx.testimonial.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, consentConfirmed: true, deletedAt: null }, take, select: { id: true } })).map((row) => row.id);
     const galleryIds = (await tx.galleryItem.findMany({ where: { status: "SCHEDULED", publishAt: { lte: now }, deletedAt: null, media: { origin: "ADMIN", isPublic: true, deletedAt: null } }, take, select: { id: true } })).map((row) => row.id);
     const results = await Promise.all([
