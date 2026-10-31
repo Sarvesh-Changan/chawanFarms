@@ -160,11 +160,15 @@ export async function getPublicAccommodations() {
   return unstable_cache(async () => {
     const rows = await db.accommodation.findMany({ where: published, orderBy: [{ sortOrder: "asc" }, { slug: "asc" }] });
     const media = await mediaMap(rows.flatMap((row) => [row.heroMediaId, ...row.imageMediaIds]));
-    return rows.map((row) => ({
-      ...row,
-      heroMedia: row.heroMediaId ? media.get(row.heroMediaId) ?? null : null,
-      gallery: row.imageMediaIds.map((id) => media.get(id)).filter((item): item is PublicMedia => Boolean(item)),
-    }));
+    return rows.map((row) => {
+      const heroMedia = row.heroMediaId ? media.get(row.heroMediaId) ?? null : null;
+      const gallery = row.imageMediaIds.map((id) => media.get(id)).filter((item): item is PublicMedia => Boolean(item));
+      return {
+        ...row,
+        heroMedia: heroMedia ?? gallery[0] ?? null,
+        gallery,
+      };
+    });
   }, ["public-content:accommodations"], { tags: ["cms:accommodations", "cms:all"], revalidate: cacheRevalidateSeconds })();
 }
 
@@ -173,10 +177,12 @@ export async function getPublicAccommodationBySlug(slug: string) {
     const row = await db.accommodation.findFirst({ where: { slug, ...published } });
     if (!row) return null;
     const media = await mediaMap([row.heroMediaId, ...row.imageMediaIds]);
+    const heroMedia = row.heroMediaId ? media.get(row.heroMediaId) ?? null : null;
+    const gallery = row.imageMediaIds.map((id) => media.get(id)).filter((item): item is PublicMedia => Boolean(item));
     return {
       ...row,
-      heroMedia: row.heroMediaId ? media.get(row.heroMediaId) ?? null : null,
-      gallery: row.imageMediaIds.map((id) => media.get(id)).filter((item): item is PublicMedia => Boolean(item)),
+      heroMedia: heroMedia ?? gallery[0] ?? null,
+      gallery,
     };
   }, ["public-content:accommodation", slug], { tags: ["cms:accommodations", `cms:accommodation:${slug}`, "cms:all"], revalidate: cacheRevalidateSeconds })();
 }

@@ -47,6 +47,7 @@ function nullableJson(value: unknown): Prisma.InputJsonValue | Prisma.NullableJs
 
 export async function saveAccommodation(input: AccommodationFormData, actorId?: string) {
   const { id, ...fields } = input;
+  const heroMediaId = fields.heroMediaId || fields.imageMediaIds[0] || null;
   const data = {
     slug: fields.slug,
     type: fields.type,
@@ -56,14 +57,14 @@ export async function saveAccommodation(input: AccommodationFormData, actorId?: 
     unitsTotal: fields.unitsTotal,
     maxGuests: fields.maxGuests,
     amenities: nullableJson(fields.amenities),
-    heroMediaId: fields.heroMediaId,
+    heroMediaId,
     imageMediaIds: fields.imageMediaIds,
   } satisfies Prisma.AccommodationUncheckedCreateInput;
   const previous = id ? await db.accommodation.findUnique({ where: { id }, select: { heroMediaId: true, imageMediaIds: true } }) : null;
   const record = await db.$transaction(async (transaction) => {
-    const selectedMedia = [...new Set([fields.heroMediaId, ...fields.imageMediaIds].filter((mediaId): mediaId is string => Boolean(mediaId)))];
+    const selectedMedia = [...new Set([heroMediaId, ...fields.imageMediaIds].filter((mediaId): mediaId is string => Boolean(mediaId)))];
     const availableMedia = selectedMedia.length ? await transaction.media.findMany({
-      where: { id: { in: selectedMedia }, kind: "IMAGE", origin: "ADMIN", isPublic: true, deletedAt: null },
+      where: { id: { in: selectedMedia }, kind: "IMAGE", origin: "ADMIN", deletedAt: null },
       select: { id: true, isPublic: true, uploadedById: true, meta: true },
     }) : [];
     const attachable = availableMedia.filter((media) => {
@@ -79,14 +80,14 @@ export async function saveAccommodation(input: AccommodationFormData, actorId?: 
 
     await transaction.mediaUsage.deleteMany({ where: { entityType: "Accommodation", entityId: record.id, field: { in: ["hero", "gallery"] } } });
     const usages = [
-      ...(fields.heroMediaId ? [{ mediaId: fields.heroMediaId, field: "hero" }] : []),
+      ...(heroMediaId ? [{ mediaId: heroMediaId, field: "hero" }] : []),
       ...fields.imageMediaIds.map((mediaId) => ({ mediaId, field: "gallery" })),
     ];
     if (usages.length) await transaction.mediaUsage.createMany({ data: usages.map((usage) => ({ ...usage, entityType: "Accommodation", entityId: record.id })) });
     return record;
   }, { isolationLevel: "Serializable" });
   const previousMedia = [...new Set([previous?.heroMediaId, ...(previous?.imageMediaIds ?? [])].filter((mediaId): mediaId is string => Boolean(mediaId)))];
-  const nextMedia = new Set([fields.heroMediaId, ...fields.imageMediaIds]);
+  const nextMedia = new Set([heroMediaId, ...fields.imageMediaIds]);
   for (const mediaId of previousMedia) if (!nextMedia.has(mediaId)) await cleanupUnusedAdminMedia(mediaId);
   return record;
 }

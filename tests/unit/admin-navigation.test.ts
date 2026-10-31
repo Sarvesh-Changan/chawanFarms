@@ -10,10 +10,10 @@ const labels = (role: RoleName) => {
 
 describe("permission-filtered admin navigation", () => {
   it.each([
-    ["Super Admin", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "SEO", "Settings", "Security"]],
-    ["Owner/Manager", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "SEO", "Settings", "Security"]],
+    ["Super Admin", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "Settings", "Security"]],
+    ["Owner/Manager", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "Settings", "Security"]],
     ["Reservations", ["Bookings", "Enquiries", "Leads"]],
-    ["Content Editor", ["Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "SEO", "Settings"]],
+    ["Content Editor", ["Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Settings"]],
     ["Reward Moderator", ["Rewards"]],
     ["Read-only", ["Dashboard", "Activity", "Stories", "Gallery", "Menu", "FAQ", "Packages", "Accommodation", "Bookings", "Enquiries", "Leads", "Rewards", "Settings", "Security"]],
   ] as const)("shows only allowed sections for %s", (role, expected) => {

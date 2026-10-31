@@ -79,11 +79,20 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          const persistedUser = await db.user.findUnique({
-            where: { id: user.id },
-            select: { type: true },
-          });
-          if (persistedUser?.type === "CUSTOMER") await ensureCustomerProfile(user.id);
+          try {
+            const persistedUser = await db.user.findUnique({
+              where: { id: user.id },
+              select: { type: true },
+            });
+            if (persistedUser?.type === "CUSTOMER") {
+              await ensureCustomerProfile(user.id);
+            }
+          } catch (error) {
+            const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" && /^[A-Z0-9_]{1,32}$/.test(error.code)
+              ? error.code
+              : undefined;
+            console.error("[auth] customer profile provisioning failed", code ? { code } : undefined);
+          }
         },
       },
     },

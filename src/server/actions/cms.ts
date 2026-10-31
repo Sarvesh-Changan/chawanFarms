@@ -136,11 +136,14 @@ export async function saveAccommodationAction(rawInput: unknown): Promise<Result
       entityId: saved.id,
       before,
       after: saved,
-      tags: [entityTag("accommodation"), ...(before?.slug ? [entityTag("accommodation", before.slug)] : []), entityTag("accommodation", saved.slug)],
-      paths: [listPath("accommodation"), "/admin"],
+      tags: [entityTag("accommodation"), "cms:all", ...(before?.slug ? [entityTag("accommodation", before.slug)] : []), entityTag("accommodation", saved.slug)],
+      paths: [listPath("accommodation"), "/accommodation", `/accommodation/${saved.slug}`, "/", "/admin"],
     });
     return auditResult.ok ? ok({ id: saved.id }) : auditResult;
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === "CMS_IMAGE_UNAVAILABLE") {
+      return err("VALIDATION", "One or more selected images are unavailable or have expired.");
+    }
     return err("CONFLICT", "The accommodation could not be saved. Check for a duplicate slug.");
   }
 }

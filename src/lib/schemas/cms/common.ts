@@ -11,17 +11,22 @@ const localizedShape = {
 export const localizedTextSchema = z.object(localizedShape).strict();
 export type LocalizedText = z.infer<typeof localizedTextSchema>;
 
-export const optionalLocalizedTextSchema = z.object({
-  en: z.string().trim().max(10_000).optional(),
-  mr: z.string().trim().max(10_000).optional(),
-  hi: z.string().trim().max(10_000).optional(),
-}).strict().superRefine((value, context) => {
+export const optionalLocalizedTextSchema = z.union([
+  z.object({
+    en: z.string().trim().max(10_000).optional(),
+    mr: z.string().trim().max(10_000).optional(),
+    hi: z.string().trim().max(10_000).optional(),
+  }).strict(),
+  z.undefined(),
+  z.null(),
+]).superRefine((value, context) => {
+  if (!value) return;
   const hasTranslation = [value.en, value.mr, value.hi].some((entry) => Boolean(entry));
   if (hasTranslation && !value.en) {
     context.addIssue({ code: "custom", path: ["en"], message: "English is required when this field is provided." });
   }
 }).transform((value) => {
-  if (![value.en, value.mr, value.hi].some((entry) => Boolean(entry))) return undefined;
+  if (!value || ![value.en, value.mr, value.hi].some((entry) => Boolean(entry))) return null;
   return { en: value.en ?? "", ...(value.mr ? { mr: value.mr } : {}), ...(value.hi ? { hi: value.hi } : {}) };
 });
 

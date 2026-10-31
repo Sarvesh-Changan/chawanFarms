@@ -22,6 +22,18 @@ export type AuthActionResult = {
 
 const genericLoginError = "Unable to sign in. Check your details and try again.";
 const genericResetError = "If the details are valid, you will receive an email shortly.";
+const signupSuccessMessage = "Check your email to verify your account before signing in.";
+
+function safeAuthErrorDetails(error: unknown): { code?: string; status?: number } {
+  if (!error || typeof error !== "object") return {};
+  const value = error as { code?: unknown; status?: unknown; statusCode?: unknown };
+  const code = typeof value.code === "string" && /^[A-Z0-9_]{1,64}$/.test(value.code) ? value.code : undefined;
+  const statusValue = typeof value.status === "number" ? value.status : value.statusCode;
+  const status = typeof statusValue === "number" && Number.isInteger(statusValue) && statusValue >= 400 && statusValue <= 599
+    ? statusValue
+    : undefined;
+  return { code, status };
+}
 
 function fieldErrors(error: z.ZodError): Record<string, string[]> {
   const errors = new Map<string, string[]>();
@@ -141,8 +153,22 @@ export async function signupAction(rawInput: unknown): Promise<AuthActionResult>
       body: { name: parsed.data.name, email: parsed.data.email, password: parsed.data.password, callbackURL: verificationDestination.redirectTo },
       headers: requestHeaders,
     });
-    return { ok: true, message: "Check your email to verify your account before signing in." };
-  } catch {
+    return { ok: true, message: signupSuccessMessage };
+  } catch (error) {
+    const details = safeAuthErrorDetails(error);
+    console.error("[auth] signup request failed", details);
+    try {
+      // Better Auth can finish creating the user and sending verification mail
+      // before a later post-commit hook rejects the API call. Keep the response
+      // generic and successful when the account was persisted.
+      const persistedUser = await db.user.findUnique({
+        where: { email: parsed.data.email },
+        select: { id: true },
+      });
+      if (persistedUser) return { ok: true, message: signupSuccessMessage };
+    } catch {
+      // Preserve the generic failure if the database cannot confirm persistence.
+    }
     return { ok: false, message: "Unable to create your account. Please try again." };
   }
 }

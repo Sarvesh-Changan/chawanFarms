@@ -1,9 +1,26 @@
 "use client";
 
-import { ArrowUpRight, LayoutDashboard } from "lucide-react";
+import {
+  ArrowUpRight,
+  Award,
+  BedDouble,
+  BookOpen,
+  CalendarCheck,
+  ChevronDown,
+  HelpCircle,
+  Image as ImageIcon,
+  LayoutDashboard,
+  MessageSquare,
+  Package,
+  Settings,
+  Shield,
+  Sparkles,
+  Users,
+  UtensilsCrossed,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useState, type ComponentType, type ReactNode } from "react";
 
 import { AdminInactivityTracker } from "@/components/admin/AdminInactivityTracker";
 import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton";
@@ -12,12 +29,145 @@ import type { StaffPrincipal } from "@/server/authz";
 
 export type AdminNavigationItem = { label: string; href: string; permission: string | readonly string[]; children?: readonly AdminNavigationItem[] };
 
+const NAV_ICONS: Record<string, ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>> = {
+  Dashboard: LayoutDashboard,
+  Activity: Sparkles,
+  Stories: BookOpen,
+  Gallery: ImageIcon,
+  Menu: UtensilsCrossed,
+  FAQ: HelpCircle,
+  Packages: Package,
+  Accommodation: BedDouble,
+  Bookings: CalendarCheck,
+  Enquiries: MessageSquare,
+  Leads: Users,
+  Rewards: Award,
+  Settings: Settings,
+  Security: Shield,
+};
+
 function NavigationLinks({ items, currentPath }: { items: AdminNavigationItem[]; currentPath: string }) {
-  return <nav aria-label="Admin sections" className="grid gap-1">{items.map(({ label, href, children }) => {
-    const Icon = label === "Dashboard" ? LayoutDashboard : ArrowUpRight;
-    const active = href === "/admin" ? currentPath === href : currentPath === href || currentPath.startsWith(`${href}/`);
-    return <div key={href}><Link href={href} aria-current={active && !children?.length ? "page" : undefined} className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm transition-colors ${active ? "bg-forest-900 text-cream-50" : "text-foreground hover:bg-muted"}`}><Icon aria-hidden className="size-4" />{label}</Link>{active && children?.length ? <div className="ml-4 grid gap-1 border-l border-border py-1 pl-3">{children.map((child) => { const selected = currentPath === child.href || currentPath.startsWith(`${child.href}/`); return <Link key={child.href} href={child.href} aria-current={selected ? "page" : undefined} className={`flex min-h-10 items-center rounded-lg px-3 text-xs ${selected ? "bg-muted font-semibold text-forest-900" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>{child.label}</Link>; })}</div> : null}</div>;
-  })}</nav>;
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+
+  const toggleGroup = (href: string, currentState: boolean) => {
+    setOpenGroups((prev) => ({
+      ...prev,
+      [href]: !currentState,
+    }));
+  };
+
+  return (
+    <nav aria-label="Admin sections" className="grid gap-1">
+      {items.map(({ label, href, children }) => {
+        const Icon = NAV_ICONS[label] ?? ArrowUpRight;
+        const hasChildren = Boolean(children?.length);
+
+        const isChildActive = Boolean(
+          children?.some(
+            (child) => currentPath === child.href || currentPath.startsWith(`${child.href}/`),
+          ),
+        );
+        const isSelfActive =
+          href === "/admin"
+            ? currentPath === href
+            : currentPath === href || currentPath.startsWith(`${href}/`);
+        const active = isSelfActive || isChildActive;
+
+        const isOpen = openGroups[href] !== undefined ? openGroups[href] : active;
+
+        return (
+          <div key={href} className="grid gap-1">
+            {hasChildren ? (
+              <div
+                className={`flex min-h-11 items-center justify-between rounded-lg transition-colors ${
+                  active ? "bg-forest-900 text-cream-50" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <Link
+                  href={href}
+                  onClick={(e) => {
+                    if (currentPath === href) {
+                      e.preventDefault();
+                      toggleGroup(href, isOpen);
+                    }
+                  }}
+                  className="flex flex-1 items-center gap-3 px-3 py-2.5 text-sm font-medium outline-none"
+                >
+                  <Icon aria-hidden className="size-4 shrink-0" />
+                  <span className="truncate">{label}</span>
+                </Link>
+                <button
+                  type="button"
+                  aria-label={`Toggle ${label} group`}
+                  aria-expanded={isOpen}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleGroup(href, isOpen);
+                  }}
+                  className={`mr-1.5 flex size-8 items-center justify-center rounded-md transition-colors ${
+                    active
+                      ? "text-cream-50/80 hover:bg-white/10 hover:text-cream-50"
+                      : "text-muted-foreground hover:bg-muted-foreground/10 hover:text-foreground"
+                  }`}
+                >
+                  <ChevronDown
+                    aria-hidden
+                    className={`size-4 shrink-0 transition-transform duration-200 ${
+                      isOpen ? "rotate-0" : "-rotate-90"
+                    }`}
+                  />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors ${
+                  active ? "bg-forest-900 text-cream-50" : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <Icon aria-hidden className="size-4 shrink-0" />
+                <span className="truncate">{label}</span>
+              </Link>
+            )}
+
+            {hasChildren && isOpen && children ? (
+              <div className="ml-4 grid gap-1 border-l border-border py-1 pl-3">
+                {children.map((child) => {
+                  const selected =
+                    currentPath === child.href ||
+                    (child.href !== href && currentPath.startsWith(`${child.href}/`)) ||
+                    (child.href === href &&
+                      currentPath.startsWith(`${child.href}/`) &&
+                      !children.some(
+                        (other) =>
+                          other.href !== href &&
+                          (currentPath === other.href || currentPath.startsWith(`${other.href}/`)),
+                      ));
+
+                  return (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      aria-current={selected ? "page" : undefined}
+                      className={`flex min-h-10 items-center rounded-lg px-3 text-xs transition-colors ${
+                        selected
+                          ? "bg-muted font-semibold text-forest-900"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      {child.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+    </nav>
+  );
 }
 
 function Breadcrumbs({ pathname }: { pathname: string }) {

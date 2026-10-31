@@ -127,14 +127,16 @@ export function PackageEditor({ initial, rates, accommodationOptions, activityOp
   const [message, setMessage] = useState("");
   const [serverErrors, setServerErrors] = useState<Record<string, string[]> | undefined>();
   const [pending, startTransition] = useTransition();
-  const form = useForm<PackageFormInput, unknown, z.output<typeof packageFormSchema>>({ resolver: zodResolver(packageFormSchema), defaultValues: initial });
+  const { status, publishAt, ...formDefaults } = initial;
+  const form = useForm<PackageFormInput, unknown, z.output<typeof packageFormSchema>>({ resolver: zodResolver(packageFormSchema), defaultValues: formDefaults });
   const packageId = initial.id;
   const selectedMediaId = useWatch({ control: form.control, name: "heroMediaId" }) ?? "";
 
   function submit(input: z.output<typeof packageFormSchema>) {
     setServerErrors(undefined);
     startTransition(async () => {
-      const result = await savePackageAction(input);
+      const payload = packageId ? { ...input, id: packageId } : input;
+      const result = await savePackageAction(payload);
       if (!result.ok) {
         setMessage(result.error.message);
         setServerErrors(result.error.fieldErrors);
@@ -154,8 +156,14 @@ export function PackageEditor({ initial, rates, accommodationOptions, activityOp
   }
 
   return <div className="grid gap-6">
-    <PublishBar entityType="package" id={packageId} status={initial.status ?? "DRAFT"} publishAt={initial.publishAt ?? null} canPublish={canPublish} />
-    <form onSubmit={form.handleSubmit(submit)} className="grid gap-6 rounded-2xl border border-border/70 bg-card p-5 sm:p-7">
+    <PublishBar entityType="package" id={packageId} status={status ?? "DRAFT"} publishAt={publishAt ?? null} canPublish={canPublish} />
+    <form
+      onSubmit={form.handleSubmit(submit, () => {
+        setMessage("Please review the form for errors before saving.");
+      })}
+      className="grid gap-6 rounded-2xl border border-border/70 bg-card p-5 sm:p-7"
+    >
+      <input type="hidden" {...form.register("id")} />
       <div><h1 className="font-heading text-3xl text-forest-900">{packageId ? "Edit package" : "Create package"}</h1><p className="mt-1 text-sm text-muted-foreground">Localised fields require English. Do not add unapproved client content.</p></div>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="grid gap-1 text-xs font-medium">Slug<Input {...form.register("slug")} aria-invalid={Boolean(form.formState.errors.slug)} /><span className="text-destructive">{form.formState.errors.slug?.message}</span></label>
