@@ -21,7 +21,7 @@ type FixedSection = { content: Record<string, unknown> };
 const fixedSections: Record<string, FixedSection> = {
   hero: { content: {} },
   location: { content: { heading: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra" }, body: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra" } } },
-  "experiences-grid": { content: { heading: { en: "Stories from the farm" }, body: { en: "Notes, memories and guest stories from Chawan Farms." } } },
+  "experiences-grid": { content: { heading: { en: "Stories from the farm" } } },
   "why-chawan": { content: { heading: { en: "Live with the nature" }, body: { en: "Imagine a place where time slows down." } } },
   packages: { content: { heading: { en: "Per person per day, one night stay" } } },
   accommodation: { content: { heading: { en: "Camping tents / Dormitory · Guest House" }, body: { en: "Lawn area only for Camp Organisers" } } },
@@ -63,8 +63,6 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
     case "accommodation": return <Fragment key={type}><AccommodationsSection section={section} accommodations={data.accommodations.slice(0, 2)}/><ViewAllLink href="/accommodation" label="View all accommodation"/></Fragment>;
     case "food": return <Fragment key={type}><FoodSection section={section} food={data.food.slice(0, 2)}/><ViewAllLink href="/food" label="View all food"/></Fragment>;
     case "activities": return <Fragment key={type}><ActivitiesSection section={section} activities={data.activities.slice(0, 4)}/><ViewAllLink href="/activities" label="View all activities"/></Fragment>;
-    case "gallery": { const items: HomeGalleryItem[] = data.gallery.filter(() => Boolean(env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)).slice(0, 6).map((item) => ({ id: item.id, category: item.category, caption: text(item.caption), publicId: item.media.publicId, alt: mediaAlt(item.media) })); return <section key={type} id="gallery" className="bg-clay-100"><div className={sectionClass}><CmsHeading content={section.content} eyebrow="Gallery"/><div className="mt-10"><HomeGallery cloudName={env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} items={items}/></div><Link href="/gallery" className="text-forest-700 mt-8 inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-turmeric-500">View all gallery →</Link></div></section>; }
     case "rewards-teaser": return <section key={type} className="bg-cream-50"><div className={sectionClass}><RewardsTeaser rule={data.activeRewardRule}/></div></section>;
-    case "final-cta": return <ClosingCta key={type} heading={data.settings.home.closing.headline} settings={data.settings}/>;
-  } })}<nav aria-label="Explore all home sections" className="bg-cream-50 border-forest-900/10 border-t px-4 py-10 sm:px-8 lg:px-12"><div className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-3 text-sm font-semibold"><Link href="/stories">All stories</Link><Link href="/accommodation">All accommodation</Link><Link href="/packages">All packages</Link><Link href="/food">All food</Link><Link href="/activities">All activities</Link><Link href="/gallery">All gallery</Link><Link href="/contact#find-us">Find us</Link></div></nav></main>;
+  } })}</main>;
 }

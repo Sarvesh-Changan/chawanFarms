@@ -91,7 +91,7 @@ export function BookingsList({
             <Button asChild variant="outline">
               <Link href="/admin/calendar">Arrivals & Calendar</Link>
             </Button>
-            <Button asChild className="bg-forest-800 text-white hover:bg-forest-900">
+            <Button asChild className="bg-forest-900 text-cream-50 hover:bg-forest-700 shadow-sm font-semibold">
               <Link href="/admin/bookings/new">+ New Manual Booking</Link>
             </Button>
           </div>

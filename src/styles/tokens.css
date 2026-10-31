@@ -1,6 +1,7 @@
 /* Starting values from DESIGN.md; subject to client approval. */
 :root {
   --forest-900: #12301f;
+  --forest-800: #173e28;
   --forest-700: #1f4d33;
   --leaf-500: #4e8f3a;
   --paddy-300: #b7c96b;
@@ -39,6 +40,7 @@
 
 @theme inline {
   --color-forest-900: var(--forest-900);
+  --color-forest-800: var(--forest-800);
   --color-forest-700: var(--forest-700);
   --color-leaf-500: var(--leaf-500);
   --color-paddy-300: var(--paddy-300);

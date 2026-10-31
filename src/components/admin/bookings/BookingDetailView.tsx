@@ -92,6 +92,17 @@ type BookingDetailViewProps = {
   auditLogs: AuditLogEntry[];
 };
 
+function formatLocalizedValue(value: unknown, fallback: string): string {
+  if (!value) return fallback;
+  if (typeof value === "string") return value;
+  if (typeof value === "object" && value !== null) {
+    const record = value as Record<string, unknown>;
+    const text = record.en || record.mr || record.hi || Object.values(record)[0];
+    if (typeof text === "string" && text.trim()) return text;
+  }
+  return fallback;
+}
+
 export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -308,7 +319,7 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
             {booking.status === "PENDING_CONFIRMATION" || booking.status === "ENQUIRY" ? (
               <>
                 <Button
-                  className="bg-forest-800 text-white hover:bg-forest-900"
+                  className="bg-forest-900 text-cream-50 hover:bg-forest-700 shadow-sm font-semibold"
                   disabled={isPending}
                   onClick={() => {
                     if (booking.paymentStatus === "PAID") {
@@ -413,8 +424,8 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
             <div>Check-in: <span className="font-mono font-medium">{checkInDateStr}</span></div>
             <div>Check-out: <span className="font-mono font-medium">{checkOutDateStr}</span></div>
             <div>Duration: {booking.nights === 0 ? "Day Visit (0 nights)" : `${booking.nights} night(s)`}</div>
-            <div>Package: {booking.package ? (typeof booking.package.name === "object" ? JSON.stringify(booking.package.name) : String(booking.package.name)) : "Standard"}</div>
-            <div>Accommodation: {booking.accommodation ? (typeof booking.accommodation.name === "object" ? JSON.stringify(booking.accommodation.name) : String(booking.accommodation.name)) : "None"}</div>
+            <div>Package: <span className="font-medium text-foreground">{booking.package ? formatLocalizedValue(booking.package.name, "Standard") : "Standard"}</span></div>
+            <div>Accommodation: <span className="font-medium text-foreground">{booking.accommodation ? formatLocalizedValue(booking.accommodation.name, "None") : "None"}</span></div>
           </div>
           <div className="border-t border-border pt-3 flex gap-2">
             <StatusBadge status={booking.status} />
@@ -431,7 +442,7 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
             <div className="flex gap-1">
               <Button
                 size="sm"
-                className="bg-forest-800 text-white hover:bg-forest-900"
+                className="bg-forest-900 text-cream-50 hover:bg-forest-700 shadow-sm font-semibold"
                 disabled={outstandingPaise <= 0 || isPending}
                 onClick={() => setShowPaymentModal(true)}
               >
@@ -662,7 +673,7 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
                 Cancel
               </Button>
               <Button
-                className="bg-forest-800 text-white hover:bg-forest-900"
+                className="bg-forest-900 text-cream-50 hover:bg-forest-700 shadow-sm font-semibold"
                 disabled={!overrideReason.trim() || isPending}
                 onClick={() =>
                   handleStatusTransition("CONFIRMED", undefined, overrideReason.trim())
@@ -787,7 +798,7 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
                 Cancel
               </Button>
               <Button
-                className="bg-forest-800 text-white hover:bg-forest-900"
+                className="bg-forest-900 text-cream-50 hover:bg-forest-700 shadow-sm font-semibold"
                 disabled={!paymentAmountRupees || isPending}
                 onClick={handleRecordPayment}
               >
@@ -914,7 +925,7 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
                 Cancel
               </Button>
               <Button
-                className="bg-forest-800 text-white hover:bg-forest-900"
+                className="bg-forest-900 text-cream-50 hover:bg-forest-700 shadow-sm font-semibold"
                 disabled={!rescheduleReason.trim() || isPending}
                 onClick={handleReschedule}
               >

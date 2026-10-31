@@ -476,7 +476,7 @@ export function ManualBookingForm({
           </Button>
           <Button
             type="submit"
-            className="bg-forest-800 text-white hover:bg-forest-900"
+            className="bg-forest-900 text-cream-50 hover:bg-forest-700 shadow-sm font-semibold"
             disabled={isPending}
           >
             {isPending ? "Submitting..." : "Create Reservation"}

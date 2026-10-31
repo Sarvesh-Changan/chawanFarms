@@ -1,13 +1,26 @@
 import type { ReactNode } from "react";
 
-export function AccountFrame({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+export function AccountFrame({
+  title,
+  description,
+  action,
+  children,
+}: {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <main className="min-w-0 flex-1 bg-cream-50 px-4 py-6 pb-24 sm:px-8 sm:py-10 lg:px-10 lg:pb-10">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-7">
-          <p className="text-xs font-semibold tracking-[0.18em] text-laterite-600 uppercase">Chawan Farms</p>
-          <h1 className="font-heading mt-2 text-3xl text-forest-900 sm:text-4xl">{title}</h1>
-          {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
+        <header className="mb-7 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.18em] text-laterite-600 uppercase">Chawan Farms</p>
+            <h1 className="font-heading mt-2 text-3xl text-forest-900 sm:text-4xl">{title}</h1>
+            {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
+          </div>
+          {action ? <div className="shrink-0">{action}</div> : null}
         </header>
         {children}
       </div>
