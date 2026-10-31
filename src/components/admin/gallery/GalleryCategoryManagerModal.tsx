@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import { Edit2, Plus, Trash2, X } from "lucide-react";
+import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,14 +33,19 @@ export function GalleryCategoryManagerModal({
   const [editedName, setEditedName] = useState("");
   const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
   const [reassignCategory, setReassignCategory] = useState<string>("");
-  const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const [message, setMessage] = useState<{
+    text: string;
+    error?: boolean;
+  } | null>(null);
   const [pending, startTransition] = useTransition();
 
   const activeCategories = categories ?? initialCategories ?? [];
 
   if (!isOpen) return null;
 
-  const countMap = new Map((categoryCounts ?? []).map((c) => [c.category.toLowerCase(), c.count]));
+  const countMap = new Map(
+    (categoryCounts ?? []).map((c) => [c.category.toLowerCase(), c.count]),
+  );
   const getCount = (cat: string) => countMap.get(cat.toLowerCase()) ?? 0;
 
   function handleAdd() {
@@ -70,7 +75,10 @@ export function GalleryCategoryManagerModal({
     }
     setMessage(null);
     startTransition(async () => {
-      const result = await editGalleryCategoryAction({ oldName, newName: trimmed });
+      const result = await editGalleryCategoryAction({
+        oldName,
+        newName: trimmed,
+      });
       if (result.ok) {
         setEditingCategory(null);
         onCategoriesChanged(result.data.categories);
@@ -114,20 +122,23 @@ export function GalleryCategoryManagerModal({
       aria-labelledby="manage-categories-heading"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
     >
-      <div className="relative max-h-[90vh] w-full max-w-xl overflow-hidden rounded-2xl border border-border/70 bg-card p-6 shadow-2xl">
+      <div className="border-border/70 bg-card relative max-h-[90vh] w-full max-w-xl overflow-hidden rounded-2xl border p-6 shadow-2xl">
         <div className="flex items-center justify-between border-b pb-4">
           <div>
-            <h2 id="manage-categories-heading" className="text-lg font-bold text-foreground">
+            <h2
+              id="manage-categories-heading"
+              className="text-foreground text-lg font-bold"
+            >
               Manage Gallery Categories
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Add new categories, rename, or delete existing ones.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-full p-1.5"
             aria-label="Close dialog"
           >
             <X className="h-5 w-5" />
@@ -138,7 +149,9 @@ export function GalleryCategoryManagerModal({
           <div
             role="status"
             className={`mt-4 rounded-lg p-3 text-sm ${
-              message.error ? "bg-destructive/10 text-destructive" : "bg-forest-900/10 text-forest-900"
+              message.error
+                ? "bg-destructive/10 text-destructive"
+                : "bg-forest-900/10 text-forest-900"
             }`}
           >
             {message.text}
@@ -146,8 +159,8 @@ export function GalleryCategoryManagerModal({
         )}
 
         {/* Add Category Form */}
-        <div className="mt-5 rounded-xl border border-border/70 bg-muted/40 p-4">
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="border-border/70 bg-muted/40 mt-5 rounded-xl border p-4">
+          <label className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             Add New Category
           </label>
           <div className="mt-2 flex gap-2">
@@ -168,7 +181,7 @@ export function GalleryCategoryManagerModal({
               type="button"
               onClick={handleAdd}
               disabled={pending || !newCategoryName.trim()}
-              className="gap-1.5 shrink-0"
+              className="shrink-0 gap-1.5"
             >
               <Plus className="h-4 w-4" /> Add
             </Button>
@@ -177,7 +190,7 @@ export function GalleryCategoryManagerModal({
 
         {/* Categories List */}
         <div className="mt-5">
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <label className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             Existing Categories ({activeCategories.length})
           </label>
           <div className="mt-2 max-h-72 space-y-2 overflow-y-auto pr-1">
@@ -185,13 +198,15 @@ export function GalleryCategoryManagerModal({
               const count = getCount(category);
               const isEditing = editingCategory === category;
               const isDeleting = deletingCategory === category;
-              const otherCategories = activeCategories.filter((c) => c !== category);
+              const otherCategories = activeCategories.filter(
+                (c) => c !== category,
+              );
 
               if (isEditing) {
                 return (
                   <div
                     key={category}
-                    className="flex items-center gap-2 rounded-lg border border-forest-700 bg-background p-2.5"
+                    className="border-forest-700 bg-background flex items-center gap-2 rounded-lg border p-2.5"
                   >
                     <Input
                       value={editedName}
@@ -230,22 +245,25 @@ export function GalleryCategoryManagerModal({
                 return (
                   <div
                     key={category}
-                    className="rounded-lg border border-destructive/50 bg-destructive/5 p-3 text-sm space-y-3"
+                    className="border-destructive/50 bg-destructive/5 space-y-3 rounded-lg border p-3 text-sm"
                   >
-                    <p className="font-medium text-destructive">
+                    <p className="text-destructive font-medium">
                       Delete category &ldquo;{category}&rdquo;?
                     </p>
                     {count > 0 && (
                       <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">
-                          {count} item(s) are currently in this category. Reassign them to:
+                        <p className="text-muted-foreground text-xs">
+                          {count} item(s) are currently in this category.
+                          Reassign them to:
                         </p>
                         <select
                           value={reassignCategory}
                           onChange={(e) => setReassignCategory(e.target.value)}
-                          className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                          className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
                         >
-                          <option value="">Select a replacement category…</option>
+                          <option value="">
+                            Select a replacement category…
+                          </option>
                           {otherCategories.map((c) => (
                             <option key={c} value={c}>
                               {c}
@@ -284,11 +302,13 @@ export function GalleryCategoryManagerModal({
               return (
                 <div
                   key={category}
-                  className="flex items-center justify-between rounded-lg border border-border/70 bg-card p-3 hover:bg-muted/30 transition-colors"
+                  className="border-border/70 bg-card hover:bg-muted/30 flex items-center justify-between rounded-lg border p-3 transition-colors"
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="font-medium text-foreground">{category}</span>
-                    <span className="rounded-full bg-secondary/80 px-2 py-0.5 text-xs text-secondary-foreground">
+                    <span className="text-foreground font-medium">
+                      {category}
+                    </span>
+                    <span className="bg-secondary/80 text-secondary-foreground rounded-full px-2 py-0.5 text-xs">
                       {count} {count === 1 ? "item" : "items"}
                     </span>
                   </div>

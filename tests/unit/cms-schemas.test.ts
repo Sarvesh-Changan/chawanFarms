@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { accommodationFormSchema } from "@/lib/schemas/cms/accommodation";
-import { packageFormSchema, packageRateFormSchema } from "@/lib/schemas/cms/package";
+import {
+  packageFormSchema,
+  packageRateFormSchema,
+} from "@/lib/schemas/cms/package";
 import { settingsFormSchema } from "@/lib/schemas/cms/settings";
 
 const packageInput = {
@@ -24,7 +27,12 @@ const packageInput = {
 
 describe("CMS schemas", () => {
   it("requires English for localised package names", () => {
-    expect(packageFormSchema.safeParse({ ...packageInput, name: { en: "", mr: "मराठी", hi: "" } }).success).toBe(false);
+    expect(
+      packageFormSchema.safeParse({
+        ...packageInput,
+        name: { en: "", mr: "मराठी", hi: "" },
+      }).success,
+    ).toBe(false);
     expect(packageFormSchema.safeParse(packageInput).success).toBe(true);
   });
 
@@ -42,7 +50,11 @@ describe("CMS schemas", () => {
       imageMediaIds: [],
     });
     expect(result.success).toBe(true);
-    if (result.success) expect([result.data.unitsTotal, result.data.maxGuests]).toEqual([null, null]);
+    if (result.success)
+      expect([result.data.unitsTotal, result.data.maxGuests]).toEqual([
+        null,
+        null,
+      ]);
   });
 
   it("validates existing accommodation with uuid id and cottage type", () => {
@@ -62,7 +74,9 @@ describe("CMS schemas", () => {
       publishAt: null,
     };
     // Simulating how AccommodationEditor extracts formDefaults without status/publishAt
-    const { status, publishAt, ...formDefaults } = rawInitial;
+    const formDefaults = { ...rawInitial };
+    delete formDefaults.status;
+    delete formDefaults.publishAt;
     const parsed = accommodationFormSchema.safeParse(formDefaults);
     expect(parsed.success).toBe(true);
     if (parsed.success) {
@@ -117,7 +131,10 @@ describe("CMS schemas", () => {
     };
     const parsed = packageRateFormSchema.safeParse(input);
     expect(parsed.success && parsed.data.amountPaise).toBe(140001);
-    expect(packageRateFormSchema.safeParse({ ...input, amountRupees: "1400.001" }).success).toBe(false);
+    expect(
+      packageRateFormSchema.safeParse({ ...input, amountRupees: "1400.001" })
+        .success,
+    ).toBe(false);
   });
 
   it("rejects impossible rate dates", () => {

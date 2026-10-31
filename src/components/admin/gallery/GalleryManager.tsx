@@ -7,10 +7,28 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GALLERY_CATEGORIES } from "@/config/gallery";
-import { bulkUpdateGalleryAction, reorderGalleryItemAction, updateGalleryFlagsAction } from "@/server/actions/cms-content";
+import {
+  bulkUpdateGalleryAction,
+  reorderGalleryItemAction,
+  updateGalleryFlagsAction,
+} from "@/server/actions/cms-content";
+
 import { GalleryCategoryManagerModal } from "./GalleryCategoryManagerModal";
 
-type Row = { id: string; category: string; status: string; sortOrder: number; isFeatured: boolean; media: { publicId: string; format: string | null; bytes: number | null; contentHash: string | null; isPublic: boolean } };
+type Row = {
+  id: string;
+  category: string;
+  status: string;
+  sortOrder: number;
+  isFeatured: boolean;
+  media: {
+    publicId: string;
+    format: string | null;
+    bytes: number | null;
+    contentHash: string | null;
+    isPublic: boolean;
+  };
+};
 
 export function GalleryManager({
   rows,
@@ -22,7 +40,12 @@ export function GalleryManager({
   rows: Row[];
   categories?: string[];
   categoryCounts: Array<{ category: string; count: number }>;
-  filters: { q: string; status: string; category: string; duplicatesOnly: boolean };
+  filters: {
+    q: string;
+    status: string;
+    category: string;
+    duplicatesOnly: boolean;
+  };
   canWrite: boolean;
 }) {
   const router = useRouter();
@@ -33,10 +56,17 @@ export function GalleryManager({
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  function run(action: () => Promise<{ ok: boolean; error?: { message: string } }>, success: string) {
+  function run(
+    action: () => Promise<{ ok: boolean; error?: { message: string } }>,
+    success: string,
+  ) {
     startTransition(async () => {
       const result = await action();
-      setMessage(result.ok ? success : result.error?.message || "The change could not be saved.");
+      setMessage(
+        result.ok
+          ? success
+          : result.error?.message || "The change could not be saved.",
+      );
       if (result.ok) {
         setSelected([]);
         router.refresh();
@@ -44,16 +74,24 @@ export function GalleryManager({
     });
   }
 
-  const allSelected = rows.length > 0 && rows.every((row) => selected.includes(row.id));
+  const allSelected =
+    rows.length > 0 && rows.every((row) => selected.includes(row.id));
 
   return (
     <div className="grid gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Gallery filters">
-          <Link href="/admin/gallery" className="rounded-full border px-3 py-2 text-sm">
+        <div
+          className="flex flex-wrap gap-2"
+          role="tablist"
+          aria-label="Gallery filters"
+        >
+          <Link
+            href="/admin/gallery"
+            className="rounded-full border px-3 py-2 text-sm"
+          >
             Items ({rows.length})
           </Link>
-          <span className="rounded-full border px-3 py-2 text-sm text-muted-foreground">
+          <span className="text-muted-foreground rounded-full border px-3 py-2 text-sm">
             Categories ({categoryList.length})
           </span>
         </div>
@@ -85,18 +123,22 @@ export function GalleryManager({
 
       <form
         method="get"
-        className="grid gap-3 rounded-xl border border-border/70 bg-card p-4 sm:grid-cols-[1fr_auto_auto_auto]"
+        className="border-border/70 bg-card grid gap-3 rounded-xl border p-4 sm:grid-cols-[1fr_auto_auto_auto]"
       >
         <label className="grid gap-1 text-xs font-medium">
           Search
-          <Input name="q" defaultValue={filters.q} placeholder="Title or public ID" />
+          <Input
+            name="q"
+            defaultValue={filters.q}
+            placeholder="Title or public ID"
+          />
         </label>
         <label className="grid gap-1 text-xs font-medium">
           Status
           <select
             name="status"
             defaultValue={filters.status}
-            className="min-h-11 rounded-lg border border-input bg-background px-3"
+            className="border-input bg-background min-h-11 rounded-lg border px-3"
           >
             <option value="">All</option>
             {["DRAFT", "SCHEDULED", "PUBLISHED", "ARCHIVED"].map((status) => (
@@ -109,7 +151,7 @@ export function GalleryManager({
           <select
             name="category"
             defaultValue={filters.category}
-            className="min-h-11 rounded-lg border border-input bg-background px-3"
+            className="border-input bg-background min-h-11 rounded-lg border px-3"
           >
             <option value="">All categories</option>
             {categoryList.map((category) => (
@@ -128,7 +170,11 @@ export function GalleryManager({
           />{" "}
           Duplicates only
         </label>
-        <Button type="submit" variant="outline" className="sm:col-span-4 sm:w-fit">
+        <Button
+          type="submit"
+          variant="outline"
+          className="sm:col-span-4 sm:w-fit"
+        >
           Apply filters
         </Button>
       </form>
@@ -140,8 +186,9 @@ export function GalleryManager({
           disabled={!canWrite || !selected.length || pending}
           onClick={() =>
             run(
-              () => bulkUpdateGalleryAction({ ids: selected, action: "publish" }),
-              "Selected items published."
+              () =>
+                bulkUpdateGalleryAction({ ids: selected, action: "publish" }),
+              "Selected items published.",
             )
           }
         >
@@ -153,8 +200,9 @@ export function GalleryManager({
           disabled={!canWrite || !selected.length || pending}
           onClick={() =>
             run(
-              () => bulkUpdateGalleryAction({ ids: selected, action: "unpublish" }),
-              "Selected items unpublished."
+              () =>
+                bulkUpdateGalleryAction({ ids: selected, action: "unpublish" }),
+              "Selected items unpublished.",
             )
           }
         >
@@ -164,7 +212,7 @@ export function GalleryManager({
           aria-label="Bulk category"
           value={bulkCategory}
           onChange={(event) => setBulkCategory(event.target.value)}
-          className="min-h-10 rounded-lg border border-input bg-background px-3 text-sm"
+          className="border-input bg-background min-h-10 rounded-lg border px-3 text-sm"
         >
           <option value="">Change category…</option>
           {categoryList.map((category) => (
@@ -185,7 +233,7 @@ export function GalleryManager({
                   action: "category",
                   category: bulkCategory,
                 }),
-              "Selected categories updated."
+              "Selected categories updated.",
             )
           }
         >
@@ -198,21 +246,22 @@ export function GalleryManager({
           onClick={() => {
             if (window.confirm("Delete the selected gallery items?"))
               run(
-                () => bulkUpdateGalleryAction({ ids: selected, action: "delete" }),
-                "Selected items deleted."
+                () =>
+                  bulkUpdateGalleryAction({ ids: selected, action: "delete" }),
+                "Selected items deleted.",
               );
           }}
         >
           Delete selected
         </Button>
         {message ? (
-          <p role="status" className="text-sm text-muted-foreground">
+          <p role="status" className="text-muted-foreground text-sm">
             {message}
           </p>
         ) : null}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border/70">
+      <div className="border-border/70 overflow-x-auto rounded-xl border">
         <table className="w-full min-w-[48rem] text-left text-sm">
           <thead className="bg-muted">
             <tr>
@@ -247,7 +296,7 @@ export function GalleryManager({
                       setSelected((current) =>
                         current.includes(row.id)
                           ? current.filter((id) => id !== row.id)
-                          : [...current, row.id]
+                          : [...current, row.id],
                       )
                     }
                   />
@@ -274,9 +323,11 @@ export function GalleryManager({
                         () =>
                           updateGalleryFlagsAction({
                             id: row.id,
-                            status: event.target.checked ? "PUBLISHED" : "DRAFT",
+                            status: event.target.checked
+                              ? "PUBLISHED"
+                              : "DRAFT",
                           }),
-                        "Publication updated."
+                        "Publication updated.",
                       )
                     }
                   />
@@ -294,7 +345,7 @@ export function GalleryManager({
                             id: row.id,
                             isFeatured: event.target.checked,
                           }),
-                        "Featured state updated."
+                        "Featured state updated.",
                       )
                     }
                   />
@@ -313,7 +364,7 @@ export function GalleryManager({
                               id: row.id,
                               direction: "up",
                             }),
-                          "Item moved up."
+                          "Item moved up.",
                         )
                       }
                       aria-label={`Move ${row.media.publicId} up`}
@@ -332,7 +383,7 @@ export function GalleryManager({
                               id: row.id,
                               direction: "down",
                             }),
-                          "Item moved down."
+                          "Item moved down.",
                         )
                       }
                       aria-label={`Move ${row.media.publicId} down`}
@@ -351,7 +402,7 @@ export function GalleryManager({
           </tbody>
         </table>
         {!rows.length ? (
-          <p className="p-8 text-center text-sm text-muted-foreground">
+          <p className="text-muted-foreground p-8 text-center text-sm">
             No gallery items match these filters.
           </p>
         ) : null}

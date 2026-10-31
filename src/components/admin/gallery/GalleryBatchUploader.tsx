@@ -1,15 +1,24 @@
 "use client";
 
+import {
+  Check,
+  Image as ImageIcon,
+  Loader2,
+  Play,
+  Plus,
+  Trash2,
+  UploadCloud,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
-import { Check, Film, Image as ImageIcon, Loader2, Play, Plus, Trash2, UploadCloud } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatMediaBytes, mediaPolicy } from "@/config/media";
 import { batchCreateGalleryItemsAction } from "@/server/actions/gallery-batch";
+
 import { GalleryCategoryManagerModal } from "./GalleryCategoryManagerModal";
 
 type Signature = {
@@ -63,8 +72,16 @@ async function uploadMediaFile(
     body: JSON.stringify({ purpose }),
   });
 
-  const signature = (await signatureResponse.json().catch(() => undefined)) as Partial<Signature>;
-  if (!signatureResponse.ok || !signature.apiKey || !signature.uploadEndpoint || !signature.signature || !signature.signedParams) {
+  const signature = (await signatureResponse
+    .json()
+    .catch(() => undefined)) as Partial<Signature>;
+  if (
+    !signatureResponse.ok ||
+    !signature.apiKey ||
+    !signature.uploadEndpoint ||
+    !signature.signature ||
+    !signature.signedParams
+  ) {
     throw new Error("Could not authorize upload with Cloudinary.");
   }
 
@@ -76,7 +93,11 @@ async function uploadMediaFile(
     data.append(key, String(entry));
   }
 
-  const uploaded = (await uploadToCloudinary(signature.uploadEndpoint, data, onProgress)) as {
+  const uploaded = (await uploadToCloudinary(
+    signature.uploadEndpoint,
+    data,
+    onProgress,
+  )) as {
     public_id?: string;
   };
 
@@ -88,7 +109,10 @@ async function uploadMediaFile(
   const confirmBody =
     kind === "VIDEO"
       ? { publicId, description: caption.trim() || file.name }
-      : { publicId, ...(caption.trim() ? { altText: { en: caption.trim() } } : {}) };
+      : {
+          publicId,
+          ...(caption.trim() ? { altText: { en: caption.trim() } } : {}),
+        };
 
   const confirmation = await fetch("/api/upload-confirm", {
     method: "POST",
@@ -124,20 +148,23 @@ type BatchItem = {
 
 export function GalleryBatchUploader({
   initialCategories = [],
-  cloudName = "",
 }: {
   initialCategories: string[];
-  cloudName?: string;
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [categories, setCategories] = useState<string[]>(initialCategories);
-  const [defaultCategory, setDefaultCategory] = useState<string>(categories[0] ?? "Farm");
+  const [defaultCategory, setDefaultCategory] = useState<string>(
+    categories[0] ?? "Farm",
+  );
   const [items, setItems] = useState<BatchItem[]>([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [globalMessage, setGlobalMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const [globalMessage, setGlobalMessage] = useState<{
+    text: string;
+    error?: boolean;
+  } | null>(null);
 
   const imagePolicy = mediaPolicy("admin_image");
   const videoPolicy = mediaPolicy("admin_video");
@@ -158,8 +185,10 @@ export function GalleryBatchUploader({
 
     for (const file of fileList) {
       const ext = extension(file);
-      const isImg = imagePolicy.formats.includes(ext) || file.type.startsWith("image/");
-      const isVid = videoPolicy.formats.includes(ext) || file.type.startsWith("video/");
+      const isImg =
+        imagePolicy.formats.includes(ext) || file.type.startsWith("image/");
+      const isVid =
+        videoPolicy.formats.includes(ext) || file.type.startsWith("video/");
 
       if (!isImg && !isVid) {
         errors.push(`"${file.name}": Unsupported format.`);
@@ -167,7 +196,8 @@ export function GalleryBatchUploader({
       }
 
       const kind: "IMAGE" | "VIDEO" = isVid ? "VIDEO" : "IMAGE";
-      const maxBytes = kind === "VIDEO" ? videoPolicy.maxBytes : imagePolicy.maxBytes;
+      const maxBytes =
+        kind === "VIDEO" ? videoPolicy.maxBytes : imagePolicy.maxBytes;
       if (file.size > maxBytes) {
         errors.push(
           `"${file.name}": File too large (max ${formatMediaBytes(maxBytes)}).`,
@@ -211,21 +241,33 @@ export function GalleryBatchUploader({
   async function startUpload(item: BatchItem) {
     setItems((curr) =>
       curr.map((i) =>
-        i.key === item.key ? { ...i, status: "uploading", progress: 0, error: undefined } : i,
+        i.key === item.key
+          ? { ...i, status: "uploading", progress: 0, error: undefined }
+          : i,
       ),
     );
 
     try {
-      const result = await uploadMediaFile(item.file, item.kind, item.caption, (progress) => {
-        setItems((curr) =>
-          curr.map((i) => (i.key === item.key ? { ...i, progress } : i)),
-        );
-      });
+      const result = await uploadMediaFile(
+        item.file,
+        item.kind,
+        item.caption,
+        (progress) => {
+          setItems((curr) =>
+            curr.map((i) => (i.key === item.key ? { ...i, progress } : i)),
+          );
+        },
+      );
 
       setItems((curr) =>
         curr.map((i) =>
           i.key === item.key
-            ? { ...i, status: "uploaded", progress: 100, mediaId: result.mediaId }
+            ? {
+                ...i,
+                status: "uploaded",
+                progress: 100,
+                mediaId: result.mediaId,
+              }
             : i,
         ),
       );
@@ -257,23 +299,34 @@ export function GalleryBatchUploader({
     setItems((curr) => curr.map((i) => ({ ...i, category: cat })));
   }
 
-  const uploadedCount = items.filter((i) => i.status === "uploaded" && i.mediaId).length;
-  const isAllUploaded = items.length > 0 && uploadedCount === items.length;
+  const uploadedCount = items.filter(
+    (i) => i.status === "uploaded" && i.mediaId,
+  ).length;
   const isAnyUploading = items.some((i) => i.status === "uploading");
 
   async function handleBatchSave(status: "DRAFT" | "PUBLISHED") {
-    const validItems = items.filter((i) => i.status === "uploaded" && i.mediaId);
+    const validItems = items.filter(
+      (i) => i.status === "uploaded" && i.mediaId,
+    );
     if (!validItems.length) {
-      setGlobalMessage({ text: "Please wait for files to finish uploading.", error: true });
+      setGlobalMessage({
+        text: "Please wait for files to finish uploading.",
+        error: true,
+      });
       return;
     }
 
     setIsSubmitting(true);
     setGlobalMessage(null);
 
+    const uploadedItems = validItems.filter(
+      (i): i is BatchItem & { mediaId: string } =>
+        typeof i.mediaId === "string" && i.mediaId.length > 0,
+    );
+
     const payload = {
-      items: validItems.map((i) => ({
-        mediaId: i.mediaId!,
+      items: uploadedItems.map((i) => ({
+        mediaId: i.mediaId,
         category: i.category,
         caption: i.caption,
         isFeatured: i.isFeatured,
@@ -314,8 +367,8 @@ export function GalleryBatchUploader({
           role="status"
           className={`rounded-xl p-4 text-sm font-medium ${
             globalMessage.error
-              ? "border border-destructive/30 bg-destructive/10 text-destructive"
-              : "border border-forest-900/30 bg-forest-900/10 text-forest-900"
+              ? "border-destructive/30 bg-destructive/10 text-destructive border"
+              : "border-forest-900/30 bg-forest-900/10 text-forest-900 border"
           }`}
         >
           {globalMessage.text}
@@ -323,16 +376,16 @@ export function GalleryBatchUploader({
       )}
 
       {/* Batch Header Controls */}
-      <div className="grid gap-4 rounded-2xl border border-border/80 bg-card p-5 sm:flex sm:items-center sm:justify-between">
+      <div className="border-border/80 bg-card grid gap-4 rounded-2xl border p-5 sm:flex sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-3">
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <label className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
             Category for new items:
           </label>
           <div className="flex items-center gap-2">
             <select
               value={defaultCategory}
               onChange={(e) => applyCategoryToAll(e.target.value)}
-              className="h-10 rounded-lg border border-input bg-background px-3 text-sm font-medium"
+              className="border-input bg-background h-10 rounded-lg border px-3 text-sm font-medium"
             >
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
@@ -417,22 +470,23 @@ export function GalleryBatchUploader({
           onChange={(e) => handleFiles(e.target.files)}
         />
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-forest-900/10 text-forest-900">
+          <div className="bg-forest-900/10 text-forest-900 flex h-14 w-14 items-center justify-center rounded-full">
             <UploadCloud className="h-7 w-7" />
           </div>
           <div>
-            <p className="text-base font-semibold text-foreground">
+            <p className="text-foreground text-base font-semibold">
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="text-forest-800 underline underline-offset-4 hover:text-forest-900"
+                className="text-forest-800 hover:text-forest-900 underline underline-offset-4"
               >
                 Choose multiple photos and videos
               </button>{" "}
               or drag &amp; drop them here
             </p>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Images up to 10MB (JPG, PNG, WebP, AVIF) · Videos up to 100MB (MP4, WebM)
+            <p className="text-muted-foreground mt-1.5 text-xs">
+              Images up to 10MB (JPG, PNG, WebP, AVIF) · Videos up to 100MB
+              (MP4, WebM)
             </p>
           </div>
           <Button
@@ -451,11 +505,12 @@ export function GalleryBatchUploader({
       {items.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-heading text-lg text-foreground">
+            <h3 className="font-heading text-foreground text-lg">
               Upload Queue ({uploadedCount} of {items.length} ready)
             </h3>
-            <span className="text-xs text-muted-foreground">
-              Customize caption, category, or featured state for each item before saving.
+            <span className="text-muted-foreground text-xs">
+              Customize caption, category, or featured state for each item
+              before saving.
             </span>
           </div>
 
@@ -465,10 +520,10 @@ export function GalleryBatchUploader({
               return (
                 <div
                   key={item.key}
-                  className="flex flex-col overflow-hidden rounded-xl border border-border/80 bg-card shadow-sm transition-shadow hover:shadow-md"
+                  className="border-border/80 bg-card flex flex-col overflow-hidden rounded-xl border shadow-sm transition-shadow hover:shadow-md"
                 >
                   {/* Media Preview Box */}
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+                  <div className="bg-muted relative aspect-[16/10] w-full overflow-hidden">
                     {isVideo ? (
                       <video
                         src={item.previewUrl}
@@ -486,7 +541,7 @@ export function GalleryBatchUploader({
                     )}
 
                     {/* Media Type Badge */}
-                    <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
+                    <span className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
                       {isVideo ? (
                         <>
                           <Play className="h-3 w-3 fill-current" /> Video
@@ -500,14 +555,14 @@ export function GalleryBatchUploader({
 
                     {/* Upload Status Overlay */}
                     <span
-                      className={`absolute right-2.5 top-2.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                      className={`absolute top-2.5 right-2.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                         item.status === "uploaded"
                           ? "bg-forest-900/90 text-cream-50"
                           : item.status === "uploading"
-                          ? "bg-black/75 text-white"
-                          : item.status === "error"
-                          ? "bg-destructive text-destructive-foreground"
-                          : "bg-muted text-muted-foreground"
+                            ? "bg-black/75 text-white"
+                            : item.status === "error"
+                              ? "bg-destructive text-destructive-foreground"
+                              : "bg-muted text-muted-foreground"
                       }`}
                     >
                       {item.status === "uploaded" ? (
@@ -516,7 +571,8 @@ export function GalleryBatchUploader({
                         </span>
                       ) : item.status === "uploading" ? (
                         <span className="flex items-center gap-1">
-                          <Loader2 className="h-3 w-3 animate-spin" /> {item.progress}%
+                          <Loader2 className="h-3 w-3 animate-spin" />{" "}
+                          {item.progress}%
                         </span>
                       ) : item.status === "error" ? (
                         "Failed"
@@ -529,7 +585,7 @@ export function GalleryBatchUploader({
                     {item.status === "uploading" && (
                       <div className="absolute inset-x-0 bottom-0 h-1.5 bg-black/40">
                         <div
-                          className="h-full bg-forest-600 transition-all duration-300"
+                          className="bg-forest-600 h-full transition-all duration-300"
                           style={{ width: `${item.progress}%` }}
                         />
                       </div>
@@ -537,7 +593,7 @@ export function GalleryBatchUploader({
                   </div>
 
                   {/* Item Metadata Form */}
-                  <div className="flex flex-1 flex-col justify-between p-3.5 space-y-3">
+                  <div className="flex flex-1 flex-col justify-between space-y-3 p-3.5">
                     <div className="space-y-2">
                       <label className="grid gap-1 text-xs font-medium">
                         Caption
@@ -566,11 +622,13 @@ export function GalleryBatchUploader({
                               const val = e.target.value;
                               setItems((curr) =>
                                 curr.map((i) =>
-                                  i.key === item.key ? { ...i, category: val } : i,
+                                  i.key === item.key
+                                    ? { ...i, category: val }
+                                    : i,
                                 ),
                               );
                             }}
-                            className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                            className="border-input bg-background h-8 rounded-md border px-2 text-xs"
                           >
                             {categories.map((c) => (
                               <option key={c} value={c}>
@@ -580,7 +638,7 @@ export function GalleryBatchUploader({
                           </select>
                         </label>
 
-                        <label className="flex items-center gap-1.5 self-end text-xs font-medium pb-1.5">
+                        <label className="flex items-center gap-1.5 self-end pb-1.5 text-xs font-medium">
                           <input
                             type="checkbox"
                             checked={item.isFeatured}
@@ -588,23 +646,28 @@ export function GalleryBatchUploader({
                               const checked = e.target.checked;
                               setItems((curr) =>
                                 curr.map((i) =>
-                                  i.key === item.key ? { ...i, isFeatured: checked } : i,
+                                  i.key === item.key
+                                    ? { ...i, isFeatured: checked }
+                                    : i,
                                 ),
                               );
                             }}
-                            className="rounded border-input text-forest-700"
+                            className="border-input text-forest-700 rounded"
                           />
                           Featured
                         </label>
                       </div>
 
                       {item.error && (
-                        <p className="text-xs text-destructive">{item.error}</p>
+                        <p className="text-destructive text-xs">{item.error}</p>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between border-t pt-2 text-xs text-muted-foreground">
-                      <span className="truncate max-w-[180px]" title={item.file.name}>
+                    <div className="text-muted-foreground flex items-center justify-between border-t pt-2 text-xs">
+                      <span
+                        className="max-w-[180px] truncate"
+                        title={item.file.name}
+                      >
                         {item.file.name}
                       </span>
                       <Button
@@ -612,7 +675,7 @@ export function GalleryBatchUploader({
                         variant="ghost"
                         size="sm"
                         onClick={() => removeItem(item.key)}
-                        className="h-7 text-xs text-destructive hover:bg-destructive/10"
+                        className="text-destructive hover:bg-destructive/10 h-7 text-xs"
                       >
                         <Trash2 className="h-3.5 w-3.5" /> Remove
                       </Button>
@@ -624,9 +687,10 @@ export function GalleryBatchUploader({
           </div>
 
           {/* Bottom Action Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border/80 bg-card p-4">
-            <span className="text-sm text-muted-foreground">
-              {uploadedCount} of {items.length} file(s) uploaded and ready to save.
+          <div className="border-border/80 bg-card flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4">
+            <span className="text-muted-foreground text-sm">
+              {uploadedCount} of {items.length} file(s) uploaded and ready to
+              save.
             </span>
             <div className="flex items-center gap-2">
               <Button asChild variant="outline">
