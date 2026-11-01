@@ -9,7 +9,7 @@ const cspPolicy = [
   isDev
     ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com"
     : `script-src 'self' https://challenges.cloudflare.com${isVercelPreview ? " https://vercel.live" : ""}`,
-  `frame-src 'self' https://challenges.cloudflare.com${isVercelPreview ? " https://vercel.live" : ""}`,
+  `frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://maps.google.com${isVercelPreview ? " https://vercel.live" : ""}`,
   `img-src 'self' data: blob: https://res.cloudinary.com${isVercelPreview ? " https://vercel.live" : ""}`,
   "media-src 'self' blob: https://res.cloudinary.com",
   isDev

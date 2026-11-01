@@ -133,9 +133,9 @@ function HomeFood({ food }: { food?: PublicHomeData["food"] }) {
 function ContactStrip({ settings }: { settings: PublicHomeData["settings"] }) {
   if (!settings.address && !settings.phones.length) return null;
   return (
-    <div className="bg-cream-50 rounded-t-[2.5rem] sm:rounded-t-[3.5rem] relative z-10 shadow-lg">
+    <div id="location" className="bg-cream-50 rounded-t-[2.5rem] sm:rounded-t-[3.5rem] -mt-8 sm:-mt-12 relative z-10 shadow-2xl transition-colors duration-300">
       <WhereWeAre section={{ content: { heading: { en: "Find the farm" } } }} settings={settings} />
-      <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-8 lg:px-12 -mt-8">
         <ViewAll href="/contact#find-us">View travel and contact details</ViewAll>
       </div>
     </div>

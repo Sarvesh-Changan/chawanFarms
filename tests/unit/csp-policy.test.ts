@@ -26,6 +26,7 @@ describe("Content Security Policy (CSP)", () => {
       expect(policy).toContain("https://challenges.cloudflare.com");
       expect(policy).toContain("https://res.cloudinary.com");
       expect(policy).toContain("https://api.cloudinary.com");
+      expect(policy).toContain("https://maps.google.com");
 
       // No external font stylesheet is requested (font-src is 'self')
       expect(policy).toContain("font-src 'self'");

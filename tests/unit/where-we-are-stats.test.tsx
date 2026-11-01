@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
 
@@ -52,5 +52,40 @@ describe("where we are and stats", () => {
     const { container } = render(<WhereWeAre section={{ content: { heading: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra" } }} } settings={emptySettings}/>);
 
     expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it("loads the Google Maps iframe only after user clicks load", () => {
+    const populatedSettings = {
+      ...emptySettings,
+      address: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra, India",
+      phones: ["+91 98215 02956"],
+    };
+
+    const { container } = render(
+      <WhereWeAre section={{ content: {} }} settings={populatedSettings} />
+    );
+
+    // Initial render: no iframe, static placeholder is displayed
+    expect(container.querySelector("iframe")).toBeNull();
+    const loadButton = screen.getByRole("button", { name: "Load interactive map" });
+    expect(loadButton).toBeInTheDocument();
+
+    // Directions and Open in Google Maps links
+    const directionsLink = screen.getByRole("link", { name: "Directions" });
+    expect(directionsLink).toHaveAttribute("href", expect.stringContaining("google.com/maps/dir/"));
+    expect(directionsLink).toHaveAttribute("href", expect.stringContaining("Baitwadi"));
+
+    const openLink = screen.getByRole("link", { name: "Open in Google Maps" });
+    expect(openLink).toHaveAttribute("href", expect.stringContaining("google.com/maps/search/"));
+
+    // User clicks the load button
+    fireEvent.click(loadButton);
+
+    // Iframe now appears with correct sandbox and title
+    const iframe = container.querySelector("iframe");
+    expect(iframe).not.toBeNull();
+    expect(iframe).toHaveAttribute("loading", "lazy");
+    expect(iframe).toHaveAttribute("title", expect.stringContaining("Google Maps"));
+    expect(iframe).toHaveAttribute("sandbox", expect.stringContaining("allow-scripts"));
   });
 });
