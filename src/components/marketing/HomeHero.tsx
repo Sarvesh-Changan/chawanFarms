@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { CallButton, WhatsAppButton } from "@/components/marketing/ContactButtons";
-import { HeroBackground, HeroHeadline, HeroReveal } from "@/components/marketing/HomeHeroMotion";
+import { HeroDriftLayer, HeroHeadline, HeroReveal } from "@/components/marketing/HomeHeroMotion";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { CldImage } from "@/components/media/CldImage";
 import { env } from "@/config/env";
@@ -12,7 +12,7 @@ type HeroSection = { content: unknown };
 type Content = Record<string, unknown>;
 
 function record(value: unknown): Content {
-  return value && typeof value === "object" && !Array.isArray(value) ? value as Content : {};
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Content) : {};
 }
 
 function text(value: unknown): string {
@@ -21,54 +21,278 @@ function text(value: unknown): string {
   return typeof english === "string" ? english : "";
 }
 
-function mediaAlt(media: PublicMedia): string {
-  return text(media.altText);
+function mediaAlt(media: PublicMedia | null | undefined, fallback: string): string {
+  if (!media) return fallback;
+  const alt = text(media.altText);
+  return alt || fallback;
 }
 
-function HeroPoster({ media, cloudName }: { media: PublicMedia; cloudName: string }) {
-  return <CldImage cloudName={cloudName} publicId={media.publicId} resourceType="image" alt={mediaAlt(media)} focalX={media.focalX} focalY={media.focalY} fill priority sizes="100vw" className="object-cover" />;
-}
-
-export function HomeHero({ section, media, settings }: { section: HeroSection; media: PublicMedia | null; settings: PublicHomeData["settings"] }) {
+export function HomeHero({
+  section,
+  media,
+  settings,
+}: {
+  section: HeroSection;
+  media: PublicMedia | null;
+  settings: PublicHomeData["settings"];
+}) {
   const content = record(section.content);
-  const heading = settings.home.hero.headline;
-  const body = settings.home.hero.subhead;
-  const eyebrow = text(content.eyebrow);
+  const heading = settings.home.hero.headline || "Come live, experience & rediscover yourself & nature at its best";
+  const body =
+    settings.home.hero.subhead ||
+    "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens.";
+  const eyebrow = text(content.eyebrow) || "// Agri-tourism centre · Kolad, Raigad";
   const primaryLabel = "Plan your stay";
   const primaryHref = "/book";
-  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const heroPhoto = isMarketingPhoto(media) && cloudName ? media : null;
+  const secondaryLabel = "Explore the farm";
+  const secondaryHref = "#stays";
 
-  return <section id="hero" aria-labelledby="hero-heading" className="home-hero text-cream-50 relative isolate min-h-[100svh] overflow-hidden bg-forest-900">
-    {heroPhoto && cloudName ? <HeroBackground className="-z-10"><HeroPoster media={heroPhoto} cloudName={cloudName} /></HeroBackground> : <HeroIllustration />}
-    <div aria-hidden="true" className="absolute inset-0 z-0 bg-[var(--overlay-hero)]" />
-    <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-7xl items-end px-4 pb-28 pt-28 sm:px-8 sm:pb-32 lg:px-12 lg:pb-36">
-      <div className="max-w-5xl">
-        {eyebrow ? <HeroReveal><SectionEyebrow className="text-paddy-300">{eyebrow}</SectionEyebrow></HeroReveal> : null}
-        <HeroHeadline id="hero-heading" text={heading} className="font-heading mt-4 max-w-5xl text-[clamp(3.25rem,8.5vw,7rem)] leading-[0.94] tracking-[-0.045em]" />
-        <HeroReveal delay={80} className="max-w-2xl">
-          <p id="hero-supporting-line" className="text-cream-50/90 mt-7 max-w-[42rem] text-base leading-7 sm:text-lg sm:leading-8">{body}</p>
-        </HeroReveal>
-        <HeroReveal delay={160} className="mt-8 flex flex-wrap gap-3">
-          <Link href={primaryHref} className="bg-turmeric-500 text-ink-900 inline-flex min-h-12 items-center justify-center rounded-full px-6 font-semibold shadow-lg transition-[transform,background-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:-translate-y-0.5 hover:brightness-95 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500">{primaryLabel}</Link>
-          {settings.whatsappNumber ? <WhatsAppButton number={settings.whatsappNumber} message={settings.whatsappMessage} className="border-cream-50/60 text-cream-50 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border px-5 font-semibold transition-[transform,background-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-standard)] hover:-translate-y-0.5 hover:bg-cream-50/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500">Chat on WhatsApp</WhatsAppButton> : null}
-          {settings.phones[0] ? <CallButton number={settings.phones[0]} className="text-cream-50 inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-4 font-semibold underline decoration-cream-50/50 underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500">Call the farm</CallButton> : null}
-        </HeroReveal>
+  const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const mainPhoto = isMarketingPhoto(media) && cloudName ? media : null;
+  const inset1Photo =
+    isMarketingPhoto(settings.home.hero.inset1Media) && cloudName ? settings.home.hero.inset1Media : null;
+  const inset2Photo =
+    isMarketingPhoto(settings.home.hero.inset2Media) && cloudName ? settings.home.hero.inset2Media : null;
+
+  return (
+    <section
+      id="hero"
+      aria-labelledby="hero-heading"
+      className="home-hero relative isolate min-h-[100svh] overflow-hidden bg-[#12301f] text-cream-50"
+    >
+      {/* Background ambient lighting */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_80%_20%,rgb(183_201_107_/0.18),transparent_50%),radial-gradient(ellipse_at_20%_90%,rgb(233_162_27_/0.12),transparent_40%)]"
+      />
+
+      <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-7xl flex-col justify-center px-4 py-24 sm:px-8 sm:py-28 lg:px-12 lg:py-32">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+          {/* Left Column: Text & Actions */}
+          <div className="max-w-2xl">
+            <HeroReveal>
+              <SectionEyebrow className="text-paddy-300 font-mono text-xs sm:text-sm tracking-wider">
+                {eyebrow}
+              </SectionEyebrow>
+            </HeroReveal>
+
+            <HeroHeadline
+              id="hero-heading"
+              text={heading}
+              className="font-heading mt-5 text-[clamp(2.5rem,6.5vw,5.5rem)] leading-[0.96] tracking-[-0.035em] text-cream-50"
+            />
+
+            <HeroReveal delay={90}>
+              <p
+                id="hero-supporting-line"
+                className="mt-6 max-w-xl text-base leading-relaxed text-cream-50/85 sm:text-lg sm:leading-8 font-light"
+              >
+                {body}
+              </p>
+            </HeroReveal>
+
+            <HeroReveal delay={180} className="mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
+              <Link
+                href={primaryHref}
+                className="bg-turmeric-500 text-ink-900 inline-flex min-h-12 items-center justify-center rounded-full px-7 font-semibold shadow-md transition-[transform,background-color] duration-150 ease-[var(--motion-ease-standard)] hover:-translate-y-0.5 hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500"
+              >
+                {primaryLabel}
+              </Link>
+              <Link
+                href={secondaryHref}
+                className="border-cream-50/40 text-cream-50 inline-flex min-h-12 items-center justify-center rounded-full border px-6 font-semibold transition-[transform,background-color] duration-150 ease-[var(--motion-ease-standard)] hover:-translate-y-0.5 hover:bg-cream-50/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500"
+              >
+                {secondaryLabel}
+              </Link>
+              {settings.whatsappNumber ? (
+                <WhatsAppButton
+                  number={settings.whatsappNumber}
+                  message={settings.whatsappMessage}
+                  className="border-cream-50/40 text-cream-50 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border px-5 font-semibold transition-[transform,background-color] duration-150 ease-[var(--motion-ease-standard)] hover:-translate-y-0.5 hover:bg-cream-50/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500"
+                >
+                  Chat on WhatsApp
+                </WhatsAppButton>
+              ) : null}
+              {settings.phones[0] ? (
+                <CallButton
+                  number={settings.phones[0]}
+                  className="text-cream-50 inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-3 font-semibold underline decoration-cream-50/40 underline-offset-4 transition-colors duration-150 hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turmeric-500"
+                >
+                  Call the farm
+                </CallButton>
+              ) : null}
+            </HeroReveal>
+          </div>
+
+          {/* Right Column: Organic Blob Photo with Overlapping Insets */}
+          <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
+            <div className="relative aspect-square w-full max-w-[460px] mx-auto">
+              {/* Main Organic Blob (Centerpiece) */}
+              <HeroDriftLayer
+                driftRate={0.05}
+                delay={200}
+                className="relative size-full overflow-hidden shadow-2xl transition-transform duration-700 ease-[var(--motion-ease-standard)]"
+              >
+                <div
+                  className="relative size-full overflow-hidden [border-radius:62%_38%_70%_30%/45%_55%_45%_55%] bg-forest-800"
+                  style={{ willChange: "transform" }}
+                >
+                  {mainPhoto && cloudName ? (
+                    <CldImage
+                      cloudName={cloudName}
+                      publicId={mainPhoto.publicId}
+                      resourceType="image"
+                      alt={mediaAlt(mainPhoto, "Chawan Farms landscape")}
+                      focalX={mainPhoto.focalX}
+                      focalY={mainPhoto.focalY}
+                      fill
+                      priority
+                      sizes="(min-width: 1024px) 40vw, 85vw"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <LayeredHillsFallback />
+                  )}
+                </div>
+              </HeroDriftLayer>
+
+              {/* Inset 1: Top-Right (e.g. crops/agriculture) */}
+              <HeroDriftLayer
+                driftRate={-0.04}
+                delay={320}
+                className="absolute -top-3 -right-3 sm:-top-5 sm:-right-5 z-20 size-28 sm:size-36 md:size-40"
+              >
+                <div className="relative size-full rounded-full border-4 border-turmeric-500 overflow-hidden shadow-xl bg-forest-700">
+                  {inset1Photo && cloudName ? (
+                    <CldImage
+                      cloudName={cloudName}
+                      publicId={inset1Photo.publicId}
+                      resourceType="image"
+                      alt={mediaAlt(inset1Photo, "Farm crops and greenery")}
+                      focalX={inset1Photo.focalX}
+                      focalY={inset1Photo.focalY}
+                      fill
+                      sizes="(min-width: 640px) 144px, 112px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <InsetFallbackCrops />
+                  )}
+                </div>
+              </HeroDriftLayer>
+
+              {/* Inset 2: Bottom-Left (e.g. guest house/stay) */}
+              <HeroDriftLayer
+                driftRate={0.08}
+                delay={440}
+                className="absolute -bottom-3 -left-3 sm:-bottom-5 sm:-left-5 z-20 size-28 sm:size-36 md:size-40"
+              >
+                <div className="relative size-full rounded-full border-4 border-laterite-600 overflow-hidden shadow-xl bg-forest-800">
+                  {inset2Photo && cloudName ? (
+                    <CldImage
+                      cloudName={cloudName}
+                      publicId={inset2Photo.publicId}
+                      resourceType="image"
+                      alt={mediaAlt(inset2Photo, "Guest house and farm cottages")}
+                      focalX={inset2Photo.focalX}
+                      focalY={inset2Photo.focalY}
+                      fill
+                      sizes="(min-width: 640px) 144px, 112px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <InsetFallbackGuestHouse />
+                  )}
+                </div>
+              </HeroDriftLayer>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <Link href="#home-content" aria-label="Scroll to the farm stay details" className="text-cream-50/80 absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-1 rounded-sm text-[10px] font-semibold tracking-[0.18em] uppercase transition-colors hover:text-turmeric-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-turmeric-500">Explore <span aria-hidden="true">↓</span></Link>
-  </section>;
+    </section>
+  );
 }
 
-function HeroIllustration() {
-  return <div data-image-placeholder="hero-illustration" aria-hidden="true" className="home-hero-art absolute inset-0 -z-10 overflow-hidden">
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_74%_17%,rgb(183_201_107_/_0.26),transparent_27%),radial-gradient(ellipse_at_12%_92%,rgb(233_162_27_/_0.11),transparent_35%),linear-gradient(125deg,#12301f_0%,#214b33_46%,#294631_100%)]" />
-    <svg className="absolute inset-x-0 bottom-0 h-[58%] w-full text-forest-900/70" viewBox="0 0 1440 520" preserveAspectRatio="xMidYMax slice" focusable="false">
-      <path fill="currentColor" d="M0 310 180 214l134 79 203-158 163 111 197-143 196 136 177-77 190 109v249H0Z" />
-      <path fill="#1f4d33" fillOpacity=".74" d="M0 360 192 278l168 69 188-86 177 113 216-121 153 76 159-55 187 80v166H0Z" />
-      <path fill="#b7c96b" fillOpacity=".26" d="M0 418c206-52 326-43 488-10s318 38 477-8 326-56 475-21v141H0Z" />
-      <path d="M0 430c206-52 326-43 488-10s318 38 477-8 326-56 475-21" fill="none" stroke="currentColor" strokeOpacity=".45" strokeWidth="2" />
-    </svg>
-    <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(18_48_31_/.58),transparent_100%),linear-gradient(0deg,rgb(18_48_31_/.58),transparent_65%)]" />
-  </div>;
+/**
+ * Layered hills SVG in the Chawan Farms palette as a graceful fallback when no main photo is set.
+ */
+function LayeredHillsFallback() {
+  return (
+    <div
+      data-image-placeholder="hero-illustration"
+      aria-hidden="true"
+      className="relative size-full overflow-hidden bg-[radial-gradient(ellipse_at_70%_25%,rgb(183_201_107_/0.35),transparent_40%),linear-gradient(135deg,#12301f_0%,#1f4d33_60%,#173e28_100%)]"
+    >
+      <svg
+        className="absolute inset-0 size-full text-forest-900"
+        viewBox="0 0 600 600"
+        preserveAspectRatio="xMidYMid slice"
+        focusable="false"
+      >
+        {/* Sky glow accent */}
+        <circle cx="440" cy="180" r="110" fill="#e9a21b" fillOpacity="0.22" />
+
+        {/* Back hills */}
+        <path d="M0 380 Q150 250 320 330 T600 290 L600 600 L0 600 Z" fill="#1f4d33" fillOpacity="0.85" />
+
+        {/* Middle hills */}
+        <path d="M0 430 Q180 340 360 410 T600 380 L600 600 L0 600 Z" fill="#4e8f3a" fillOpacity="0.8" />
+
+        {/* Front rolling hill */}
+        <path d="M0 490 Q220 420 440 500 T600 480 L600 600 L0 600 Z" fill="#b7c96b" fillOpacity="0.45" />
+
+        {/* Foreground river curve */}
+        <path d="M0 550 Q280 500 600 570 L600 600 L0 600 Z" fill="#12301f" />
+      </svg>
+      <div className="absolute inset-0 bg-gradient-to-t from-forest-900/60 via-transparent to-transparent" />
+    </div>
+  );
+}
+
+function InsetFallbackCrops() {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex size-full flex-col items-center justify-center bg-gradient-to-br from-turmeric-500/90 to-turmeric-500 text-forest-900 p-2 text-center"
+    >
+      <svg
+        className="size-8 sm:size-10 text-forest-900/80 mb-1"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 21v-8m0 0a4 4 0 10-8 0 4 4 0 008 0zm0 0a4 4 0 118 0 4 4 0 01-8 0z"
+        />
+      </svg>
+      <span className="font-heading text-[10px] sm:text-xs font-semibold tracking-wide uppercase">Crops & Trees</span>
+    </div>
+  );
+}
+
+function InsetFallbackGuestHouse() {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex size-full flex-col items-center justify-center bg-gradient-to-br from-laterite-600/90 to-laterite-600 text-cream-50 p-2 text-center"
+    >
+      <svg
+        className="size-8 sm:size-10 text-cream-50/85 mb-1"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+        />
+      </svg>
+      <span className="font-heading text-[10px] sm:text-xs font-semibold tracking-wide uppercase">Farm Cottages</span>
+    </div>
+  );
 }

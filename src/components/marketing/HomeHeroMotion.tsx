@@ -139,3 +139,71 @@ export function HeroBackground({ children, className, rate = 0.82 }: { children:
   const transform = staticMotion ? "none" : `translate3d(0, ${offset}px, 0) scale(1.04)`;
   return <div ref={ref} data-parallax-layer data-parallax-rate={rate} className={cn("absolute inset-[-4%_0] will-change-transform", className)} style={{ transform }}>{children}</div>;
 }
+
+export function HeroDriftLayer({
+  children,
+  className,
+  driftRate = 0.05,
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  driftRate?: number;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [scrollY, setScrollY] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [staticMotion, setStaticMotion] = useState(prefersStaticHeroMotion);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setReady(true));
+    if (typeof window.matchMedia !== "function") return () => cancelAnimationFrame(frame);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setStaticMotion(prefersStaticHeroMotion());
+    reduced.addEventListener("change", update);
+    return () => {
+      cancelAnimationFrame(frame);
+      reduced.removeEventListener("change", update);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (staticMotion || typeof window === "undefined") return;
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        setScrollY(window.scrollY);
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [staticMotion]);
+
+  const offset = staticMotion ? 0 : scrollY * driftRate;
+  const style: CSSProperties = staticMotion
+    ? {}
+    : {
+        transform: `translate3d(0, ${offset.toFixed(1)}px, 0)`,
+        transitionDelay: `${delay}ms`,
+      };
+
+  return (
+    <div
+      ref={ref}
+      data-parallax-drift={driftRate}
+      className={cn(
+        className,
+        ready && !staticMotion && "hero-copy-in",
+        "will-change-transform motion-reduce:transform-none"
+      )}
+      style={style}
+    >
+      {children}
+    </div>
+  );
+}

@@ -48,6 +48,7 @@ export type StayCardData = {
   foodOptions: string[];
   groupNote: string | null;
   priceLabel: string;
+  detailLine?: string | null;
   childLabel: string | null;
   infantLabel: string | null;
 };
@@ -95,9 +96,32 @@ function groupNote(item: StayPackageSource): string | null {
 
 export function mapStayPackage(item: StayPackageSource, index: number): StayCardData {
   const adultRates = item.rates.filter((rate) => rate.audience === "ADULT");
-  const lowestAdultRate = adultRates.sort((a, b) => a.amountPaise - b.amountPaise)[0];
+  const vegAdultRate = adultRates.find((rate) => rate.foodPreference === "VEG");
+  const nonVegAdultRate = adultRates.find((rate) => rate.foodPreference === "NON_VEG");
   const childRate = lowestRate(item.rates, "CHILD_4_10");
   const infantRate = lowestRate(item.rates, "INFANT_UNDER_4");
+
+  let priceLabel = "Contact us for rates";
+  if (item.isDayVisit && adultRates[0] && childRate) {
+    priceLabel = `Adult ${formatINR(adultRates[0].amountPaise)} · Kid ${formatINR(childRate.amountPaise)}`;
+  } else if (vegAdultRate && nonVegAdultRate) {
+    priceLabel = `Veg ${formatINR(vegAdultRate.amountPaise)} · Non-veg ${formatINR(nonVegAdultRate.amountPaise)}`;
+  } else if (adultRates[0]) {
+    priceLabel = `from ${formatINR(adultRates[0].amountPaise)} per person`;
+  }
+
+  // Conditions line only where the data has them
+  let detailLine: string | null = null;
+  const accommodationNames = item.accommodations.map((a) => localized(a.accommodation.name)).filter(Boolean);
+  const note = groupNote(item);
+  if (accommodationNames.length > 0 && note) {
+    detailLine = `${accommodationNames[0]} · ${note.toLowerCase()}`;
+  } else if (note) {
+    detailLine = note;
+  } else if (localized(item.summary)) {
+    detailLine = localized(item.summary);
+  }
+
   const foodOptions = [...new Set(adultRates.flatMap((rate) => rate.foodPreference ? [foodLabel(rate.foodPreference)] : []))];
 
   return {
@@ -115,8 +139,9 @@ export function mapStayPackage(item: StayPackageSource, index: number): StayCard
       focalY: item.heroMedia.focalY,
     } : null,
     foodOptions,
-    groupNote: groupNote(item),
-    priceLabel: lowestAdultRate ? `from ${formatINR(lowestAdultRate.amountPaise)} per person` : "Contact us for rates",
+    groupNote: note,
+    priceLabel,
+    detailLine,
     childLabel: childRate ? `Children 4–10: ${childRate.percentOfAdult !== null ? `${childRate.percentOfAdult}% of adult rate` : formatINR(childRate.amountPaise)}` : null,
     infantLabel: infantRate ? `Under 4: ${infantRate.amountPaise === 0 ? "free" : formatINR(infantRate.amountPaise)}` : null,
   };

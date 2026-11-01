@@ -44,6 +44,8 @@ const settingsFieldsSchema = z.object({
   heroPrimaryCta: optionalText(100),
   heroSecondaryCta: optionalText(100),
   heroMediaId: mediaId,
+  heroInset1MediaId: mediaId.optional().default(null),
+  heroInset2MediaId: mediaId.optional().default(null),
   closingHeadline: optionalText(240),
   instagramUrl: z.union([httpsUrl, z.literal("")]).transform((value) => value || null),
   facebookUrl: z.union([httpsUrl, z.literal("")]).transform((value) => value || null),
@@ -65,7 +67,7 @@ export const settingsFormSchema = z.preprocess((raw) => {
   const value = legacy.data;
   const phones = value.businessPhones.split(/\r?\n/).map((number) => number.trim()).filter(Boolean).map((number, index) => ({ number, isPrimary: index === 0 }));
   const link = (label: string) => value.socialLinks.find((item) => item.label.toLowerCase() === label)?.url ?? "";
-  return { businessName: value.businessName, businessEmail: value.businessEmail, phones, whatsappNumber: value.whatsappNumber, whatsappDefaultMessage: value.whatsappDefaultMessage, address: value.address, ownerDisplay: false, ownerMediaId: null, ownerName: "", ownerCaption: "", heroHeadline: "", heroSubhead: "", heroPrimaryCta: "", heroSecondaryCta: "", heroMediaId: null, closingHeadline: "", instagramUrl: link("instagram"), facebookUrl: link("facebook"), youtubeUrl: link("youtube") };
+  return { businessName: value.businessName, businessEmail: value.businessEmail, phones, whatsappNumber: value.whatsappNumber, whatsappDefaultMessage: value.whatsappDefaultMessage, address: value.address, ownerDisplay: false, ownerMediaId: null, ownerName: "", ownerCaption: "", heroHeadline: "", heroSubhead: "", heroPrimaryCta: "", heroSecondaryCta: "", heroMediaId: null, heroInset1MediaId: null, heroInset2MediaId: null, closingHeadline: "", instagramUrl: link("instagram"), facebookUrl: link("facebook"), youtubeUrl: link("youtube") };
 }, settingsFieldsSchema);
 
 const strongPassword = z.string().min(10).max(128).refine((value) => [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((pattern) => pattern.test(value)).length >= 3, "Use at least three of lowercase, uppercase, number and symbol.");
@@ -81,6 +83,6 @@ export const passwordChangeSchema = z.object({
 
 export type SettingsFormValues = {
   businessName: { en: string; mr?: string; hi?: string };
-  businessEmail: string; phones: Array<{ number: string; isPrimary: boolean }>; whatsappNumber: string; whatsappDefaultMessage: { en?: string; mr?: string; hi?: string }; address: { en: string; mr?: string; hi?: string }; ownerDisplay: boolean; ownerMediaId: string | null; ownerName: string; ownerCaption: string; heroHeadline: string; heroSubhead: string; heroPrimaryCta: string; heroSecondaryCta: string; heroMediaId: string | null; closingHeadline: string; instagramUrl: string; facebookUrl: string; youtubeUrl: string;
+  businessEmail: string; phones: Array<{ number: string; isPrimary: boolean }>; whatsappNumber: string; whatsappDefaultMessage: { en?: string; mr?: string; hi?: string }; address: { en: string; mr?: string; hi?: string }; ownerDisplay: boolean; ownerMediaId: string | null; ownerName: string; ownerCaption: string; heroHeadline: string; heroSubhead: string; heroPrimaryCta: string; heroSecondaryCta: string; heroMediaId: string | null; heroInset1MediaId?: string | null; heroInset2MediaId?: string | null; closingHeadline: string; instagramUrl: string; facebookUrl: string; youtubeUrl: string;
 };
 export type SettingsData = z.output<typeof settingsFormSchema>;

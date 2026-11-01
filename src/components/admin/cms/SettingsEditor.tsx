@@ -26,6 +26,8 @@ export function SettingsEditor({ initial, canWrite, cloudName }: { initial: CmsS
   const phones = useFieldArray({ control: form.control, name: "phones" });
   const ownerMediaId = useWatch({ control: form.control, name: "ownerMediaId" }) ?? null;
   const heroMediaId = useWatch({ control: form.control, name: "heroMediaId" }) ?? null;
+  const heroInset1MediaId = useWatch({ control: form.control, name: "heroInset1MediaId" }) ?? null;
+  const heroInset2MediaId = useWatch({ control: form.control, name: "heroInset2MediaId" }) ?? null;
   const phoneValues = useWatch({ control: form.control, name: "phones" });
   const phoneErrors = Array.isArray(form.formState.errors.phones) ? form.formState.errors.phones : [];
   function submit(data: z.output<typeof settingsFormSchema>) {
@@ -52,6 +54,10 @@ export function SettingsEditor({ initial, canWrite, cloudName }: { initial: CmsS
       <SettingsSection title="Hero section content" description="Empty fields fall back to the approved defaults in site-content.ts.">
         <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1 text-sm font-medium">Headline<Input {...form.register("heroHeadline")} /></label><label className="grid gap-1 text-sm font-medium">Subhead<Textarea rows={4} {...form.register("heroSubhead")} /></label><label className="grid gap-1 text-sm font-medium">Primary CTA text<Input {...form.register("heroPrimaryCta")} /></label><label className="grid gap-1 text-sm font-medium">Secondary CTA text<Input {...form.register("heroSecondaryCta")} /></label></div>
         <LocalImageUploader label="Home hero image" value={heroMediaId ?? ""} media={initial.heroMedia} cloudName={cloudName} onChange={(value) => form.setValue("heroMediaId", value, { shouldDirty: true })} onRemove={() => form.setValue("heroMediaId", null, { shouldDirty: true })} disabled={!canWrite} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <LocalImageUploader label="Hero inset image 1 (optional, top-right)" value={heroInset1MediaId ?? ""} media={(initial as unknown as { heroInset1Media?: typeof initial.heroMedia }).heroInset1Media} cloudName={cloudName} onChange={(value) => form.setValue("heroInset1MediaId", value, { shouldDirty: true })} onRemove={() => form.setValue("heroInset1MediaId", null, { shouldDirty: true })} disabled={!canWrite} />
+          <LocalImageUploader label="Hero inset image 2 (optional, bottom-left)" value={heroInset2MediaId ?? ""} media={(initial as unknown as { heroInset2Media?: typeof initial.heroMedia }).heroInset2Media} cloudName={cloudName} onChange={(value) => form.setValue("heroInset2MediaId", value, { shouldDirty: true })} onRemove={() => form.setValue("heroInset2MediaId", null, { shouldDirty: true })} disabled={!canWrite} />
+        </div>
         <label className="grid gap-1 text-sm font-medium">Closing statement headline<Input {...form.register("closingHeadline")} /></label><SaveButton pending={pending} disabled={!canWrite} label="Save hero content" />
       </SettingsSection>
 

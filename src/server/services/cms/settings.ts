@@ -15,7 +15,12 @@ export type AdminSettingsMedia = {
   tags: string[];
 };
 
-export type CmsSettings = SettingsFormValues & { ownerMedia?: AdminSettingsMedia; heroMedia?: AdminSettingsMedia };
+export type CmsSettings = SettingsFormValues & {
+  ownerMedia?: AdminSettingsMedia;
+  heroMedia?: AdminSettingsMedia;
+  heroInset1Media?: AdminSettingsMedia;
+  heroInset2Media?: AdminSettingsMedia;
+};
 export type CmsSettingsData = SettingsData;
 
 function recordValue(value: Prisma.JsonValue | null | undefined): Record<string, unknown> {
@@ -60,14 +65,21 @@ export async function getCmsSettings(): Promise<CmsSettings> {
     where: { key: { in: [
       "business.name", "business.email", "business.phones", "business.address", "business.socialLinks",
       "whatsapp.number", "whatsapp.defaultMessage", "owner.display", "owner.mediaId", "owner.name", "owner.caption",
-      "home.hero.headline", "home.hero.subhead", "home.hero.primaryCta", "home.hero.secondaryCta", "home.hero.mediaId", "home.closing.headline",
+      "home.hero.headline", "home.hero.subhead", "home.hero.primaryCta", "home.hero.secondaryCta", "home.hero.mediaId", "home.hero.inset1MediaId", "home.hero.inset2MediaId", "home.closing.headline",
     ] } },
     select: { key: true, value: true },
   });
   const values = new Map(rows.map((row) => [row.key, row.value]));
   const ownerMediaId = typeof values.get("owner.mediaId") === "string" ? values.get("owner.mediaId") as string : null;
   const heroMediaId = typeof values.get("home.hero.mediaId") === "string" ? values.get("home.hero.mediaId") as string : null;
-  const [ownerMedia, heroMedia] = await Promise.all([settingMedia(ownerMediaId), settingMedia(heroMediaId)]);
+  const heroInset1MediaId = typeof values.get("home.hero.inset1MediaId") === "string" ? values.get("home.hero.inset1MediaId") as string : null;
+  const heroInset2MediaId = typeof values.get("home.hero.inset2MediaId") === "string" ? values.get("home.hero.inset2MediaId") as string : null;
+  const [ownerMedia, heroMedia, heroInset1Media, heroInset2Media] = await Promise.all([
+    settingMedia(ownerMediaId),
+    settingMedia(heroMediaId),
+    settingMedia(heroInset1MediaId),
+    settingMedia(heroInset2MediaId),
+  ]);
   return {
     businessName: localizedValue(values.get("business.name")),
     businessEmail: typeof values.get("business.email") === "string" ? values.get("business.email") as string : "",
@@ -84,12 +96,16 @@ export async function getCmsSettings(): Promise<CmsSettings> {
     heroPrimaryCta: typeof values.get("home.hero.primaryCta") === "string" ? values.get("home.hero.primaryCta") as string : "",
     heroSecondaryCta: typeof values.get("home.hero.secondaryCta") === "string" ? values.get("home.hero.secondaryCta") as string : "",
     heroMediaId,
+    heroInset1MediaId,
+    heroInset2MediaId,
     closingHeadline: typeof values.get("home.closing.headline") === "string" ? values.get("home.closing.headline") as string : "",
     instagramUrl: urlValue(values.get("business.socialLinks"), "instagram"),
     facebookUrl: urlValue(values.get("business.socialLinks"), "facebook"),
     youtubeUrl: urlValue(values.get("business.socialLinks"), "youtube"),
     ...(ownerMedia ? { ownerMedia } : {}),
     ...(heroMedia ? { heroMedia } : {}),
+    ...(heroInset1Media ? { heroInset1Media } : {}),
+    ...(heroInset2Media ? { heroInset2Media } : {}),
   };
 }
 
@@ -118,14 +134,19 @@ export async function saveCmsSettings(data: CmsSettingsData, actorId: string) {
   const keys: Array<[string, unknown]> = [
     ["business.name", data.businessName], ["business.email", data.businessEmail], ["business.phones", data.phones], ["business.address", data.address], ["business.socialLinks", socialLinks],
     ["whatsapp.number", data.whatsappNumber], ["whatsapp.defaultMessage", data.whatsappDefaultMessage], ["owner.display", data.ownerDisplay], ["owner.mediaId", data.ownerMediaId], ["owner.name", data.ownerName], ["owner.caption", data.ownerCaption],
-    ["home.hero.headline", data.heroHeadline], ["home.hero.subhead", data.heroSubhead], ["home.hero.primaryCta", data.heroPrimaryCta], ["home.hero.secondaryCta", data.heroSecondaryCta], ["home.hero.mediaId", data.heroMediaId], ["home.closing.headline", data.closingHeadline],
+    ["home.hero.headline", data.heroHeadline], ["home.hero.subhead", data.heroSubhead], ["home.hero.primaryCta", data.heroPrimaryCta], ["home.hero.secondaryCta", data.heroSecondaryCta], ["home.hero.mediaId", data.heroMediaId], ["home.hero.inset1MediaId", data.heroInset1MediaId], ["home.hero.inset2MediaId", data.heroInset2MediaId], ["home.closing.headline", data.closingHeadline],
   ];
-  const oldRows = await db.setting.findMany({ where: { key: { in: ["owner.mediaId", "home.hero.mediaId"] } }, select: { key: true, value: true } });
+  const oldRows = await db.setting.findMany({ where: { key: { in: ["owner.mediaId", "home.hero.mediaId", "home.hero.inset1MediaId", "home.hero.inset2MediaId"] } }, select: { key: true, value: true } });
   const oldMediaIds = oldRows.map((row) => typeof row.value === "string" ? row.value : null);
   await db.$transaction(async (tx) => {
     for (const [key, value] of keys) await tx.setting.upsert({ where: { key }, create: { key, value: settingJson(value), updatedById: actorId }, update: { value: settingJson(value), updatedById: actorId } });
-    await tx.mediaUsage.deleteMany({ where: { entityType: "Setting", entityId: "home", field: { in: ["owner", "hero"] } } });
-    const selected = [data.ownerMediaId ? { mediaId: data.ownerMediaId, field: "owner" } : null, data.heroMediaId ? { mediaId: data.heroMediaId, field: "hero" } : null].filter((value): value is { mediaId: string; field: string } => Boolean(value));
+    await tx.mediaUsage.deleteMany({ where: { entityType: "Setting", entityId: "home", field: { in: ["owner", "hero", "heroInset1", "heroInset2"] } } });
+    const selected = [
+      data.ownerMediaId ? { mediaId: data.ownerMediaId, field: "owner" } : null,
+      data.heroMediaId ? { mediaId: data.heroMediaId, field: "hero" } : null,
+      data.heroInset1MediaId ? { mediaId: data.heroInset1MediaId, field: "heroInset1" } : null,
+      data.heroInset2MediaId ? { mediaId: data.heroInset2MediaId, field: "heroInset2" } : null,
+    ].filter((value): value is { mediaId: string; field: string } => Boolean(value));
     for (const item of selected) {
       const media = await tx.media.findFirst({ where: { id: item.mediaId, kind: "IMAGE", origin: "ADMIN", deletedAt: null }, select: { id: true, meta: true } });
       if (!media) throw new Error("SETTINGS_MEDIA_UNAVAILABLE");
@@ -135,6 +156,6 @@ export async function saveCmsSettings(data: CmsSettingsData, actorId: string) {
       await tx.mediaUsage.create({ data: { mediaId: item.mediaId, entityType: "Setting", entityId: "home", field: item.field } });
     }
   }, { isolationLevel: "Serializable" });
-  for (const oldId of oldMediaIds) if (oldId && oldId !== data.ownerMediaId && oldId !== data.heroMediaId) await cleanupIfUnused(oldId);
+  for (const oldId of oldMediaIds) if (oldId && oldId !== data.ownerMediaId && oldId !== data.heroMediaId && oldId !== data.heroInset1MediaId && oldId !== data.heroInset2MediaId) await cleanupIfUnused(oldId);
   return { updatedKeys: keys.map(([key]) => key) };
 }
