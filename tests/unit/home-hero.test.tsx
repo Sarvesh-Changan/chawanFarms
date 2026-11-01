@@ -9,7 +9,7 @@ const emptySettings = {
   phones: [],
   whatsappNumber: "",
   whatsappMessage: "",
-  home: { hero: { headline: "Settings headline", subhead: "Settings subhead", cta: "Settings CTA" }, closing: { headline: "Closing" } },
+  home: { hero: { headline: "Settings headline", subhead: "Settings subhead", cta: "Settings CTA", secondaryCta: "Settings secondary CTA" }, closing: { headline: "Closing" } },
 };
 
 const cmsSection = {
@@ -23,13 +23,14 @@ const cmsSection = {
 };
 
 describe("home hero", () => {
-  it("renders Settings copy and the primary Plan your stay action", () => {
+  it("renders hero copy and CTA labels from Settings", () => {
     render(<HomeHero section={cmsSection} media={null} settings={emptySettings} />);
 
     expect(screen.getByRole("heading", { name: "Settings headline" })).toBeInTheDocument();
     expect(screen.getByText("CMS eyebrow")).toBeInTheDocument();
     expect(screen.getByText("Settings subhead")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Plan your stay" })).toHaveAttribute("href", "/book");
+    expect(screen.getByRole("link", { name: "Settings CTA" })).toHaveAttribute("href", "/book");
+    expect(screen.getByRole("link", { name: "Settings secondary CTA" })).toHaveAttribute("href", "#stays");
     expect(screen.queryByRole("link", { name: "Explore experiences" })).toBeNull();
   });
 

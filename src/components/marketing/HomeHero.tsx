@@ -42,9 +42,9 @@ export function HomeHero({
     settings.home.hero.subhead ||
     "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens.";
   const eyebrow = text(content.eyebrow) || "// Agri-tourism centre · Kolad, Raigad";
-  const primaryLabel = "Plan your stay";
+  const primaryLabel = settings.home.hero.cta || "Plan your stay";
   const primaryHref = "/book";
-  const secondaryLabel = "Explore the farm";
+  const secondaryLabel = settings.home.hero.secondaryCta || "Explore the farm";
   const secondaryHref = "#stays";
 
   const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;

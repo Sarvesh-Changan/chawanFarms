@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ActivitiesRow } from "@/components/marketing/ActivitiesRow";
 import { ClosingCta } from "@/components/marketing/ClosingCta";
 import { HomeHero } from "@/components/marketing/HomeHero";
+import { HomeScrollMotion } from "@/components/marketing/HomeScrollMotion";
 import { HomeStories } from "@/components/marketing/HomeStories";
 import { PlateExplorer } from "@/components/marketing/PlateExplorer";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
@@ -161,8 +162,20 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
       ? configuredClosingHeadline
       : "Your farm stay starts here.";
 
+  const activeSections = [
+    "hero",
+    data.packages?.length ? "stays" : null,
+    data.activities?.length ? "activities" : null,
+    data.gallery?.length ? "parallax-scene" : null,
+    data.stories?.length ? "stories" : null,
+    data.food?.length ? "food" : null,
+    data.settings.address || data.settings.phones.length ? "location" : null,
+    "closing-cta",
+  ].filter((id): id is string => Boolean(id));
+
   return (
     <main id="home-content" className="min-h-[50vh] overflow-x-hidden bg-forest-900">
+      <HomeScrollMotion activeSections={activeSections} />
       <HomeHero section={heroSection} media={data.settings.home.hero.media ?? null} settings={data.settings} />
       <Stays packages={data.packages} />
       <ActivitiesRow activities={data.activities} />

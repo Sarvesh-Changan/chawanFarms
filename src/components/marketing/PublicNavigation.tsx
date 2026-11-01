@@ -70,7 +70,7 @@ function Dropdown({ group, pathname, openGroup, setOpenGroup }: { group: (typeof
     </button>
     {open ? <>
       <span aria-hidden="true" className="absolute right-0 bottom-[-0.75rem] left-0 h-3" />
-      <div id={`nav-${group.label.toLowerCase()}`} role="menu" aria-label={group.label} onMouseEnter={clearTimer} onMouseLeave={scheduleClose} className="bg-cream-50 absolute top-[calc(100%+0.75rem)] left-0 z-50 min-w-56 origin-top rounded-xl border border-forest-900/10 p-2 opacity-100 shadow-xl transition duration-200 ease-out motion-safe:animate-[nav-drop-in_180ms_ease-out] motion-reduce:animate-none">
+      <div id={`nav-${group.label.toLowerCase()}`} role="menu" aria-label={group.label} onMouseEnter={clearTimer} onMouseLeave={scheduleClose} className="bg-cream-50 text-forest-900 absolute top-[calc(100%+0.75rem)] left-0 z-50 min-w-56 origin-top rounded-xl border border-forest-900/10 p-2 opacity-100 shadow-xl transition duration-200 ease-out motion-safe:animate-[nav-drop-in_180ms_ease-out] motion-reduce:animate-none">
         {group.items.map((item, index) => <NavLink key={item.href} {...item} pathname={pathname} menuItem onKeyDown={(event) => handleItemKeyDown(event, index)} itemRef={(element) => { if (element) itemRefs.current.set(index, element); else itemRefs.current.delete(index); }}>{item.label}</NavLink>)}
       </div>
     </> : null}
