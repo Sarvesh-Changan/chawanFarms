@@ -20,10 +20,13 @@ function prefersStaticHeroMotion(): boolean {
 
 export function HeroReveal({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   const [ready, setReady] = useState(false);
-  const [staticMotion, setStaticMotion] = useState(prefersStaticHeroMotion);
+  const [staticMotion, setStaticMotion] = useState(true);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => setReady(true));
+    const frame = requestAnimationFrame(() => {
+      setStaticMotion(prefersStaticHeroMotion());
+      setReady(true);
+    });
     if (typeof window.matchMedia !== "function") return () => cancelAnimationFrame(frame);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     const updatePreference = () => setStaticMotion(prefersStaticHeroMotion());
@@ -43,7 +46,7 @@ export function HeroHeadline({ text, className, id }: { text: string; className?
   const wordRefs = useRef(new Map<number, HTMLSpanElement>());
   const [lineIndexes, setLineIndexes] = useState<number[]>([]);
   const [ready, setReady] = useState(false);
-  const [staticMotion, setStaticMotion] = useState(prefersStaticHeroMotion);
+  const [staticMotion, setStaticMotion] = useState(true);
 
   useLayoutEffect(() => {
     const measureLines = () => {
@@ -73,10 +76,14 @@ export function HeroHeadline({ text, className, id }: { text: string; className?
 
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return;
+    const frame = requestAnimationFrame(() => setStaticMotion(prefersStaticHeroMotion()));
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     const updatePreference = () => setStaticMotion(prefersStaticHeroMotion());
     reduced.addEventListener("change", updatePreference);
-    return () => reduced.removeEventListener("change", updatePreference);
+    return () => {
+      cancelAnimationFrame(frame);
+      reduced.removeEventListener("change", updatePreference);
+    };
   }, []);
 
   return (
@@ -154,10 +161,13 @@ export function HeroDriftLayer({
   const ref = useRef<HTMLDivElement>(null);
   const [scrollY, setScrollY] = useState(0);
   const [ready, setReady] = useState(false);
-  const [staticMotion, setStaticMotion] = useState(prefersStaticHeroMotion);
+  const [staticMotion, setStaticMotion] = useState(true);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => setReady(true));
+    const frame = requestAnimationFrame(() => {
+      setStaticMotion(prefersStaticHeroMotion());
+      setReady(true);
+    });
     if (typeof window.matchMedia !== "function") return () => cancelAnimationFrame(frame);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => setStaticMotion(prefersStaticHeroMotion());

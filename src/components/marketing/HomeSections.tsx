@@ -4,6 +4,7 @@ import { ActivitiesRow } from "@/components/marketing/ActivitiesRow";
 import { ClosingCta } from "@/components/marketing/ClosingCta";
 import { HomeHero } from "@/components/marketing/HomeHero";
 import { HomeStories } from "@/components/marketing/HomeStories";
+import { PlateExplorer } from "@/components/marketing/PlateExplorer";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { StayCards } from "@/components/marketing/StayCards";
 import { WhereWeAre } from "@/components/marketing/WhereWeAre";
@@ -106,10 +107,14 @@ function HomeParallaxScene({ gallery, heroMedia }: { gallery?: PublicHomeData["g
   );
 }
 
-function FoodPlaceholder({ food }: { food?: PublicHomeData["food"] }) {
+function HomeFood({ food }: { food?: PublicHomeData["food"] }) {
   if (!food?.length) return null;
   return (
-    <section id="food" className="bg-[#F6E7C1] rounded-t-[2.5rem] sm:rounded-t-[3.5rem] py-16 sm:py-20 lg:py-24">
+    <section
+      id="food"
+      aria-labelledby="home-food-heading"
+      className="bg-[#F6E7C1] rounded-t-[2.5rem] sm:rounded-t-[3.5rem] relative z-10 shadow-2xl -mt-8 sm:-mt-12 transition-colors duration-300"
+    >
       <div className={sectionClass}>
         <SectionHeading
           id="home-food-heading"
@@ -117,7 +122,9 @@ function FoodPlaceholder({ food }: { food?: PublicHomeData["food"] }) {
           title="Build your plate"
           description="Pick a meal and veg or non-veg, and the plate changes to match."
         />
-        <ViewAll href="/food">View full food menu</ViewAll>
+        <div className="mt-8">
+          <PlateExplorer categories={food} />
+        </div>
       </div>
     </section>
   );
@@ -161,7 +168,7 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
       <ActivitiesRow activities={data.activities} />
       <HomeParallaxScene gallery={data.gallery} heroMedia={data.settings.home.hero.media ?? null} />
       <HomeStories stories={data.stories} />
-      <FoodPlaceholder food={data.food} />
+      <HomeFood food={data.food} />
       <ContactStrip settings={data.settings} />
       <ClosingCta heading={closingHeadline} settings={data.settings} />
     </main>

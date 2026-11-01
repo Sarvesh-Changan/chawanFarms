@@ -44,14 +44,18 @@ export function ExperienceCarousel({ experiences, heading, description, cloudNam
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [liveMessage, setLiveMessage] = useState("");
-  const [reducedMotion, setReducedMotion] = useState(() => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return;
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const frame = requestAnimationFrame(() => setReducedMotion(mediaQuery.matches));
     const updatePreference = () => setReducedMotion(mediaQuery.matches);
     mediaQuery.addEventListener("change", updatePreference);
-    return () => mediaQuery.removeEventListener("change", updatePreference);
+    return () => {
+      cancelAnimationFrame(frame);
+      mediaQuery.removeEventListener("change", updatePreference);
+    };
   }, []);
 
   if (!experiences.length) return null;
