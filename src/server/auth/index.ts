@@ -110,10 +110,49 @@ export const auth = betterAuth({
 });
 
 export async function getSession() {
-  return auth.api.getSession({
+  const session = await auth.api.getSession({
     headers: await headers(),
     query: { disableCookieCache: true },
   });
+  if (!session) return null;
+
+  // Enforce staff session timeouts: 8 hours idle, 24 hours absolute maximum
+  try {
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { type: true, status: true, deletedAt: true },
+    });
+
+    if (user?.type === "STAFF") {
+      if (user.status !== "ACTIVE" || user.deletedAt) {
+        await db.session.deleteMany({ where: { token: session.session.token } });
+        return null;
+      }
+
+      const now = Date.now();
+      const createdAt = new Date(session.session.createdAt).getTime();
+      const updatedAt = new Date(session.session.updatedAt).getTime();
+      const absoluteTimeoutMs = 24 * 60 * 60 * 1000; // 24 hours
+      const idleTimeoutMs = 8 * 60 * 60 * 1000; // 8 hours
+
+      if (now - createdAt > absoluteTimeoutMs || now - updatedAt > idleTimeoutMs) {
+        await db.session.deleteMany({ where: { token: session.session.token } });
+        return null;
+      }
+
+      // Update session updatedAt to track sliding idle window if > 5 minutes since last touch
+      if (now - updatedAt > 5 * 60 * 1000) {
+        await db.session.update({
+          where: { token: session.session.token },
+          data: { updatedAt: new Date() },
+        }).catch(() => undefined);
+      }
+    }
+  } catch (error) {
+    console.error("[auth] error verifying staff session lifecycle", error);
+  }
+
+  return session;
 }
 
 export async function requireUser() {

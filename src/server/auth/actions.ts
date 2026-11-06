@@ -2,11 +2,20 @@
 
 import { createHash } from "node:crypto";
 
+import { verifyPassword } from "@better-auth/utils/password";
 import { headers } from "next/headers";
 import { z } from "zod";
 
 import { resolvePostLoginDestination } from "@/lib/auth/post-login-destination";
-import { forgotPasswordSchema, loginSchema, resetPasswordSchema, signupSchema } from "@/lib/schemas/auth";
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  resetPasswordSchema,
+  signupSchema,
+  staffForgotPasswordSchema,
+  staffResetPasswordSchema,
+  staffVerifyOtpSchema,
+} from "@/lib/schemas/auth";
 import { auth } from "@/server/auth";
 import { resolveUserPostLogin } from "@/server/auth/post-login";
 import { db } from "@/server/db";
@@ -18,11 +27,16 @@ export type AuthActionResult = {
   fieldErrors?: Record<string, string[]>;
   redirectTo?: string;
   retryAfterSeconds?: number;
+  grantToken?: string;
 };
 
 const genericLoginError = "Unable to sign in. Check your details and try again.";
 const genericResetError = "If the details are valid, you will receive an email shortly.";
 const signupSuccessMessage = "Check your email to verify your account before signing in.";
+
+// Pre-computed scrypt hash used to ensure constant-time verification for non-existent or locked accounts
+const DUMMY_SCRYPT_HASH =
+  "fce2f109a6370b0341a73facd12a2268:fe3c6b42cd86ee5811c4c9941f579247c2e71abfdc7dc7515a437cc99683d5c4591cefbc523ff656d428a6128024dccdfb9599f351cb3a276978261c6717fbf9";
 
 function safeAuthErrorDetails(error: unknown): { code?: string; status?: number } {
   if (!error || typeof error !== "object") return {};
@@ -69,7 +83,7 @@ function limited(result: Awaited<ReturnType<typeof limit>>): AuthActionResult | 
 async function accountState(email: string) {
   return db.user.findUnique({
     where: { email },
-    select: { id: true, emailVerified: true, failedLoginCount: true, lockedUntil: true },
+    select: { id: true, type: true, emailVerified: true, failedLoginCount: true, lockedUntil: true },
   });
 }
 
@@ -108,8 +122,21 @@ export async function loginAction(rawInput: unknown): Promise<AuthActionResult> 
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
 
   const user = await accountState(parsed.data.email);
+  const isAdminLogin = user?.type === "STAFF" || Boolean(parsed.data.callbackUrl?.includes("/admin"));
+
   if (user?.lockedUntil && user.lockedUntil > new Date()) {
+    // Constant-time execution for locked admin accounts
+    await verifyPassword(DUMMY_SCRYPT_HASH, parsed.data.password).catch(() => false);
+    if (isAdminLogin) {
+      return { ok: false, message: genericLoginError };
+    }
     return { ok: false, message: "This account has been temporarily locked due to failed attempts. Please try again later." };
+  }
+
+  if (!user) {
+    // Constant-time execution for non-existent accounts
+    await verifyPassword(DUMMY_SCRYPT_HASH, parsed.data.password).catch(() => false);
+    return { ok: false, message: genericLoginError };
   }
 
   try {
@@ -122,6 +149,17 @@ export async function loginAction(rawInput: unknown): Promise<AuthActionResult> 
       ? signInResult.user.id
       : needsTwoFactorVerify ? user?.id : undefined;
     if (!signInUserId) return { ok: false, message: genericLoginError };
+
+    // Session rotation on login: purge any prior stale session on this connection
+    const cookieHeader = requestHeaders.get("cookie");
+    const priorSessionMatch = cookieHeader?.match(/better-auth\.session_token=([^;]+)/);
+    if (priorSessionMatch?.[1]) {
+      const priorToken = decodeURIComponent(priorSessionMatch[1]);
+      await db.session.deleteMany({
+        where: { token: priorToken, userId: { not: signInUserId } },
+      }).catch(() => undefined);
+    }
+
     const destination = await resolveUserPostLogin(signInUserId, parsed.data.callbackUrl, { needsTwoFactorVerify });
     if (!destination) return { ok: false, message: genericLoginError };
     return { ok: true, redirectTo: destination.redirectTo };
@@ -231,4 +269,60 @@ export async function logoutAction(): Promise<{ ok: boolean; redirectTo: string 
     // Session may already be expired or revoked
   }
   return { ok: true, redirectTo: "/login" };
+}
+
+export async function requestStaffResetOtpAction(rawInput: unknown): Promise<AuthActionResult> {
+  const requestHeaders = await headers();
+  const ip = clientIp(requestHeaders);
+
+  const parsed = staffForgotPasswordSchema.safeParse(rawInput);
+  if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
+
+  const { requestStaffPasswordReset } = await import("@/server/auth/staff-password-reset");
+  const result = await requestStaffPasswordReset(parsed.data.email, ip);
+  return {
+    ok: result.ok,
+    message: result.message,
+    retryAfterSeconds: result.cooldownRemainingSeconds,
+  };
+}
+
+export async function verifyStaffResetOtpAction(rawInput: unknown): Promise<AuthActionResult> {
+  const requestHeaders = await headers();
+  const ip = clientIp(requestHeaders);
+
+  const parsed = staffVerifyOtpSchema.safeParse(rawInput);
+  if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
+
+  const { verifyStaffResetOtp } = await import("@/server/auth/staff-password-reset");
+  const result = await verifyStaffResetOtp(parsed.data.email, parsed.data.code, ip);
+  if (!result.ok) {
+    return { ok: false, message: result.error.message };
+  }
+
+  return {
+    ok: true,
+    message: "Code verified. Please choose a new password.",
+    grantToken: result.data.grantToken,
+  };
+}
+
+export async function completeStaffResetPasswordAction(rawInput: unknown): Promise<AuthActionResult> {
+  const requestHeaders = await headers();
+  const ip = clientIp(requestHeaders);
+
+  const parsed = staffResetPasswordSchema.safeParse(rawInput);
+  if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
+
+  const { completeStaffPasswordReset } = await import("@/server/auth/staff-password-reset");
+  const result = await completeStaffPasswordReset(parsed.data.grantToken, parsed.data.password, ip);
+  if (!result.ok) {
+    return { ok: false, message: result.error.message };
+  }
+
+  return {
+    ok: true,
+    message: "Your password has been changed. You can now sign in.",
+    redirectTo: "/login?callbackUrl=%2Fadmin",
+  };
 }

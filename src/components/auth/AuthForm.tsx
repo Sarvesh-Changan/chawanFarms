@@ -87,7 +87,22 @@ export function AuthForm({ mode, action, defaultValues = {} }: { mode: AuthMode;
             <Button type="submit" disabled={pending} className="mt-2 w-full">{pending ? "Please wait…" : text.submit}</Button>
           </form>
           <div className="text-muted-foreground mt-6 flex flex-wrap justify-between gap-3 text-sm">
-            {mode === "login" ? <><Link className="underline underline-offset-4" href="/forgot-password">Forgot password?</Link><Link className="underline underline-offset-4" href={defaultValues.callbackUrl ? `/signup?callbackUrl=${encodeURIComponent(defaultValues.callbackUrl)}` : "/signup"}>Create account</Link></> : null}
+            {mode === "login" ? (
+              <>
+                <Link
+                  className="underline underline-offset-4"
+                  href={defaultValues.callbackUrl?.includes("/admin") ? "/forgot-password?role=admin" : "/forgot-password"}
+                >
+                  Forgot password?
+                </Link>
+                <Link
+                  className="underline underline-offset-4"
+                  href={defaultValues.callbackUrl ? `/signup?callbackUrl=${encodeURIComponent(defaultValues.callbackUrl)}` : "/signup"}
+                >
+                  Create account
+                </Link>
+              </>
+            ) : null}
             {mode === "signup" ? <Link className="underline underline-offset-4" href={defaultValues.callbackUrl ? `/login?callbackUrl=${encodeURIComponent(defaultValues.callbackUrl)}` : "/login"}>Already have an account?</Link> : null}
             {mode === "forgot" ? <Link className="underline underline-offset-4" href="/login">Back to sign in</Link> : null}
             {mode === "reset" ? <Link className="underline underline-offset-4" href="/login">Back to sign in</Link> : null}

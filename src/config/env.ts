@@ -67,6 +67,41 @@ const envSchema = z
           context.addIssue({ code: "custom", path: [path], message: `${String(path)} is required in production.` });
         }
       }
+
+      // Production AUTH_SECRET strength check: reject known placeholder strings
+      const secretLower = data.AUTH_SECRET.toLowerCase();
+      if (
+        secretLower.includes("replace") ||
+        secretLower.includes("example") ||
+        secretLower.includes("change-me") ||
+        data.AUTH_SECRET.length < 32
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["AUTH_SECRET"],
+          message: "AUTH_SECRET must be a high-entropy secret of at least 32 characters (generate with openssl rand -base64 32).",
+        });
+      }
+
+      // Production origins must use HTTPS and must not be localhost
+      const trustedOrigins = data.AUTH_TRUSTED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean);
+      for (const origin of trustedOrigins) {
+        if (!origin.startsWith("https://") || origin.includes("localhost") || origin.includes("127.0.0.1")) {
+          context.addIssue({
+            code: "custom",
+            path: ["AUTH_TRUSTED_ORIGINS"],
+            message: `AUTH_TRUSTED_ORIGINS in production must use https:// and cannot contain localhost: ${origin}`,
+          });
+        }
+      }
+
+      if (!data.NEXT_PUBLIC_SITE_URL.startsWith("https://") || data.NEXT_PUBLIC_SITE_URL.includes("localhost")) {
+        context.addIssue({
+          code: "custom",
+          path: ["NEXT_PUBLIC_SITE_URL"],
+          message: "NEXT_PUBLIC_SITE_URL must use https:// and cannot be localhost in production.",
+        });
+      }
     }
 
     if (data.SMTP_HOST || data.SMTP_USER || data.SMTP_PASS || data.SMTP_PORT) {

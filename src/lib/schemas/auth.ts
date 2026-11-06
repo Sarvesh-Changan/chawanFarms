@@ -36,7 +36,29 @@ export const resetPasswordSchema = z.object({
   }
 });
 
+export const staffForgotPasswordSchema = z.object({
+  email,
+}).strict();
+
+export const staffVerifyOtpSchema = z.object({
+  email,
+  code: z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit verification code."),
+}).strict();
+
+export const staffResetPasswordSchema = z.object({
+  grantToken: z.string().trim().min(1, "Reset grant token is required."),
+  password: z.string().min(12, "Use at least 12 characters.").max(128, "Use 128 characters or fewer."),
+  confirmPassword: z.string(),
+}).strict().superRefine((value, context) => {
+  if (value.password !== value.confirmPassword) {
+    context.addIssue({ code: "custom", path: ["confirmPassword"], message: "Passwords do not match." });
+  }
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type SignupInput = z.infer<typeof signupSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type StaffForgotPasswordInput = z.infer<typeof staffForgotPasswordSchema>;
+export type StaffVerifyOtpInput = z.infer<typeof staffVerifyOtpSchema>;
+export type StaffResetPasswordInput = z.infer<typeof staffResetPasswordSchema>;
