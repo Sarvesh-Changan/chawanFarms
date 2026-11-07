@@ -154,6 +154,14 @@ export async function getCustomerBooking(userId: string, id: string) {
       package: { select: { slug: true, name: true } },
       accommodation: { select: { slug: true, name: true } },
       lines: { select: { kind: true, label: true, quantity: true, unitPaise: true, totalPaise: true }, orderBy: { id: "asc" } },
+      guests: {
+        select: {
+          ageGroup: true,
+          idType: true,
+          idPurgedAt: true,
+        },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
 }
@@ -245,7 +253,26 @@ export async function getPrivacyExport(userId: string) {
   if (!identity) return null;
   const [features, bookings, enquiries, ledger, coupons, videos, consents, favourites, notifications] = await Promise.all([
     getFeatureFlags(),
-    listCustomerBookings(userId), listCustomerEnquiries(userId),
+    db.booking.findMany({
+      where: { ...bookingOwnership(identity), deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true, reference: true, status: true, paymentStatus: true, checkIn: true, checkOut: true,
+        adults: true, children4to10: true, infantsUnder4: true, totalPaise: true,
+        package: { select: { slug: true, name: true } },
+        accommodation: { select: { slug: true, name: true } },
+        guests: {
+          select: {
+            ageGroup: true,
+            idType: true,
+            idPurgedAt: true,
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    }),
+    listCustomerEnquiries(userId),
     db.pointsLedger.findMany({ where: { userId }, orderBy: { createdAt: "asc" }, select: { type: true, points: true, balanceAfter: true, reason: true, expiresAt: true, createdAt: true } }),
     db.coupon.findMany({ where: { userId }, orderBy: { issuedAt: "asc" }, select: { code: true, status: true, discountType: true, discountValue: true, maxDiscountPaise: true, minBookingPaise: true, pointsSpent: true, issuedAt: true, expiresAt: true } }),
     db.videoSubmission.findMany({ where: { userId }, orderBy: { createdAt: "asc" }, select: { status: true, title: true, visitDate: true, submittedAt: true, createdAt: true, rejectionReason: true } }),
@@ -256,7 +283,16 @@ export async function getPrivacyExport(userId: string) {
   return {
     exportedAt: new Date().toISOString(),
     profile: { name: identity.name, email: identity.email, emailVerified: identity.emailVerified, phone: identity.profile?.phone ?? null, city: identity.profile?.city ?? null, marketingConsent: identity.profile?.marketingConsent ?? false, referralCode: features.referrals ? identity.profile?.referralCode ?? null : null },
-    bookings, enquiries, ledger, coupons, videos, consents, favourites, notifications,
+    bookings: bookings.map((b) => ({
+      ...b,
+      guests: b.guests.map((g) => ({
+        ageGroup: g.ageGroup,
+        idType: g.idType,
+        hasIdDocument: true,
+        idPurgedAt: g.idPurgedAt ? g.idPurgedAt.toISOString() : null,
+      })),
+    })),
+    enquiries, ledger, coupons, videos, consents, favourites, notifications,
   };
 }
 

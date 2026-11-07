@@ -69,15 +69,41 @@ integrationDescribe("booking and availability integration", () => {
 
   afterAll(async () => {
     // Cleanup test records
+    await testDb?.bookingGuest.deleteMany({ where: { booking: { contactEmail: "test-integ@example.com" } } });
     await testDb?.bookingLine.deleteMany({ where: { booking: { contactEmail: "test-integ@example.com" } } });
     await testDb?.policyAcceptance.deleteMany({ where: { booking: { contactEmail: "test-integ@example.com" } } });
     await testDb?.booking.deleteMany({ where: { contactEmail: "test-integ@example.com" } });
+    await testDb?.media.deleteMany({ where: { publicId: { startsWith: "private/booking-ids/" } } });
     await testDb?.availabilityDay.deleteMany({ where: { accommodationId: testAccommodationId } });
     await testDb?.$disconnect();
   });
 
   it("tampered client price is strictly ignored; server re-quotes using integer paise", async () => {
     const idempotencyKey = crypto.randomUUID();
+    const guestPublicIds = Array.from(
+      { length: 10 },
+      (_, i) => `private/booking-ids/${idempotencyKey}/guest-${i}`,
+    );
+    await testDb?.media.createMany({
+      data: guestPublicIds.map((publicId) => ({
+        publicId,
+        kind: "IMAGE",
+        origin: "CUSTOMER",
+        resourceType: "image",
+        deliveryType: "authenticated",
+        format: "jpg",
+        bytes: 100_000,
+        meta: { draftKey: idempotencyKey, pending: true },
+      })),
+    });
+
+    const mockGuests = guestPublicIds.map((publicId, i) => ({
+      fullName: `Guest User ${i + 1}`,
+      ageGroup: "ADULT" as const,
+      idType: "AADHAAR" as const,
+      mediaPublicId: publicId,
+    }));
+
     const result = await submitBookingRequest({
       idempotencyKey,
       checkIn: "2026-11-20",
@@ -92,6 +118,8 @@ integrationDescribe("booking and availability integration", () => {
       contactPhone: "+91 98765 00001",
       contactEmail: "test-integ@example.com",
       policyAccepted: true,
+      guests: mockGuests,
+      idConsentAccepted: true,
       extras: [],
     });
 
@@ -113,6 +141,8 @@ integrationDescribe("booking and availability integration", () => {
       contactPhone: "+91 98765 00001",
       contactEmail: "test-integ@example.com",
       policyAccepted: true,
+      guests: mockGuests,
+      idConsentAccepted: true,
       extras: [],
     });
 

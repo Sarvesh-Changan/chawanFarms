@@ -70,6 +70,33 @@ const mockSettings = {
   maxNights: 30,
 };
 
+const mockGuestEntries = [
+  {
+    guestIndex: 0,
+    label: "Adult 1",
+    ageGroup: "ADULT" as const,
+    fullName: "Pooja Patil",
+    idType: "AADHAAR",
+    mediaPublicId: "private/booking-ids/mock-draft/asset-1",
+    mediaId: "media-1",
+    fileName: "aadhaar.jpg",
+    bytes: 200000,
+    format: "jpg",
+  },
+  {
+    guestIndex: 1,
+    label: "Adult 2",
+    ageGroup: "ADULT" as const,
+    fullName: "Rohan Patil",
+    idType: "PASSPORT",
+    mediaPublicId: "private/booking-ids/mock-draft/asset-2",
+    mediaId: "media-2",
+    fileName: "passport.jpg",
+    bytes: 300000,
+    format: "jpg",
+  },
+];
+
 describe("BookingFlow accessible stepper & jest-axe", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -145,7 +172,7 @@ describe("BookingFlow accessible stepper & jest-axe", () => {
     expect(results.violations).toEqual([]);
   });
 
-  it("Step 2 (Stay type and food) passes axe accessibility checks", async () => {
+  it("Step 2 (Guests & ID) passes axe accessibility checks", async () => {
     const { container } = render(
       <BookingFlow
         stayTypes={mockStayTypes}
@@ -170,18 +197,18 @@ describe("BookingFlow accessible stepper & jest-axe", () => {
 
     // Verify on step 2
     expect(
-      screen.getByRole("heading", { name: /Choose stay accommodation & food/i }),
+      screen.getByRole("heading", { name: /Guests & identity documents/i }),
     ).toBeInTheDocument();
 
     const activeStep = screen.getByRole("listitem", { current: "step" });
     expect(activeStep).toHaveTextContent("2");
-    expect(activeStep).toHaveTextContent("Stay & Food");
+    expect(activeStep).toHaveTextContent("Guests & ID");
 
     const results = await axe(container);
     expect(results.violations).toEqual([]);
   });
 
-  it("Step 3 (Activities and extras) passes axe accessibility checks", async () => {
+  it("Step 3 (Stay type and food) passes axe accessibility checks", async () => {
     const { container } = render(
       <BookingFlow
         stayTypes={mockStayTypes}
@@ -189,6 +216,8 @@ describe("BookingFlow accessible stepper & jest-axe", () => {
         policy={mockPolicy}
         settings={mockSettings}
         customerProfile={null}
+        initialGuestIdEntries={mockGuestEntries}
+        initialIdConsentAccepted={true}
       />,
     );
 
@@ -205,18 +234,18 @@ describe("BookingFlow accessible stepper & jest-axe", () => {
     fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
 
     expect(
-      screen.getByRole("heading", { name: /Optional farm activities & extras/i }),
+      screen.getByRole("heading", { name: /Choose stay accommodation & food/i }),
     ).toBeInTheDocument();
 
     const activeStep = screen.getByRole("listitem", { current: "step" });
     expect(activeStep).toHaveTextContent("3");
-    expect(activeStep).toHaveTextContent("Activities & Extras");
+    expect(activeStep).toHaveTextContent("Stay & Food");
 
     const results = await axe(container);
     expect(results.violations).toEqual([]);
   });
 
-  it("Step 4 (Contact details) passes axe accessibility checks", async () => {
+  it("Step 4 (Activities and extras) passes axe accessibility checks", async () => {
     const { container } = render(
       <BookingFlow
         stayTypes={mockStayTypes}
@@ -224,6 +253,8 @@ describe("BookingFlow accessible stepper & jest-axe", () => {
         policy={mockPolicy}
         settings={mockSettings}
         customerProfile={null}
+        initialGuestIdEntries={mockGuestEntries}
+        initialIdConsentAccepted={true}
       />,
     );
 
@@ -239,29 +270,27 @@ describe("BookingFlow accessible stepper & jest-axe", () => {
     fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
 
     expect(
-      screen.getByRole("heading", { name: /Guest contact information/i }),
+      screen.getByRole("heading", { name: /Optional farm activities & extras/i }),
     ).toBeInTheDocument();
 
     const activeStep = screen.getByRole("listitem", { current: "step" });
     expect(activeStep).toHaveTextContent("4");
-    expect(activeStep).toHaveTextContent("Contact Details");
+    expect(activeStep).toHaveTextContent("Activities & Extras");
 
     const results = await axe(container);
     expect(results.violations).toEqual([]);
   });
 
-  it("Step 5 (Review & policy agreement) passes axe accessibility checks", async () => {
+  it("Step 5 (Contact details) passes axe accessibility checks", async () => {
     const { container } = render(
       <BookingFlow
         stayTypes={mockStayTypes}
         activities={mockActivities}
         policy={mockPolicy}
         settings={mockSettings}
-        customerProfile={{
-          name: "Pooja Patil",
-          phone: "+91 98765 43210",
-          email: "pooja@example.com",
-        }}
+        customerProfile={null}
+        initialGuestIdEntries={mockGuestEntries}
+        initialIdConsentAccepted={true}
       />,
     );
 
@@ -278,11 +307,53 @@ describe("BookingFlow accessible stepper & jest-axe", () => {
     fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
 
     expect(
-      screen.getByRole("heading", { name: /Review booking & confirm request/i }),
+      screen.getByRole("heading", { name: /Guest contact information/i }),
     ).toBeInTheDocument();
 
     const activeStep = screen.getByRole("listitem", { current: "step" });
     expect(activeStep).toHaveTextContent("5");
+    expect(activeStep).toHaveTextContent("Contact Details");
+
+    const results = await axe(container);
+    expect(results.violations).toEqual([]);
+  });
+
+  it("Step 6 (Review & policy agreement) passes axe accessibility checks", async () => {
+    const { container } = render(
+      <BookingFlow
+        stayTypes={mockStayTypes}
+        activities={mockActivities}
+        policy={mockPolicy}
+        settings={mockSettings}
+        customerProfile={{
+          name: "Pooja Patil",
+          phone: "+91 98765 43210",
+          email: "pooja@example.com",
+        }}
+        initialGuestIdEntries={mockGuestEntries}
+        initialIdConsentAccepted={true}
+      />,
+    );
+
+    // Step 1 -> 2 -> 3 -> 4 -> 5 -> 6
+    const checkInInput = screen.getByLabelText(/Check-in date/i);
+    const checkOutInput = screen.getByLabelText(/Check-out date/i);
+    fireEvent.change(checkInInput, { target: { value: "20/11/2026" } });
+    fireEvent.blur(checkInInput);
+    fireEvent.change(checkOutInput, { target: { value: "21/11/2026" } });
+    fireEvent.blur(checkOutInput);
+    fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
+
+    expect(
+      screen.getByRole("heading", { name: /Review booking & confirm request/i }),
+    ).toBeInTheDocument();
+
+    const activeStep = screen.getByRole("listitem", { current: "step" });
+    expect(activeStep).toHaveTextContent("6");
     expect(activeStep).toHaveTextContent("Review & Confirm");
 
     const results = await axe(container);
@@ -317,16 +388,19 @@ describe("BookingFlow accessible stepper & jest-axe", () => {
           phone: "+91 98201 11222",
           email: "suresh@example.com",
         }}
+        initialGuestIdEntries={mockGuestEntries}
+        initialIdConsentAccepted={true}
       />,
     );
 
-    // Fast-forward to step 5
+    // Fast-forward to step 6 (5 continue clicks)
     const checkInInput = screen.getByLabelText(/Check-in date/i);
     const checkOutInput = screen.getByLabelText(/Check-out date/i);
     fireEvent.change(checkInInput, { target: { value: "20/11/2026" } });
     fireEvent.blur(checkInInput);
     fireEvent.change(checkOutInput, { target: { value: "21/11/2026" } });
     fireEvent.blur(checkOutInput);
+    fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
     fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
     fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
     fireEvent.click(screen.getByRole("button", { name: /Continue/i }));

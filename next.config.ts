@@ -10,7 +10,7 @@ const cspPolicy = [
     ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com"
     : `script-src 'self' https://challenges.cloudflare.com${isVercelPreview ? " https://vercel.live" : ""}`,
   `frame-src 'self' https://challenges.cloudflare.com https://www.google.com https://maps.google.com${isVercelPreview ? " https://vercel.live" : ""}`,
-  `img-src 'self' data: blob: https://res.cloudinary.com${isVercelPreview ? " https://vercel.live" : ""}`,
+  `img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com${isVercelPreview ? " https://vercel.live" : ""}`,
   "media-src 'self' blob: https://res.cloudinary.com",
   isDev
     ? "connect-src 'self' https://api.cloudinary.com https://res.cloudinary.com https://challenges.cloudflare.com ws: wss:"
@@ -43,6 +43,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   async redirects() {
     return [
+      { source: "/signup", destination: "/login", permanent: true },
       { source: "/experience", destination: "/experiences", permanent: true },
       { source: "/find-us", destination: "/contact#find-us", permanent: true },
       { source: "/location", destination: "/contact#find-us", permanent: true },
@@ -65,7 +66,10 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+    ],
   },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];

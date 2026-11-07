@@ -751,6 +751,7 @@ Isolation: default Read Committed + explicit row locks; use Serializable only wh
 | Approved videos | until user requests removal or reversal (publish consent separate) |
 | Audit logs | ≥ 3 years |
 | Sessions/verification tokens | expiry + 30 days |
+| Guest identity documents (BookingGuest) | 30 days after check-out (or 7 days after cancellation/rejection); then Cloudinary asset deleted, idMediaId cleared, idPurgedAt set |
 | Deleted accounts | anonymise PII; keep ledger/booking rows with pseudonymised user |
 
 ## 9. Migration workflow
@@ -771,4 +772,15 @@ Isolation: default Read Committed + explicit row locks; use Serializable only wh
 ### Account deletion request migration
 
 `20261021150000_account_deletion_request` adds the approval-workflow-only `AccountDeletionRequest` model with status values `PENDING`, `CANCELLED`, `APPROVED`, `REJECTED`, and `COMPLETED`. It stores the requesting customer, optional reason and decision metadata, and uses a partial unique index to allow one pending request per user. This phase only creates and cancels requests; it does not delete, disable, or anonymise customer data. Never edit applied migrations; never db push.
+
+### Mandatory guest identity documents migration
+
+`20261107170000_booking_guest_ids` adds the `BookingGuest` model, `BookingGuestAgeGroup` enum (`ADULT`, `CHILD_4_10`, `INFANT_UNDER_4`), and `BookingGuestIdType` enum (`AADHAAR`, `PASSPORT`, `DRIVING_LICENCE`, `VOTER_ID`, `PAN`, `STUDENT_ID`, `BIRTH_CERTIFICATE`).
+- Enforces mandatory identity document upload for every guest included in a booking.
+- Does NOT store ID numbers, OCR text, or document contents.
+- Links each guest document to a private authenticated `Media` asset (`idMediaId` with `@unique` and `onDelete: Restrict`).
+- On booking purge/cancellation retention expiration, `idMediaId` is nullified and `idPurgedAt` is set, while the Cloudinary asset and `Media` row are permanently deleted.
+- Cascade-deletes `BookingGuest` if parent `Booking` is deleted.
+- Indexed on `bookingId`.
+
 

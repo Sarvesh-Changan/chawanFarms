@@ -6,12 +6,9 @@ import { verifyPassword } from "@better-auth/utils/password";
 import { headers } from "next/headers";
 import { z } from "zod";
 
-import { resolvePostLoginDestination } from "@/lib/auth/post-login-destination";
 import {
-  forgotPasswordSchema,
   loginSchema,
   resetPasswordSchema,
-  signupSchema,
   staffForgotPasswordSchema,
   staffResetPasswordSchema,
   staffVerifyOtpSchema,
@@ -32,22 +29,10 @@ export type AuthActionResult = {
 
 const genericLoginError = "Unable to sign in. Check your details and try again.";
 const genericResetError = "If the details are valid, you will receive an email shortly.";
-const signupSuccessMessage = "Check your email to verify your account before signing in.";
 
 // Pre-computed scrypt hash used to ensure constant-time verification for non-existent or locked accounts
 const DUMMY_SCRYPT_HASH =
   "fce2f109a6370b0341a73facd12a2268:fe3c6b42cd86ee5811c4c9941f579247c2e71abfdc7dc7515a437cc99683d5c4591cefbc523ff656d428a6128024dccdfb9599f351cb3a276978261c6717fbf9";
-
-function safeAuthErrorDetails(error: unknown): { code?: string; status?: number } {
-  if (!error || typeof error !== "object") return {};
-  const value = error as { code?: unknown; status?: unknown; statusCode?: unknown };
-  const code = typeof value.code === "string" && /^[A-Z0-9_]{1,64}$/.test(value.code) ? value.code : undefined;
-  const statusValue = typeof value.status === "number" ? value.status : value.statusCode;
-  const status = typeof statusValue === "number" && Number.isInteger(statusValue) && statusValue >= 400 && statusValue <= 599
-    ? statusValue
-    : undefined;
-  return { code, status };
-}
 
 function fieldErrors(error: z.ZodError): Record<string, string[]> {
   const errors = new Map<string, string[]>();
@@ -122,19 +107,16 @@ export async function loginAction(rawInput: unknown): Promise<AuthActionResult> 
   if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
 
   const user = await accountState(parsed.data.email);
-  const isAdminLogin = user?.type === "STAFF" || Boolean(parsed.data.callbackUrl?.includes("/admin"));
 
-  if (user?.lockedUntil && user.lockedUntil > new Date()) {
-    // Constant-time execution for locked admin accounts
+  // Admin password login accepts ONLY staff accounts. Customer password sign-in is disabled.
+  if (!user || user.type !== "STAFF") {
+    // Constant-time execution for non-staff or non-existent accounts
     await verifyPassword(DUMMY_SCRYPT_HASH, parsed.data.password).catch(() => false);
-    if (isAdminLogin) {
-      return { ok: false, message: genericLoginError };
-    }
-    return { ok: false, message: "This account has been temporarily locked due to failed attempts. Please try again later." };
+    return { ok: false, message: genericLoginError };
   }
 
-  if (!user) {
-    // Constant-time execution for non-existent accounts
+  if (user.lockedUntil && user.lockedUntil > new Date()) {
+    // Constant-time execution for locked admin accounts
     await verifyPassword(DUMMY_SCRYPT_HASH, parsed.data.password).catch(() => false);
     return { ok: false, message: genericLoginError };
   }
@@ -169,73 +151,16 @@ export async function loginAction(rawInput: unknown): Promise<AuthActionResult> 
   }
 }
 
-export async function signupAction(rawInput: unknown): Promise<AuthActionResult> {
-  const requestHeaders = await headers();
-  const ip = clientIp(requestHeaders);
-  const ipLimit = await limit(`auth:signup:ip:${ip}`, 5, 3_600);
-  const limitedResult = limited(ipLimit);
-  if (limitedResult) return limitedResult;
-
-  const parsed = signupSchema.safeParse(rawInput);
-  if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
-
-  try {
-    const verificationDestination = resolvePostLoginDestination({
-      userType: "CUSTOMER",
-      callbackUrl: parsed.data.callbackUrl,
-      needsTwoFactorSetup: false,
-      needsTwoFactorVerify: false,
-      emailVerified: false,
-    });
-    await auth.api.signUpEmail({
-      body: { name: parsed.data.name, email: parsed.data.email, password: parsed.data.password, callbackURL: verificationDestination.redirectTo },
-      headers: requestHeaders,
-    });
-    return { ok: true, message: signupSuccessMessage };
-  } catch (error) {
-    const details = safeAuthErrorDetails(error);
-    console.error("[auth] signup request failed", details);
-    try {
-      // Better Auth can finish creating the user and sending verification mail
-      // before a later post-commit hook rejects the API call. Keep the response
-      // generic and successful when the account was persisted.
-      const persistedUser = await db.user.findUnique({
-        where: { email: parsed.data.email },
-        select: { id: true },
-      });
-      if (persistedUser) return { ok: true, message: signupSuccessMessage };
-    } catch {
-      // Preserve the generic failure if the database cannot confirm persistence.
-    }
-    return { ok: false, message: "Unable to create your account. Please try again." };
-  }
+export async function signupAction(_rawInput?: unknown): Promise<AuthActionResult> {
+  void _rawInput;
+  // Customer email/password registration is disabled; users authenticate via Google.
+  return { ok: false, message: genericLoginError };
 }
 
-export async function forgotPasswordAction(rawInput: unknown): Promise<AuthActionResult> {
-  const requestHeaders = await headers();
-  const ip = clientIp(requestHeaders);
-  const rawEmail = typeof rawInput === "object" && rawInput !== null && "email" in rawInput && typeof rawInput.email === "string"
-    ? rawInput.email.trim().toLowerCase()
-    : "invalid";
-  const [ipLimit, emailLimit] = await Promise.all([
-    limit(`auth:forgot-password:ip:${ip}`, 10, 3_600),
-    limit(`auth:forgot-password:email:${emailKey(rawEmail)}`, 3, 3_600),
-  ]);
-  const limitedResult = limited(ipLimit) ?? limited(emailLimit);
-  if (limitedResult) return limitedResult;
-
-  const parsed = forgotPasswordSchema.safeParse(rawInput);
-  if (!parsed.success) return { ok: false, fieldErrors: fieldErrors(parsed.error) };
-
-  try {
-    await auth.api.requestPasswordReset({
-      body: { email: parsed.data.email, redirectTo: "/reset-password" },
-      headers: requestHeaders,
-    });
-  } catch {
-    // Deliberately keep the same response for existing and unknown addresses.
-  }
-  return { ok: true, message: genericResetError };
+export async function forgotPasswordAction(_rawInput?: unknown): Promise<AuthActionResult> {
+  void _rawInput;
+  // Customer password reset is disabled; users authenticate via Google. Staff uses OTP reset.
+  return { ok: false, message: genericResetError };
 }
 
 export async function resetPasswordAction(rawInput: unknown): Promise<AuthActionResult> {

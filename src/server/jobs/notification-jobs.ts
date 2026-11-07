@@ -66,15 +66,30 @@ export async function purgeConfiguredRetention(): Promise<{ auditLogs: number }>
 }
 
 export async function reportMediaOrphans(): Promise<{ candidates: number; cleaned: number }> {
-  const candidates = await db.media.findMany({ where: { origin: "ADMIN", deletedAt: null, usages: { none: {} }, videoSubmission: null }, select: { id: true, publicId: true, resourceType: true, deliveryType: true, meta: true } });
+  const candidates = await db.media.findMany({
+    where: {
+      deletedAt: null,
+      usages: { none: {} },
+      videoSubmission: null,
+      bookingGuest: null,
+    },
+    select: { id: true, publicId: true, resourceType: true, deliveryType: true, meta: true },
+  });
   let cleaned = 0;
   for (const media of candidates) {
     const meta = media.meta && typeof media.meta === "object" && !Array.isArray(media.meta) ? media.meta as Record<string, unknown> : {};
     const pendingUntil = typeof meta.pendingUntil === "string" ? new Date(meta.pendingUntil) : null;
     if (meta.pending !== true || !pendingUntil || Number.isNaN(pendingUntil.getTime()) || pendingUntil > new Date()) continue;
-    const removed = await db.media.updateMany({ where: { id: media.id, deletedAt: null, usages: { none: {} }, videoSubmission: null }, data: { deletedAt: new Date(), isPublic: false } });
+    const removed = await db.media.updateMany({
+      where: { id: media.id, deletedAt: null, usages: { none: {} }, videoSubmission: null, bookingGuest: null },
+      data: { deletedAt: new Date(), isPublic: false },
+    });
     if (!removed.count) continue;
-    await deleteCloudinaryAsset({ publicId: media.publicId, resourceType: media.resourceType === "video" ? "video" : "image", deliveryType: media.deliveryType === "authenticated" ? "authenticated" : "upload" });
+    await deleteCloudinaryAsset({
+      publicId: media.publicId,
+      resourceType: media.resourceType === "video" ? "video" : "image",
+      deliveryType: media.deliveryType === "authenticated" ? "authenticated" : "upload",
+    });
     cleaned += 1;
   }
   return { candidates: candidates.length, cleaned };

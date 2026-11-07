@@ -98,13 +98,23 @@ export async function getAdminBookingsAction(rawParams: unknown) {
       include: {
         package: { select: { id: true, name: true, slug: true } },
         accommodation: { select: { id: true, name: true, slug: true } },
+        _count: { select: { guests: true } },
       },
     }),
   ]);
 
+  const mappedBookings = bookings.map((b) => {
+    const totalExpected = b.adults + b.children4to10 + b.infantsUnder4;
+    const idsPending = (b._count?.guests ?? 0) < totalExpected;
+    return {
+      ...b,
+      idsPending,
+    };
+  });
+
   return {
     ok: true,
-    bookings,
+    bookings: mappedBookings,
     totalCount,
     page,
     pageSize,
@@ -113,7 +123,7 @@ export async function getAdminBookingsAction(rawParams: unknown) {
 }
 
 export async function getAdminBookingDetailAction(bookingId: string) {
-  await requireStaff();
+  const staff = await requireStaff();
   await requirePermission("bookings.read");
 
   if (!bookingId) {
@@ -133,12 +143,26 @@ export async function getAdminBookingDetailAction(bookingId: string) {
           policyVersion: { select: { key: true, version: true, title: true } },
         },
       },
+      guests: {
+        select: {
+          id: true,
+          fullName: true,
+          ageGroup: true,
+          idType: true,
+          idMediaId: true,
+          idPurgedAt: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
 
   if (!booking) {
     return { ok: false, error: "Booking not found." };
   }
+
+  const canViewGuestIds = await can(staff, "bookings.ids.read");
 
   const paymentIds = booking.payments.map((p) => p.id);
 
@@ -160,6 +184,7 @@ export async function getAdminBookingDetailAction(bookingId: string) {
     ok: true,
     booking,
     auditLogs,
+    canViewGuestIds,
   };
 }
 

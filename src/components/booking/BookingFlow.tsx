@@ -6,6 +6,8 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { TurnstileField } from "@/components/auth/TurnstileField";
 import { BookingDatePicker } from "@/components/booking/BookingDatePicker";
+import { GuestIdStep } from "@/components/booking/GuestIdStep";
+import type { GuestIdEntry } from "@/components/booking/GuestIdStep";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -61,6 +63,8 @@ export type BookingFlowProps = {
     packageSlug?: string | null;
     activitySlug?: string | null;
   };
+  initialGuestIdEntries?: GuestIdEntry[];
+  initialIdConsentAccepted?: boolean;
 };
 
 type QuoteEstimate = {
@@ -117,6 +121,8 @@ export function BookingFlow({
   settings,
   customerProfile,
   prefill,
+  initialGuestIdEntries,
+  initialIdConsentAccepted,
 }: BookingFlowProps) {
   const startedAtRef = useRef<number>(0);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -136,7 +142,7 @@ export function BookingFlow({
       )?.key ?? stayTypes[0]?.key ?? "tent_dorm"
     : stayTypes[0]?.key ?? "tent_dorm";
 
-  // Stepper state (1..5)
+  // Stepper state (1..6)
   const [currentStep, setCurrentStep] = useState<number>(1);
 
   // Form State with lazy initializers from sessionStorage
@@ -180,6 +186,14 @@ export function BookingFlow({
   const [policyAccepted, setPolicyAccepted] = useState<boolean>(false);
   const [turnstileToken, setTurnstileToken] = useState<string>("");
   const [honeypot, setHoneypot] = useState<string>("");
+
+  // Guest ID step state
+  const [guestIdEntries, setGuestIdEntries] = useState<GuestIdEntry[]>(
+    () => initialGuestIdEntries ?? [],
+  );
+  const [idConsentAccepted, setIdConsentAccepted] = useState<boolean>(
+    () => initialIdConsentAccepted ?? false,
+  );
 
   // UUID Idempotency Key (client-generated per submission attempt)
   const [idempotencyKey, setIdempotencyKey] = useState<string>(() => crypto.randomUUID());
@@ -358,18 +372,43 @@ export function BookingFlow({
   };
 
   const validateStep2 = (): boolean => {
+    // All guests must have fullName, idType and a verified upload
+    const totalGuests = adults + children4to10 + infantsUnder4;
+    if (guestIdEntries.length !== totalGuests) {
+      setFieldErrors({ guestIds: [`Please upload an identity document for all ${totalGuests} guest(s).`] });
+      return false;
+    }
+    for (const entry of guestIdEntries) {
+      if (!entry.fullName.trim()) {
+        setFieldErrors({ guestIds: ["Please enter a full name for every guest."] });
+        return false;
+      }
+      if (!entry.mediaPublicId) {
+        setFieldErrors({ guestIds: ["Please upload an identity document for every guest."] });
+        return false;
+      }
+    }
+    if (!idConsentAccepted) {
+      setFieldErrors({ guestIds: ["You must accept the data collection consent to continue."] });
+      return false;
+    }
+    setFieldErrors({});
+    return true;
+  };
+
+  const validateStep3 = (): boolean => {
     const errors: Record<string, string[]> = {};
     if (!selectedStayKey) errors.stayType = ["Please choose a stay option."];
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const validateStep3 = (): boolean => {
+  const validateStep4 = (): boolean => {
     setFieldErrors({});
     return true;
   };
 
-  const validateStep4 = (): boolean => {
+  const validateStep5 = (): boolean => {
     const errors: Record<string, string[]> = {};
     if (!contactName.trim() || contactName.trim().length < 2) {
       errors.contactName = ["Please provide your name (at least 2 characters)."];
@@ -400,11 +439,14 @@ export function BookingFlow({
       case 4:
         valid = validateStep4();
         break;
+      case 5:
+        valid = validateStep5();
+        break;
       default:
         valid = true;
     }
     if (valid) {
-      setCurrentStep((prev) => Math.min(5, prev + 1));
+      setCurrentStep((prev) => Math.min(6, prev + 1));
     }
   };
 
@@ -414,7 +456,7 @@ export function BookingFlow({
     setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
-  // Submission handler for Step 5
+  // Submission handler for Step 6
   const handleSubmitBooking = async () => {
     if (!policyAccepted) {
       setFieldErrors({ policy: ["You must review and accept the stay rules and policies."] });
@@ -449,6 +491,13 @@ export function BookingFlow({
           note: act?.priceNote ?? undefined,
         };
       }),
+      guests: guestIdEntries.map((e) => ({
+        fullName: e.fullName,
+        ageGroup: e.ageGroup,
+        idType: e.idType,
+        mediaPublicId: e.mediaPublicId,
+      })),
+      idConsentAccepted: true as const,
       couponCode: settings.featureCoupons && couponCode.trim() ? couponCode.trim() : null,
       honeypot,
       turnstileToken: turnstileToken || undefined,
@@ -637,6 +686,7 @@ export function BookingFlow({
   // STEPPER COMPONENT
   const stepTitles = [
     "Dates & Guests",
+    "Guests & ID",
     "Stay & Food",
     "Activities & Extras",
     "Contact Details",
@@ -645,9 +695,9 @@ export function BookingFlow({
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
-      {/* 5-Step Stepper Header */}
+      {/* 6-Step Stepper Header */}
       <nav aria-label="Booking flow progress" className="w-full">
-        <ol className="grid grid-cols-5 gap-1.5 sm:gap-3 text-center">
+        <ol className="grid grid-cols-6 gap-1 sm:gap-2 text-center">
           {stepTitles.map((title, index) => {
             const stepNum = index + 1;
             const isCurrent = currentStep === stepNum;
@@ -739,7 +789,7 @@ export function BookingFlow({
         {currentStep === 1 && (
           <section aria-labelledby="step-1-heading" className="space-y-6">
             <div>
-              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 1 of 5</p>
+              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 1 of 6</p>
               <h2
                 id="step-1-heading"
                 ref={headingRef}
@@ -899,13 +949,46 @@ export function BookingFlow({
           </section>
         )}
 
-        {/* STEP 2: Stay Type & Food Option */}
+        {/* STEP 2: Guests & Identity Documents */}
         {currentStep === 2 && (
           <section aria-labelledby="step-2-heading" className="space-y-6">
             <div>
-              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 2 of 5</p>
+              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 2 of 6</p>
               <h2
                 id="step-2-heading"
+                ref={headingRef}
+                tabIndex={-1}
+                className="font-heading text-2xl font-bold text-forest-900 sm:text-3xl mt-1 focus:outline-none"
+              >
+                Guests &amp; identity documents
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Indian law requires a valid photo ID for every guest at check-in. Please upload documents now to speed up arrival.
+              </p>
+            </div>
+            {fieldErrors.guestIds && (
+              <p className="text-xs text-destructive font-semibold">{fieldErrors.guestIds[0]}</p>
+            )}
+            <GuestIdStep
+              draftKey={idempotencyKey}
+              adults={adults}
+              children4to10={children4to10}
+              infantsUnder4={infantsUnder4}
+              entries={guestIdEntries}
+              idConsentAccepted={idConsentAccepted}
+              onEntriesChange={setGuestIdEntries}
+              onConsentChange={setIdConsentAccepted}
+            />
+          </section>
+        )}
+
+        {/* STEP 3: Stay Type & Food Option */}
+        {currentStep === 3 && (
+          <section aria-labelledby="step-3-heading" className="space-y-6">
+            <div>
+              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 3 of 6</p>
+              <h2
+                id="step-3-heading"
                 ref={headingRef}
                 tabIndex={-1}
                 className="font-heading text-2xl font-bold text-forest-900 sm:text-3xl mt-1 focus:outline-none"
@@ -1034,13 +1117,13 @@ export function BookingFlow({
           </section>
         )}
 
-        {/* STEP 3: Activities & Extras */}
-        {currentStep === 3 && (
-          <section aria-labelledby="step-3-heading" className="space-y-6">
+        {/* STEP 4: Activities & Extras */}
+        {currentStep === 4 && (
+          <section aria-labelledby="step-4-heading" className="space-y-6">
             <div>
-              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 3 of 5</p>
+              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 4 of 6</p>
               <h2
-                id="step-3-heading"
+                id="step-4-heading"
                 ref={headingRef}
                 tabIndex={-1}
                 className="font-heading text-2xl font-bold text-forest-900 sm:text-3xl mt-1 focus:outline-none"
@@ -1109,13 +1192,13 @@ export function BookingFlow({
           </section>
         )}
 
-        {/* STEP 4: Contact Details & Special Requests */}
-        {currentStep === 4 && (
-          <section aria-labelledby="step-4-heading" className="space-y-6">
+        {/* STEP 5: Contact Details & Special Requests */}
+        {currentStep === 5 && (
+          <section aria-labelledby="step-5-heading" className="space-y-6">
             <div>
-              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 4 of 5</p>
+              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 5 of 6</p>
               <h2
-                id="step-4-heading"
+                id="step-5-heading"
                 ref={headingRef}
                 tabIndex={-1}
                 className="font-heading text-2xl font-bold text-forest-900 sm:text-3xl mt-1 focus:outline-none"
@@ -1224,13 +1307,13 @@ export function BookingFlow({
           </section>
         )}
 
-        {/* STEP 5: Review & Mandatory Policy Acceptance */}
-        {currentStep === 5 && (
-          <section aria-labelledby="step-5-heading" className="space-y-6">
+        {/* STEP 6: Review & Mandatory Policy Acceptance */}
+        {currentStep === 6 && (
+          <section aria-labelledby="step-6-heading" className="space-y-6">
             <div>
-              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 5 of 5</p>
+              <p className="text-xs font-semibold tracking-wider text-forest-700 uppercase">Step 6 of 6</p>
               <h2
-                id="step-5-heading"
+                id="step-6-heading"
                 ref={headingRef}
                 tabIndex={-1}
                 className="font-heading text-2xl font-bold text-forest-900 sm:text-3xl mt-1 focus:outline-none"
@@ -1387,7 +1470,7 @@ export function BookingFlow({
             <div />
           )}
 
-          {currentStep < 5 ? (
+          {currentStep < 6 ? (
             <Button
               type="button"
               onClick={handleNext}
@@ -1430,7 +1513,7 @@ export function BookingFlow({
 
           {mobileSummaryExpanded && (
             <div className="mx-auto max-w-md mt-2 pt-2 border-t border-border text-xs text-muted-foreground space-y-1">
-              <p>Step {currentStep} of 5: {stepTitles[currentStep - 1]}</p>
+              <p>Step {currentStep} of 6: {stepTitles[currentStep - 1]}</p>
               <p>{activeEstimate.disclaimer}</p>
             </div>
           )}

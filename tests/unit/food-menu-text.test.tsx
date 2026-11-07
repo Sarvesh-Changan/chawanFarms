@@ -31,7 +31,10 @@ describe("FoodMenuText", () => {
   });
 
   it("renders nothing when there are no menu items", () => {
-    const { container } = render(<FoodMenuText categories={[{ ...categories[0]!, items: [] }]} />);
+    const firstCat = categories[0];
+    const { container } = render(
+      <FoodMenuText categories={firstCat ? [{ ...firstCat, items: [] }] : []} />,
+    );
     expect(container).toBeEmptyDOMElement();
   });
 });

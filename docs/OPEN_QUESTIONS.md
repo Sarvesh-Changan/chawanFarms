@@ -1,4 +1,4 @@
-﻿# Open Questions and Client Decisions
+# Open Questions and Client Decisions
 
 Status: all questions below remain open unless the client records a written answer in this file. No application behavior, public content, price, policy, capacity or contact detail should be guessed from an unanswered question.
 
@@ -130,4 +130,12 @@ These values were supplied for implementation, are **provisional**, and do not r
 
 - **D-18 Extras (mutton/chicken per kg, fish, barbecue, bullock cart):**
   - No amounts in PDF.
-  - Default: Price stays empty; extras are listed as "extra â€” quoted by our team" and are NOT included in the estimate; staff may add a manual extra line to a booking.
+  - Default: Price stays empty; extras are listed as "extra — quoted by our team" and are NOT included in the estimate; staff may add a manual extra line to a booking.
+
+- **D-42 Guest Identity Document Retention & Legal Basis (India DPDP Act 2023 & Tourism Regulations):**
+  - Config provisional default: `ID_RETENTION_DAYS_AFTER_CHECKOUT = 30` days past check-out for completed stays, and 7 days after cancellation or rejection (`ID_RETENTION_DAYS_AFTER_CANCEL_OR_REJECT = 7`).
+  - Indian hospitality regulations (Sarai Act / Maharashtra Tourism Board) mandate guest identity verification at check-in. The Digital Personal Data Protection Act 2023 (DPDP) requires storage limitation and purpose limitation.
+  - Client must confirm:
+    1. Legal basis and exact retention period (30-day provisional default vs 90-day vs immediate post-checkout purge).
+    2. Exact policy regarding handling and verification of minor identity documents (student ID / birth certificate).
+    3. Mandatory Aadhaar masking compliance advisory (UIDAI mandates that only masked Aadhaar with the first 8 digits blacked out should be collected; system recommends masked Aadhaar in UI).

@@ -66,7 +66,7 @@ async function mediaMap(ids: Array<string | null | undefined>): Promise<Map<stri
 }
 
 export type PublicSettings = {
-  tagline: string;
+  tagline?: string;
   phones: string[];
   address: string;
   socialLinks?: Array<{ label: string; url: string }>;
@@ -85,8 +85,11 @@ export async function getPublicSettings(): Promise<PublicSettings> {
       });
       const values = new Map(rows.map((row) => [row.key, row.value]));
       const rawPhones = values.get("business.phones");
-      const phones = (Array.isArray(rawPhones) ? rawPhones : typeof rawPhones === "string" ? rawPhones.split(/\r?\n/) : [])
-        .flatMap((value) => typeof value === "string" ? [value] : value && typeof value === "object" && !Array.isArray(value) && typeof (value as Record<string, unknown>).number === "string" ? [(value as Record<string, unknown>).number as string] : [])
+      const phoneEntries = (Array.isArray(rawPhones) ? rawPhones : typeof rawPhones === "string" ? rawPhones.split(/\r?\n/) : [])
+        .flatMap((value, index) => typeof value === "string" ? [{ number: value, isPrimary: index === 0 }] : value && typeof value === "object" && !Array.isArray(value) && typeof (value as Record<string, unknown>).number === "string" ? [{ number: (value as Record<string, unknown>).number as string, isPrimary: (value as Record<string, unknown>).isPrimary === true }] : [])
+        .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary));
+      const phones = phoneEntries
+        .map(({ number }) => number)
         .flatMap((value) => {
           try {
             return [normalizeLeadPhone(value)];

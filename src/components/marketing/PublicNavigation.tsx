@@ -77,7 +77,7 @@ function Dropdown({ group, pathname, openGroup, setOpenGroup }: { group: (typeof
   </div>;
 }
 
-export function PublicNavigation({ accountHref, accountLabel, tagline, phone, whatsappNumber, whatsappMessage }: { accountHref: string; accountLabel: string; tagline: string; phone?: string; whatsappNumber?: string; whatsappMessage?: string }) {
+export function PublicNavigation({ accountHref, accountLabel, tagline = "Agri-Tourism & Home Stay", phone, whatsappNumber, whatsappMessage }: { accountHref: string; accountLabel: string; tagline?: string; phone?: string; whatsappNumber?: string; whatsappMessage?: string }) {
   const pathname = usePathname() ?? "/";
   const [openGroup, setOpenGroup] = useState<GroupKey | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);

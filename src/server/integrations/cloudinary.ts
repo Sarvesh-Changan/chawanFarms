@@ -116,7 +116,9 @@ function presetForPurpose(purpose: MediaPurpose): string {
     ? env.CLOUDINARY_UPLOAD_PRESET_CUSTOMER_VIDEO
     : purpose === "admin_image"
       ? env.CLOUDINARY_UPLOAD_PRESET_ADMIN_IMAGE
-      : env.CLOUDINARY_UPLOAD_PRESET_ADMIN_VIDEO;
+      : purpose === "admin_video"
+        ? env.CLOUDINARY_UPLOAD_PRESET_ADMIN_VIDEO
+        : env.CLOUDINARY_UPLOAD_PRESET_BOOKING_GUEST_ID;
   if (!presetName) throw new Error(`Cloudinary preset for ${purpose} is not configured.`);
   return presetName;
 }
@@ -289,6 +291,21 @@ export function createAuthenticatedVideoPreviewUrl(input: { publicId: string; fo
     resource_type: "video",
     type: "authenticated",
     expires_at: Math.floor(Date.now() / 1000) + VIDEO_PREVIEW_TTL_SECONDS,
+    attachment: false,
+  });
+}
+
+/** Generate a short-lived (~60s) signed private delivery URL for staff viewing a guest ID document. */
+export function createAuthenticatedGuestIdViewUrl(input: { publicId: string; format?: string }): string {
+  const parsed = z.object({ publicId: publicIdSchema, format: z.string().regex(/^[a-z0-9]{2,8}$/i).optional() }).strict().safeParse(input);
+  if (!parsed.success) throw new Error("Invalid ID document asset.");
+  const expiresAt = Math.floor(Date.now() / 1000) + 60; // 60 seconds
+  if (cloudinaryTestMode()) return `https://test-cloudinary.invalid/authenticated/${encodeURIComponent(parsed.data.publicId)}?expires=${expiresAt}`;
+  cloudinaryConfig();
+  return cloudinary.utils.private_download_url(parsed.data.publicId, parsed.data.format ?? "jpg", {
+    resource_type: "image",
+    type: "authenticated",
+    expires_at: expiresAt,
     attachment: false,
   });
 }

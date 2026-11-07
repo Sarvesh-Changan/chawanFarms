@@ -56,7 +56,9 @@ function groupCategories(categories: FoodCategory[]): MealGroup[] {
       : value.includes("evening") || value.includes("tea") || value.includes("snack") || value.includes("part-c")
         ? groups[2]
         : groups[1];
-    group.categories.push(category);
+    if (group) {
+      group.categories.push(category);
+    }
   }
   return groups.filter((group) => group.categories.some((category) => category.items.length > 0));
 }

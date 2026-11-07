@@ -1,6 +1,6 @@
-import { AuthForm } from "@/components/auth/AuthForm";
+import { permanentRedirect } from "next/navigation";
+
 import { StaffPasswordResetForm } from "@/components/auth/StaffPasswordResetForm";
-import { forgotPasswordAction } from "@/server/auth/actions";
 
 export default async function ForgotPasswordPage({
   searchParams,
@@ -14,5 +14,5 @@ export default async function ForgotPasswordPage({
     return <StaffPasswordResetForm />;
   }
 
-  return <AuthForm mode="forgot" action={forgotPasswordAction} />;
+  permanentRedirect("/login");
 }

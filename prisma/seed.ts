@@ -252,7 +252,7 @@ const settingSeeds = [
   { key: "business.tagline", value: "Agri-Tourism & Home Stay" },
   { key: "business.name", value: { en: "Chawan Farms — Agri-Tourism Centre" } },
   { key: "business.address", value: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra, India" } },
-  { key: "business.phones", value: ["9821502956", "9821089375", "9359895322"] },
+  { key: "business.phones", value: ["9821502956", "9359895322"] },
   { key: "business.email", value: Prisma.JsonNull },
   { key: "whatsapp.number", value: Prisma.JsonNull },
   { key: "catalogue.amenities", value: amenitySeeds },

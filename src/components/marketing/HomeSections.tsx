@@ -2,10 +2,10 @@ import Link from "next/link";
 
 import { ActivitiesRow } from "@/components/marketing/ActivitiesRow";
 import { ClosingCta } from "@/components/marketing/ClosingCta";
+import { FoodMenuText } from "@/components/marketing/FoodMenuText";
 import { HomeHero } from "@/components/marketing/HomeHero";
 import { HomeScrollMotion } from "@/components/marketing/HomeScrollMotion";
 import { HomeStories } from "@/components/marketing/HomeStories";
-import { FoodMenuText } from "@/components/marketing/FoodMenuText";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { StayCards } from "@/components/marketing/StayCards";
 import { WhereWeAre } from "@/components/marketing/WhereWeAre";

@@ -8,6 +8,7 @@ export const PERMISSIONS = [
   "media.write",
   "media.delete",
   "bookings.read",
+  "bookings.ids.read",
   "bookings.write",
   "bookings.confirm",
   "bookings.cancel",
@@ -51,6 +52,7 @@ export const ROLE_PERMISSION_MATRIX = {
   ),
   Reservations: [
     "bookings.read",
+    "bookings.ids.read",
     "bookings.write",
     "bookings.cancel",
     "payments.record",
@@ -76,7 +78,9 @@ export const ROLE_PERMISSION_MATRIX = {
     "rewards.videos.review",
     "rewards.ledger.read",
   ],
-  "Read-only": PERMISSIONS.filter((key) => key.endsWith(".read")),
+  "Read-only": PERMISSIONS.filter(
+    (key) => key.endsWith(".read") && key !== "bookings.ids.read",
+  ),
 } as const satisfies Record<string, readonly Permission[]>;
 
 export type RoleName = keyof typeof ROLE_PERMISSION_MATRIX;

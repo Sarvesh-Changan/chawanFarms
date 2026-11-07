@@ -33,6 +33,7 @@ export type BookingListItem = {
   amountPaidPaise: number;
   package?: { id: string; name: unknown; slug: string } | null;
   accommodation?: { id: string; name: unknown; slug: string } | null;
+  idsPending?: boolean;
   createdAt: Date | string;
 };
 
@@ -273,6 +274,11 @@ export function BookingsList({
                         <div className="flex flex-col gap-1 items-start">
                           <StatusBadge status={b.status} />
                           <StatusBadge status={b.paymentStatus} />
+                          {b.idsPending && (
+                            <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                              IDs pending
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-right">

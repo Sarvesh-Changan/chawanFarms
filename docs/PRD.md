@@ -209,7 +209,7 @@ Enquiry conversion rate (visit → submitted form/WhatsApp/call), lead→booking
 
 > Slide references are PDF page order. Text was extracted from slides; wording lightly normalised. **Prices are in INR, as written by client.** Anything unclear is flagged ⚠ and also listed in Appendix B.
 
-**Business**: Chawan Farms — Agri-Tourism Centre ("कृषी पर्यटन केंद्र"). Address: Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra, India. Contacts: 9821502956, 9821089375, 9359895322. Website: www.chawanfarms.com. No email address or WhatsApp number is stated in the PDF ⚠ (D-13).
+**Business**: Chawan Farms — Agri-Tourism Centre ("कृषी पर्यटन केंद्र"). Address: Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra, India. The two retained business contact numbers are stored in Settings. Website: www.chawanfarms.com. No email address or WhatsApp number is stated in the PDF ⚠ (D-13).
 
 **Taglines/messages (slides 2–4, 9, 18)**: "Come live, experience & rediscover yourself & nature at its best" · "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens" · "Imagine a place where time slows down" · Agri-tourism as an inexpensive gateway; curiosity about farming industry and lifestyle; restoration of rural culture.
 

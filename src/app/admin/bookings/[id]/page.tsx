@@ -23,6 +23,7 @@ export default async function AdminBookingDetailPage({ params }: PageProps) {
     <BookingDetailView
       booking={result.booking}
       auditLogs={result.auditLogs || []}
+      canViewGuestIds={result.canViewGuestIds ?? false}
     />
   );
 }

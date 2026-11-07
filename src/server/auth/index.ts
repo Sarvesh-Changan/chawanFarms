@@ -9,6 +9,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { env } from "@/config/env";
+import { validateGoogleUserInfo } from "@/server/auth/google-gate";
 import { ensureCustomerProfile } from "@/server/auth/referral";
 import { db } from "@/server/db";
 import { sendResetPasswordEmail, sendVerificationEmail } from "@/server/integrations/email";
@@ -25,6 +26,24 @@ export const auth = betterAuth({
   basePath: "/api/auth",
   trustedOrigins: env.AUTH_TRUSTED_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean),
   database: prismaAdapter(db, { provider: "postgresql", transaction: true }),
+  socialProviders: {
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID || "google-client-id-placeholder",
+      clientSecret: env.GOOGLE_CLIENT_SECRET || "google-client-secret-placeholder",
+      prompt: "select_account",
+      scope: ["openid", "email", "profile"],
+      enabled: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+    },
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+    },
+  },
+  user: {
+    validateUserInfo: validateGoogleUserInfo,
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -78,6 +97,18 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        before: async (user) => {
+          return {
+            data: {
+              ...user,
+              name: user.name || "Customer",
+              email: user.email.toLowerCase(),
+              image: user.image ?? null,
+              type: user.type ?? "CUSTOMER",
+              status: user.status ?? "ACTIVE",
+            },
+          };
+        },
         after: async (user) => {
           try {
             const persistedUser = await db.user.findUnique({
@@ -86,6 +117,14 @@ export const auth = betterAuth({
             });
             if (persistedUser?.type === "CUSTOMER") {
               await ensureCustomerProfile(user.id);
+              await db.consentRecord.create({
+                data: {
+                  userId: user.id,
+                  purpose: "privacy",
+                  granted: true,
+                  policyVersion: "2026-v1",
+                },
+              }).catch(() => undefined);
             }
           } catch (error) {
             const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" && /^[A-Z0-9_]{1,32}$/.test(error.code)

@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertCircle, Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -25,6 +26,7 @@ import {
   transitionBookingStatusAction,
   updateBookingNotesAction,
 } from "@/server/actions/admin-bookings";
+import { viewGuestIdDocumentAction } from "@/server/actions/booking-id";
 
 export type BookingDetail = {
   id: string;
@@ -55,6 +57,15 @@ export type BookingDetail = {
   createdAt: Date | string;
   package?: { id: string; name: unknown; slug: string } | null;
   accommodation?: { id: string; name: unknown; slug: string } | null;
+  guests?: Array<{
+    id: string;
+    fullName: string;
+    ageGroup: string;
+    idType: string;
+    idMediaId: string | null;
+    idPurgedAt: Date | string | null;
+    createdAt?: Date | string;
+  }>;
   lines: Array<{
     id: string;
     kind: string;
@@ -90,6 +101,7 @@ export type AuditLogEntry = {
 type BookingDetailViewProps = {
   booking: BookingDetail;
   auditLogs: AuditLogEntry[];
+  canViewGuestIds?: boolean;
 };
 
 function formatLocalizedValue(value: unknown, fallback: string): string {
@@ -103,11 +115,40 @@ function formatLocalizedValue(value: unknown, fallback: string): string {
   return fallback;
 }
 
-export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps) {
+export function BookingDetailView({
+  booking,
+  auditLogs,
+  canViewGuestIds = false,
+}: BookingDetailViewProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Guest IDs state
+  const [viewingGuestId, setViewingGuestId] = useState<string | null>(null);
+  const [guestIdError, setGuestIdError] = useState<string | null>(null);
+  const [showConfirmWarningModal, setShowConfirmWarningModal] = useState(false);
+
+  const totalExpectedGuests = booking.adults + booking.children4to10 + booking.infantsUnder4;
+  const idsPending = (booking.guests?.length ?? 0) < totalExpectedGuests;
+
+  const handleViewGuestId = async (guestId: string) => {
+    setGuestIdError(null);
+    setViewingGuestId(guestId);
+    try {
+      const res = await viewGuestIdDocumentAction(guestId);
+      if (res.ok) {
+        window.open(res.viewUrl, "_blank", "noopener,noreferrer");
+      } else {
+        setGuestIdError(res.error);
+      }
+    } catch {
+      setGuestIdError("An unexpected error occurred while requesting document view.");
+    } finally {
+      setViewingGuestId(null);
+    }
+  };
 
   // Status transition state
   const [showOverrideModal, setShowOverrideModal] = useState(false);
@@ -323,7 +364,11 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
                   disabled={isPending}
                   onClick={() => {
                     if (booking.paymentStatus === "PAID") {
-                      handleStatusTransition("CONFIRMED");
+                      if (idsPending) {
+                        setShowConfirmWarningModal(true);
+                      } else {
+                        handleStatusTransition("CONFIRMED");
+                      }
                     } else {
                       setShowOverrideModal(true);
                     }
@@ -369,6 +414,18 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
           </div>
         }
       />
+
+      {idsPending ? (
+        <div role="alert" className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-amber-900 text-sm flex items-start gap-3">
+          <AlertCircle className="size-5 shrink-0 text-amber-600 mt-0.5" />
+          <div>
+            <p className="font-semibold">Identity documents pending ({booking.guests?.length ?? 0}/{totalExpectedGuests})</p>
+            <p className="mt-0.5 text-xs text-amber-800">
+              This booking does not yet have verified identity documents for all guests. All standard workflows remain available; please ensure physical documents are verified at check-in.
+            </p>
+          </div>
+        </div>
+      ) : null}
 
       {errorMsg ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
@@ -480,6 +537,124 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
             Note: Offline payments only (D-1). Cheques start PENDING until cleared.
           </p>
         </div>
+      </div>
+
+      {/* Guest IDs Panel (Permission: bookings.ids.read) */}
+      <div className="rounded-lg border border-border bg-card overflow-hidden">
+        <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-3">
+          <div>
+            <span className="font-semibold text-sm text-foreground">Guest Identity Documents</span>
+            <span className="ml-2 text-xs text-muted-foreground">
+              ({booking.guests?.length ?? 0} of {totalExpectedGuests} provided)
+            </span>
+          </div>
+          {idsPending && (
+            <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+              IDs Pending
+            </span>
+          )}
+        </div>
+
+        {guestIdError && (
+          <div className="border-b border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
+            {guestIdError}
+          </div>
+        )}
+
+        {!canViewGuestIds ? (
+          <div className="p-4 text-xs text-muted-foreground italic">
+            You do not have permission to view guest identity documents (requires <code>bookings.ids.read</code>).
+          </div>
+        ) : !booking.guests || booking.guests.length === 0 ? (
+          <div className="p-6 text-center text-sm text-muted-foreground">
+            No identity documents have been submitted for this booking.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-border text-xs text-muted-foreground uppercase bg-muted/20">
+                <tr>
+                  <th className="px-4 py-2">#</th>
+                  <th className="px-4 py-2">Guest Name</th>
+                  <th className="px-4 py-2">Age Group</th>
+                  <th className="px-4 py-2">ID Type</th>
+                  <th className="px-4 py-2 text-right">Document Access</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {booking.guests.map((g, idx) => {
+                  const idTypeLabel =
+                    g.idType === "AADHAAR"
+                      ? "Aadhaar Card"
+                      : g.idType === "PASSPORT"
+                      ? "Passport"
+                      : g.idType === "DRIVING_LICENCE"
+                      ? "Driving Licence"
+                      : g.idType === "VOTER_ID"
+                      ? "Voter ID"
+                      : g.idType === "PAN"
+                      ? "PAN Card"
+                      : g.idType === "STUDENT_ID"
+                      ? "Student / School ID"
+                      : g.idType === "BIRTH_CERTIFICATE"
+                      ? "Birth Certificate"
+                      : g.idType;
+
+                  const ageGroupLabel =
+                    g.ageGroup === "ADULT"
+                      ? "Adult"
+                      : g.ageGroup === "CHILD_4_10"
+                      ? "Child (4–10 yrs)"
+                      : g.ageGroup === "INFANT_UNDER_4"
+                      ? "Infant (under 4 yrs)"
+                      : g.ageGroup;
+
+                  return (
+                    <tr key={g.id}>
+                      <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
+                        {idx + 1}
+                      </td>
+                      <td className="px-4 py-2.5 font-medium text-foreground">
+                        {g.fullName}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs">
+                        <span className="rounded bg-muted px-2 py-0.5 font-medium">
+                          {ageGroupLabel}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 text-xs">
+                        {idTypeLabel}
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        {g.idPurgedAt ? (
+                          <span className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                            <Trash2 className="size-3.5" />
+                            Purged on {new Date(g.idPurgedAt).toLocaleDateString("en-IN")}
+                          </span>
+                        ) : g.idMediaId ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={viewingGuestId === g.id}
+                            onClick={() => handleViewGuestId(g.id)}
+                            className="h-8 gap-1.5 text-xs"
+                          >
+                            <Eye className="size-3.5" />
+                            {viewingGuestId === g.id ? "Loading..." : "View Document"}
+                          </Button>
+                        ) : (
+                          <span className="text-xs font-semibold text-amber-700">
+                            Document Pending
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Pricing Lines */}
@@ -653,6 +828,12 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
             <h3 className="font-semibold text-lg text-foreground">
               Confirm Unpaid Booking
             </h3>
+            {idsPending ? (
+              <div className="rounded border border-amber-400 bg-amber-50 p-2.5 text-xs text-amber-800 font-semibold flex items-center gap-2">
+                <AlertCircle className="size-4 shrink-0 text-amber-600" />
+                <span>Warning: Identity documents are pending ({booking.guests?.length ?? 0}/{totalExpectedGuests} provided).</span>
+              </div>
+            ) : null}
             <p className="text-sm text-muted-foreground">
               This booking currently has an outstanding balance of ₹{(outstandingPaise / 100).toLocaleString("en-IN")}.
               Per Decision D-1, confirmations require 100% payment unless an explicit override reason is provided by staff with `bookings.confirm` permission.
@@ -680,6 +861,39 @@ export function BookingDetailView({ booking, auditLogs }: BookingDetailViewProps
                 }
               >
                 Confirm with Override
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Pending IDs Confirmation Warning Modal */}
+      {showConfirmWarningModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 space-y-4">
+            <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
+              <AlertCircle className="size-5 text-amber-600" />
+              Confirm Booking with Pending IDs
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              This booking currently has <strong>{booking.guests?.length ?? 0} of {totalExpectedGuests}</strong> guest identity documents submitted.
+            </p>
+            <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-3">
+              Staff may confirm this booking, but physical identity documents must be inspected and verified in accordance with Maharashtra Tourism guidelines upon guest arrival.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setShowConfirmWarningModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-forest-900 text-cream-50 hover:bg-forest-700 shadow-sm font-semibold"
+                disabled={isPending}
+                onClick={() => {
+                  setShowConfirmWarningModal(false);
+                  handleStatusTransition("CONFIRMED");
+                }}
+              >
+                Confirm Anyway
               </Button>
             </div>
           </div>

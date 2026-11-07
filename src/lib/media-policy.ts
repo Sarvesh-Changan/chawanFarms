@@ -64,6 +64,9 @@ export function identifyMediaPurpose(publicId: string): { purpose: MediaPurpose;
   if (parts.length === 4 && parts[0] === "customers" && parts[2] === "videos" && userIdPattern.test(parts[1] ?? "") && assetIdPattern.test(parts[3] ?? "")) {
     return { purpose: "customer_video", userId: parts[1] as string };
   }
+  if (parts.length === 4 && parts[0] === "private" && parts[1] === "booking-ids" && assetIdPattern.test(parts[2] ?? "") && assetIdPattern.test(parts[3] ?? "")) {
+    return { purpose: "booking_guest_id", userId: parts[2] as string };
+  }
   if (parts.length === 5 && parts[0] === "admin" && parts[1] === "media" && userIdPattern.test(parts[3] ?? "") && assetIdPattern.test(parts[4] ?? "")) {
     if (parts[2] === "images") return { purpose: "admin_image", userId: parts[3] as string };
     if (parts[2] === "videos") return { purpose: "admin_video", userId: parts[3] as string };

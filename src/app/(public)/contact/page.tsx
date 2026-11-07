@@ -39,7 +39,7 @@ export default async function ContactPage() {
       name: "Chawan Farms",
       ...(address ? { address: { "@type": "PostalAddress", streetAddress: address } } : {}),
       ...(googleMapsUrl ? { hasMap: googleMapsUrl } : {}),
-      ...(phones[0] ? { telephone: phones[0] } : {}),
+      ...(phones.length ? { telephone: phones } : {}),
     },
   };
 

@@ -40,6 +40,23 @@ export const quoteRequestSchema = quoteBaseSchema.refine(
 
 export type QuoteRequestInput = z.infer<typeof quoteRequestSchema>;
 
+export const bookingGuestInputSchema = z.object({
+  fullName: z.string().trim().min(2, "Full name must be at least 2 characters").max(120),
+  ageGroup: z.enum(["ADULT", "CHILD_4_10", "INFANT_UNDER_4"]),
+  idType: z.enum([
+    "AADHAAR",
+    "PASSPORT",
+    "DRIVING_LICENCE",
+    "VOTER_ID",
+    "PAN",
+    "STUDENT_ID",
+    "BIRTH_CERTIFICATE",
+  ]),
+  mediaPublicId: z.string().trim().min(1, "Document upload is required").max(255),
+});
+
+export type BookingGuestInput = z.infer<typeof bookingGuestInputSchema>;
+
 export const bookingSubmissionBaseSchema = quoteBaseSchema.extend({
   contactName: z
     .string()
@@ -55,6 +72,10 @@ export const bookingSubmissionBaseSchema = quoteBaseSchema.extend({
     .optional()
     .nullable(),
   specialRequests: z.string().trim().max(1000).optional().nullable(),
+  guests: z.array(bookingGuestInputSchema).min(1, "Guest details and identity documents are required"),
+  idConsentAccepted: z.literal(true, {
+    message: "You must accept the identity document verification and retention policy",
+  }),
   policyAccepted: z.literal(true, {
     message: "You must accept the stay rules and policies",
   }),

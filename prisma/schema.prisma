@@ -102,6 +102,22 @@ enum BookingStatus {
   REJECTED
 }
 
+enum BookingGuestAgeGroup {
+  ADULT
+  CHILD_4_10
+  INFANT_UNDER_4
+}
+
+enum BookingGuestIdType {
+  AADHAAR
+  PASSPORT
+  DRIVING_LICENCE
+  VOTER_ID
+  PAN
+  STUDENT_ID
+  BIRTH_CERTIFICATE
+}
+
 enum PaymentStatus {
   UNPAID
   PARTIALLY_PAID
@@ -756,6 +772,7 @@ model Booking {
   payments          Payment[]
   policyAcceptances PolicyAcceptance[]
   couponRedemption  CouponRedemption?
+  guests            BookingGuest[]
 
   @@index([status, checkIn])
   @@index([userId, createdAt])
@@ -773,6 +790,21 @@ model BookingLine {
   refId      String?
   meta       Json?
   booking    Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+model BookingGuest {
+  id         String               @id @default(uuid())
+  bookingId  String
+  fullName   String
+  ageGroup   BookingGuestAgeGroup
+  idType     BookingGuestIdType
+  idMediaId  String?              @unique
+  idPurgedAt DateTime?
+  createdAt  DateTime             @default(now())
+  booking    Booking              @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  idMedia    Media?               @relation(fields: [idMediaId], references: [id], onDelete: Restrict)
 
   @@index([bookingId])
 }
@@ -850,6 +882,7 @@ model Media {
   galleryItems GalleryItem[]
   postVideos   Post[]       @relation("PostVideo")
   videoSubmission VideoSubmission?
+  bookingGuest BookingGuest?
 
   @@index([kind, category])
   @@index([contentHash])

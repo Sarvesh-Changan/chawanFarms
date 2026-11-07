@@ -10,4 +10,119 @@ export const revalidate = 0;
 
 function date(value: Date): string { return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" }).format(value); }
 
-export default async function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) { const session = await requireCustomer(); const { id } = await params; const booking = await getCustomerBooking(session.user.id, id); if (!booking) notFound(); return <AccountFrame title={booking.reference} description="Customer-visible booking details and price snapshot."><div className="grid gap-6 lg:grid-cols-[1fr_20rem]"><section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-7"><div className="flex flex-wrap items-center gap-3"><StatusChip value={booking.status} /><StatusChip value={booking.paymentStatus} /></div><dl className="mt-6 grid gap-5 sm:grid-cols-2"><div><dt className="text-xs text-muted-foreground">Stay</dt><dd className="mt-1 text-sm font-medium">{date(booking.checkIn)} – {date(booking.checkOut)}</dd></div><div><dt className="text-xs text-muted-foreground">Guests</dt><dd className="mt-1 text-sm font-medium">{booking.adults} adults · {booking.children4to10} children · {booking.infantsUnder4} infants</dd></div><div><dt className="text-xs text-muted-foreground">Package</dt><dd className="mt-1 text-sm font-medium">{accountJsonLabel(booking.package?.name) ?? booking.package?.slug ?? "—"}</dd></div><div><dt className="text-xs text-muted-foreground">Accommodation</dt><dd className="mt-1 text-sm font-medium">{accountJsonLabel(booking.accommodation?.name) ?? booking.accommodation?.slug ?? "—"}</dd></div></dl><h2 className="mt-8 font-heading text-xl text-forest-900">Price snapshot</h2><div className="mt-3 grid gap-2 text-sm">{booking.lines.map((line) => <div key={`${line.kind}-${line.label}`} className="flex justify-between gap-4"><span>{line.label} × {line.quantity}</span><span>{formatINR(line.totalPaise)}</span></div>)}<div className="mt-2 flex justify-between border-t border-border pt-3 font-semibold"><span>Total</span><span>{formatINR(booking.totalPaise)}</span></div></div></section><aside className="rounded-2xl border border-border/70 bg-card p-5"><h2 className="font-heading text-xl text-forest-900">Contact details</h2><dl className="mt-4 grid gap-3 text-sm"><div><dt className="text-muted-foreground">Name</dt><dd>{booking.contactName}</dd></div><div><dt className="text-muted-foreground">Phone</dt><dd>{booking.contactPhone}</dd></div>{booking.contactEmail ? <div><dt className="text-muted-foreground">Email</dt><dd className="break-all">{booking.contactEmail}</dd></div> : null}</dl></aside></div></AccountFrame>; }
+export default async function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await requireCustomer();
+  const { id } = await params;
+  const booking = await getCustomerBooking(session.user.id, id);
+  if (!booking) notFound();
+
+  return (
+    <AccountFrame title={booking.reference} description="Customer-visible booking details and price snapshot.">
+      <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+        <section className="rounded-2xl border border-border/70 bg-card p-5 sm:p-7">
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusChip value={booking.status} />
+            <StatusChip value={booking.paymentStatus} />
+          </div>
+          <dl className="mt-6 grid gap-5 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs text-muted-foreground">Stay</dt>
+              <dd className="mt-1 text-sm font-medium">
+                {date(booking.checkIn)} – {date(booking.checkOut)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Guests</dt>
+              <dd className="mt-1 text-sm font-medium">
+                {booking.adults} adults · {booking.children4to10} children · {booking.infantsUnder4} infants
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Package</dt>
+              <dd className="mt-1 text-sm font-medium">
+                {accountJsonLabel(booking.package?.name) ?? booking.package?.slug ?? "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Accommodation</dt>
+              <dd className="mt-1 text-sm font-medium">
+                {accountJsonLabel(booking.accommodation?.name) ?? booking.accommodation?.slug ?? "—"}
+              </dd>
+            </div>
+          </dl>
+
+          {/* Guest Identity Verification Summary (Never displays file URLs or document contents) */}
+          {booking.guests && booking.guests.length > 0 ? (
+            <div className="mt-8 border-t border-border pt-6">
+              <h2 className="font-heading text-xl text-forest-900">Identity verification</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Document status for check-in compliance per government regulations.
+              </p>
+              <div className="mt-3 divide-y divide-border/60">
+                {booking.guests.map((g, idx) => {
+                  const idTypeFormatted = g.idType.replace(/_/g, " ");
+                  return (
+                    <div key={idx} className="flex items-center justify-between py-2 text-sm">
+                      <div>
+                        <span className="font-medium text-forest-900">Guest {idx + 1}</span>
+                        <span className="ml-2 text-xs text-muted-foreground uppercase">
+                          ({idTypeFormatted})
+                        </span>
+                      </div>
+                      <div>
+                        {g.idPurgedAt ? (
+                          <span className="text-xs text-muted-foreground">
+                            ID deleted on {date(new Date(g.idPurgedAt))}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center text-xs font-semibold text-emerald-700">
+                            ✓ ID provided
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          <h2 className="mt-8 font-heading text-xl text-forest-900">Price snapshot</h2>
+          <div className="mt-3 grid gap-2 text-sm">
+            {booking.lines.map((line) => (
+              <div key={`${line.kind}-${line.label}`} className="flex justify-between gap-4">
+                <span>
+                  {line.label} × {line.quantity}
+                </span>
+                <span>{formatINR(line.totalPaise)}</span>
+              </div>
+            ))}
+            <div className="mt-2 flex justify-between border-t border-border pt-3 font-semibold">
+              <span>Total</span>
+              <span>{formatINR(booking.totalPaise)}</span>
+            </div>
+          </div>
+        </section>
+        <aside className="rounded-2xl border border-border/70 bg-card p-5">
+          <h2 className="font-heading text-xl text-forest-900">Contact details</h2>
+          <dl className="mt-4 grid gap-3 text-sm">
+            <div>
+              <dt className="text-muted-foreground">Name</dt>
+              <dd>{booking.contactName}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Phone</dt>
+              <dd>{booking.contactPhone}</dd>
+            </div>
+            {booking.contactEmail ? (
+              <div>
+                <dt className="text-muted-foreground">Email</dt>
+                <dd className="break-all">{booking.contactEmail}</dd>
+              </div>
+            ) : null}
+          </dl>
+        </aside>
+      </div>
+    </AccountFrame>
+  );
+}

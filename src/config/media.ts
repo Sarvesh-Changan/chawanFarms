@@ -15,14 +15,18 @@ export const CLOUDINARY_WEBHOOK_MAX_BODY_BYTES = 256_000;
 export const MEDIA_API_MAX_REQUEST_BYTES = 4_096;
 export const MEDIA_FILE_METADATA_TIMEOUT_MS = 15_000;
 
-export type MediaPurpose = "customer_video" | "admin_image" | "admin_video";
+export type MediaPurpose = "customer_video" | "admin_image" | "admin_video" | "booking_guest_id";
 
 type MediaPurposePolicy = {
   kind: MediaKind;
   origin: MediaOrigin;
   resourceType: "image" | "video";
   folder: (userId: string) => string;
-  presetEnv: "CLOUDINARY_UPLOAD_PRESET_CUSTOMER_VIDEO" | "CLOUDINARY_UPLOAD_PRESET_ADMIN_IMAGE" | "CLOUDINARY_UPLOAD_PRESET_ADMIN_VIDEO";
+  presetEnv:
+    | "CLOUDINARY_UPLOAD_PRESET_CUSTOMER_VIDEO"
+    | "CLOUDINARY_UPLOAD_PRESET_ADMIN_IMAGE"
+    | "CLOUDINARY_UPLOAD_PRESET_ADMIN_VIDEO"
+    | "CLOUDINARY_UPLOAD_PRESET_BOOKING_GUEST_ID";
   formats: readonly string[];
   maxBytes: number;
   maxDurationSeconds?: number;
@@ -66,6 +70,17 @@ export const MEDIA_PURPOSES: Record<MediaPurpose, MediaPurposePolicy> = {
     deliveryType: "upload",
     eagerTransformations: ["f_mp4,vc_h264", "so_0,f_jpg"],
   },
+  booking_guest_id: {
+    kind: "IMAGE",
+    origin: "CUSTOMER",
+    resourceType: "image",
+    folder: (draftKey: string) => `private/booking-ids/${draftKey}`,
+    presetEnv: "CLOUDINARY_UPLOAD_PRESET_BOOKING_GUEST_ID",
+    formats: ["jpg", "png", "webp", "pdf"],
+    maxBytes: 5_000_000,
+    deliveryType: "authenticated",
+    eagerTransformations: [],
+  },
 };
 
 export const MEDIA_PURPOSE_KEYS = Object.keys(MEDIA_PURPOSES) as [MediaPurpose, ...MediaPurpose[]];
@@ -75,6 +90,7 @@ export function mediaPolicy(purpose: MediaPurpose): MediaPurposePolicy {
     case "customer_video": return MEDIA_PURPOSES.customer_video;
     case "admin_image": return MEDIA_PURPOSES.admin_image;
     case "admin_video": return MEDIA_PURPOSES.admin_video;
+    case "booking_guest_id": return MEDIA_PURPOSES.booking_guest_id;
   }
 }
 

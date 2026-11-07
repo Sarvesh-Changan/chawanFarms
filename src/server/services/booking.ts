@@ -233,6 +233,80 @@ export async function submitBookingRequest(
     ? "ENQUIRY"
     : "PENDING_CONFIRMATION";
 
+  // 3b. Verify guest ID documents:
+  // Must match guest counts exactly
+  const expectedAdults = input.adults;
+  const expectedChildren = input.children4to10 ?? 0;
+  const expectedInfants = input.infantsUnder4 ?? 0;
+  const totalExpectedGuests = expectedAdults + expectedChildren + expectedInfants;
+
+  if (!input.guests || input.guests.length !== totalExpectedGuests) {
+    throw new Error(
+      `Guest count mismatch: expected ${totalExpectedGuests} identity document(s) for ${expectedAdults} adult(s), ${expectedChildren} child(ren), and ${expectedInfants} infant(s), but received ${input.guests?.length ?? 0}.`,
+    );
+  }
+
+  const adultGuests = input.guests.filter((g) => g.ageGroup === "ADULT");
+  const childGuests = input.guests.filter((g) => g.ageGroup === "CHILD_4_10");
+  const infantGuests = input.guests.filter((g) => g.ageGroup === "INFANT_UNDER_4");
+
+  if (
+    adultGuests.length !== expectedAdults ||
+    childGuests.length !== expectedChildren ||
+    infantGuests.length !== expectedInfants
+  ) {
+    throw new Error(
+      "Guest age group distribution does not match the booking guest count.",
+    );
+  }
+
+  for (const guest of input.guests) {
+    if (!guest.fullName || guest.fullName.trim().length < 2) {
+      throw new Error("Full name is required for all guests.");
+    }
+  }
+
+  const publicIds = input.guests.map((g) => g.mediaPublicId);
+  const uniquePublicIds = new Set(publicIds);
+  if (uniquePublicIds.size !== publicIds.length) {
+    throw new Error("Each guest must have a unique identity document upload.");
+  }
+
+  const expectedFolderPrefix = `private/booking-ids/${input.idempotencyKey}/`;
+  for (const pid of publicIds) {
+    if (!pid.startsWith(expectedFolderPrefix)) {
+      throw new Error("Identity document asset does not belong to this booking draft.");
+    }
+  }
+
+  const mediaRecords = await db.media.findMany({
+    where: {
+      publicId: { in: publicIds },
+      deletedAt: null,
+      resourceType: "image",
+      deliveryType: "authenticated",
+    },
+    include: {
+      bookingGuest: true,
+    },
+  });
+
+  if (mediaRecords.length !== publicIds.length) {
+    throw new Error("One or more identity documents could not be verified. Please re-upload.");
+  }
+
+  for (const media of mediaRecords) {
+    if (media.bookingGuest) {
+      throw new Error("One or more identity documents have already been attached to another booking.");
+    }
+    const meta = media.meta as Record<string, unknown> | null;
+    if (meta?.draftKey !== input.idempotencyKey) {
+      throw new Error("Identity document asset draft mismatch.");
+    }
+  }
+
+  const mediaMap = new Map(mediaRecords.map((m) => [m.publicId, m]));
+
   const phone = normalizeLeadPhone(input.contactPhone);
   const email = input.contactEmail?.trim().toLowerCase() || null;
 
@@ -336,6 +410,20 @@ export async function submitBookingRequest(
               meta: l.meta as Prisma.InputJsonValue | undefined,
             })),
           },
+          guests: {
+            create: input.guests.map((g) => {
+              const media = mediaMap.get(g.mediaPublicId);
+              if (!media) {
+                throw new Error("Document asset is not registered.");
+              }
+              return {
+                fullName: g.fullName.trim(),
+                ageGroup: g.ageGroup,
+                idType: g.idType,
+                idMediaId: media.id,
+              };
+            }),
+          },
           ...(policyVersionId
             ? {
                 policyAcceptances: {
@@ -348,6 +436,31 @@ export async function submitBookingRequest(
             : {}),
         },
       });
+
+      // Update Media records to link them and clear pending status
+      await tx.media.updateMany({
+        where: { id: { in: mediaRecords.map((m) => m.id) } },
+        data: {
+          meta: {
+            draftKey: input.idempotencyKey,
+            pending: false,
+            bookingId: booking.id,
+          },
+        },
+      });
+
+      if (options.userId) {
+        await tx.consentRecord
+          .create({
+            data: {
+              userId: options.userId,
+              purpose: "booking_guest_id",
+              granted: true,
+              policyVersion: "2026-v1",
+            },
+          })
+          .catch(() => undefined);
+      }
 
       // (e) Place hold if accommodation is specified and quote was standard
       let holdExpiresAt: Date | null = null;
