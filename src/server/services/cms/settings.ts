@@ -63,7 +63,7 @@ async function settingMedia(id: string | null) {
 export async function getCmsSettings(): Promise<CmsSettings> {
   const rows = await db.setting.findMany({
     where: { key: { in: [
-      "business.name", "business.email", "business.phones", "business.address", "business.socialLinks",
+      "business.tagline", "business.name", "business.email", "business.phones", "business.address", "business.socialLinks",
       "whatsapp.number", "whatsapp.defaultMessage", "owner.display", "owner.mediaId", "owner.name", "owner.caption",
       "home.hero.headline", "home.hero.subhead", "home.hero.primaryCta", "home.hero.secondaryCta", "home.hero.mediaId", "home.hero.inset1MediaId", "home.hero.inset2MediaId", "home.closing.headline",
     ] } },
@@ -81,6 +81,7 @@ export async function getCmsSettings(): Promise<CmsSettings> {
     settingMedia(heroInset2MediaId),
   ]);
   return {
+    businessTagline: typeof values.get("business.tagline") === "string" ? values.get("business.tagline") as string : "Agri-Tourism & Home Stay",
     businessName: localizedValue(values.get("business.name")),
     businessEmail: typeof values.get("business.email") === "string" ? values.get("business.email") as string : "",
     phones: phoneValues(values.get("business.phones")),
@@ -132,7 +133,7 @@ export async function saveCmsSettings(data: CmsSettingsData, actorId: string) {
     data.youtubeUrl ? { kind: "youtube", label: "YouTube", url: data.youtubeUrl } : null,
   ].filter((value): value is { kind: string; label: string; url: string } => Boolean(value));
   const keys: Array<[string, unknown]> = [
-    ["business.name", data.businessName], ["business.email", data.businessEmail], ["business.phones", data.phones], ["business.address", data.address], ["business.socialLinks", socialLinks],
+    ["business.tagline", data.businessTagline], ["business.name", data.businessName], ["business.email", data.businessEmail], ["business.phones", data.phones], ["business.address", data.address], ["business.socialLinks", socialLinks],
     ["whatsapp.number", data.whatsappNumber], ["whatsapp.defaultMessage", data.whatsappDefaultMessage], ["owner.display", data.ownerDisplay], ["owner.mediaId", data.ownerMediaId], ["owner.name", data.ownerName], ["owner.caption", data.ownerCaption],
     ["home.hero.headline", data.heroHeadline], ["home.hero.subhead", data.heroSubhead], ["home.hero.primaryCta", data.heroPrimaryCta], ["home.hero.secondaryCta", data.heroSecondaryCta], ["home.hero.mediaId", data.heroMediaId], ["home.hero.inset1MediaId", data.heroInset1MediaId], ["home.hero.inset2MediaId", data.heroInset2MediaId], ["home.closing.headline", data.closingHeadline],
   ];

@@ -18,11 +18,11 @@ export async function Header() {
           <span className="bg-forest-700 text-turmeric-500 grid size-10 place-items-center rounded-full font-heading text-xl">C</span>
           <span className="leading-tight whitespace-nowrap">
             <span className="block font-heading text-lg">Chawan Farms</span>
-            <span className="text-mist-500 block max-w-24 truncate text-[9px] font-semibold tracking-[0.13em] uppercase">Agri-Tourism Centre</span>
+            <span className="text-mist-500 block whitespace-nowrap text-[9px] font-semibold tracking-[0.08em] uppercase">{settings.tagline}</span>
           </span>
         </Link>
         <div className="min-w-0 flex-1">
-          <PublicNavigation accountHref={accountHref} accountLabel={accountLabel} phone={settings.phones[0]} whatsappNumber={settings.whatsappNumber} whatsappMessage={settings.whatsappMessage} />
+          <PublicNavigation accountHref={accountHref} accountLabel={accountLabel} tagline={settings.tagline} phone={settings.phones[0]} whatsappNumber={settings.whatsappNumber} whatsappMessage={settings.whatsappMessage} />
         </div>
         <div className="hidden shrink-0 items-center gap-2 xl:flex">
           {settings.phones[0] ? <CallButton number={settings.phones[0]} aria-label={`Call ${settings.phones[0]}`} title={settings.phones[0]} className="text-mist-500 inline-flex min-h-11 items-center gap-2 rounded-lg px-2 text-xs hover:text-laterite-600 focus-visible:outline-2 focus-visible:outline-turmeric-500"><span className="hidden 2xl:inline">{settings.phones[0]}</span></CallButton> : null}

@@ -66,6 +66,7 @@ async function mediaMap(ids: Array<string | null | undefined>): Promise<Map<stri
 }
 
 export type PublicSettings = {
+  tagline: string;
   phones: string[];
   address: string;
   socialLinks?: Array<{ label: string; url: string }>;
@@ -79,7 +80,7 @@ export async function getPublicSettings(): Promise<PublicSettings> {
   return unstable_cache(async () => {
     try {
       const rows = await db.setting.findMany({
-        where: { key: { in: ["business.phones", "business.address", "business.socialLinks", "whatsapp.number", "whatsapp.defaultMessage", "home.hero.headline", "home.hero.subhead", "home.hero.cta", "home.hero.primaryCta", "home.hero.secondaryCta", "home.hero.mediaId", "home.hero.inset1MediaId", "home.hero.inset2MediaId", "home.closing.headline", "owner.display", "owner.mediaId", "owner.name", "owner.caption"] } },
+        where: { key: { in: ["business.tagline", "business.phones", "business.address", "business.socialLinks", "whatsapp.number", "whatsapp.defaultMessage", "home.hero.headline", "home.hero.subhead", "home.hero.cta", "home.hero.primaryCta", "home.hero.secondaryCta", "home.hero.mediaId", "home.hero.inset1MediaId", "home.hero.inset2MediaId", "home.closing.headline", "owner.display", "owner.mediaId", "owner.name", "owner.caption"] } },
         select: { key: true, value: true },
       });
       const values = new Map(rows.map((row) => [row.key, row.value]));
@@ -116,6 +117,7 @@ export async function getPublicSettings(): Promise<PublicSettings> {
       const media = await mediaMap([heroMediaId, heroInset1MediaId, heroInset2MediaId, ownerMediaId]);
       const ownerDisplay = values.get("owner.display") === true;
       return {
+        tagline: stringSetting("business.tagline", siteContentDefaults.header.tagline),
         phones: [...new Set(phones)],
         address: typeof address.en === "string" ? address.en : "",
         socialLinks,
@@ -137,6 +139,7 @@ export async function getPublicSettings(): Promise<PublicSettings> {
       };
     } catch {
       return {
+        tagline: siteContentDefaults.header.tagline,
         phones: [],
         address: "",
         socialLinks: [],

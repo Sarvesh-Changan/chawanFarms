@@ -1,4 +1,5 @@
 export const siteContentDefaults = {
+  header: { tagline: "Agri-Tourism & Home Stay" },
   home: {
     hero: {
       headline: "Come live, experience & rediscover yourself & nature at its best",

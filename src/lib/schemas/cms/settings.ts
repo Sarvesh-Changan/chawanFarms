@@ -45,6 +45,7 @@ const mediaId = z
   .transform((value) => value || null);
 
 const settingsFieldsSchema = z.object({
+  businessTagline: z.string().trim().min(1).max(120),
   businessName: localizedField(240),
   businessEmail: optionalEmail,
   phones: phoneList,
@@ -83,7 +84,7 @@ export const settingsFormSchema = z.preprocess((raw) => {
   const value = legacy.data;
   const phones = value.businessPhones.split(/\r?\n/).map((number) => number.trim()).filter(Boolean).map((number, index) => ({ number, isPrimary: index === 0 }));
   const link = (label: string) => value.socialLinks.find((item) => item.label.toLowerCase() === label)?.url ?? "";
-  return { businessName: value.businessName, businessEmail: value.businessEmail, phones, whatsappNumber: value.whatsappNumber, whatsappDefaultMessage: value.whatsappDefaultMessage, address: value.address, ownerDisplay: false, ownerMediaId: null, ownerName: "", ownerCaption: "", heroHeadline: "", heroSubhead: "", heroPrimaryCta: "", heroSecondaryCta: "", heroMediaId: null, heroInset1MediaId: null, heroInset2MediaId: null, closingHeadline: "", instagramUrl: link("instagram"), facebookUrl: link("facebook"), youtubeUrl: link("youtube") };
+  return { businessTagline: "Agri-Tourism & Home Stay", businessName: value.businessName, businessEmail: value.businessEmail, phones, whatsappNumber: value.whatsappNumber, whatsappDefaultMessage: value.whatsappDefaultMessage, address: value.address, ownerDisplay: false, ownerMediaId: null, ownerName: "", ownerCaption: "", heroHeadline: "", heroSubhead: "", heroPrimaryCta: "", heroSecondaryCta: "", heroMediaId: null, heroInset1MediaId: null, heroInset2MediaId: null, closingHeadline: "", instagramUrl: link("instagram"), facebookUrl: link("facebook"), youtubeUrl: link("youtube") };
 }, settingsFieldsSchema);
 
 const strongPassword = z.string().min(10).max(128).refine((value) => [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((pattern) => pattern.test(value)).length >= 3, "Use at least three of lowercase, uppercase, number and symbol.");
@@ -98,6 +99,7 @@ export const passwordChangeSchema = z.object({
 });
 
 export type SettingsFormValues = {
+  businessTagline: string;
   businessName: { en: string; mr?: string; hi?: string };
   businessEmail: string; phones: Array<{ number: string; isPrimary: boolean }>; whatsappNumber: string; whatsappDefaultMessage: { en?: string; mr?: string; hi?: string }; address: { en: string; mr?: string; hi?: string }; ownerDisplay: boolean; ownerMediaId: string | null; ownerName: string; ownerCaption: string; heroHeadline: string; heroSubhead: string; heroPrimaryCta: string; heroSecondaryCta: string; heroMediaId: string | null; heroInset1MediaId?: string | null; heroInset2MediaId?: string | null; closingHeadline: string; instagramUrl: string; facebookUrl: string; youtubeUrl: string;
 };

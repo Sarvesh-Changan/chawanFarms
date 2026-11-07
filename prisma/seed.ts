@@ -249,6 +249,7 @@ const roleNames = Object.keys(rolePermissionMap);
 const roleSeedSchema = z.array(z.string().min(1));
 
 const settingSeeds = [
+  { key: "business.tagline", value: "Agri-Tourism & Home Stay" },
   { key: "business.name", value: { en: "Chawan Farms — Agri-Tourism Centre" } },
   { key: "business.address", value: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra, India" } },
   { key: "business.phones", value: ["9821502956", "9821089375", "9359895322"] },
