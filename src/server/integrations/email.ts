@@ -500,3 +500,36 @@ export async function sendBookingCancelledEmail(input: {
     transactional: true,
   });
 }
+
+export async function sendStaffAccountCreatedEmail(input: {
+  to: string;
+  name: string;
+  roleNames: string[];
+  loginUrl: string;
+}): Promise<void> {
+  const safeName = stripHeaderInjection(input.name);
+  const rolesText = input.roleNames.join(", ");
+  await sendEmailMessage({
+    type: "staff-account-created",
+    to: input.to,
+    subject: "Your Chawan Farms Admin Account Has Been Created",
+    text: `Hello ${safeName},\n\nAn administrator account (${rolesText}) has been created for you at Chawan Farms.\n\nPlease log in using the link below to set your permanent password and configure your security settings:\n${input.loginUrl}\n\nNote: You will be required to change your temporary password upon your first sign in.\n\nWarm regards,\nChawan Farms`,
+    html: `<p>Hello ${safeName},</p><p>An administrator account (<strong>${rolesText}</strong>) has been created for you at Chawan Farms.</p><p>Please <a href="${input.loginUrl}">log in here</a> to set your permanent password and configure your security settings.</p><p><em>Note: You will be required to change your temporary password upon your first sign in.</em></p><p>Warm regards,<br />Chawan Farms</p>`,
+    transactional: true,
+  });
+}
+
+export async function sendStaffAccountDeletedEmail(input: {
+  to: string;
+  deletedAdminEmail: string;
+  actorEmail: string;
+}): Promise<void> {
+  await sendEmailMessage({
+    type: "staff-account-deleted",
+    to: input.to,
+    subject: "Security Alert: Staff Account Deleted",
+    text: `Security Alert:\n\nThe staff account for ${input.deletedAdminEmail} was deleted by ${input.actorEmail}.\n\nAll active sessions, credentials, and access permissions for this account have been revoked.\n\nIf this action was unexpected, please review the audit log immediately.\n\nChawan Farms Security`,
+    html: `<p><strong>Security Alert:</strong></p><p>The staff account for <strong>${input.deletedAdminEmail}</strong> was deleted by <strong>${input.actorEmail}</strong>.</p><p>All active sessions, credentials, and access permissions for this account have been revoked.</p><p>If this action was unexpected, please review the audit log immediately.</p><p>Chawan Farms Security</p>`,
+    transactional: true,
+  });
+}

@@ -11,6 +11,7 @@ export type PostLoginIdentity = {
   userType: UserType;
   emailVerified: boolean;
   twoFactorEnabled: boolean;
+  mustChangePassword: boolean;
   roleNames: string[];
   permissionKeys: string[];
 };
@@ -23,6 +24,7 @@ export async function getPostLoginIdentity(userId: string): Promise<PostLoginIde
       type: true,
       emailVerified: true,
       twoFactorEnabled: true,
+      mustChangePassword: true,
       staffRoles: {
         select: {
           role: {
@@ -41,6 +43,7 @@ export async function getPostLoginIdentity(userId: string): Promise<PostLoginIde
     userType: user.type,
     emailVerified: user.emailVerified,
     twoFactorEnabled: user.twoFactorEnabled,
+    mustChangePassword: user.mustChangePassword,
     roleNames: user.staffRoles.map(({ role }) => role.name),
     permissionKeys: user.staffRoles.flatMap(({ role }) => role.permissions.map(({ permission }) => permission.key)),
   };
@@ -61,6 +64,7 @@ export function resolveIdentityPostLogin(
     needsTwoFactorSetup,
     needsTwoFactorVerify: options.needsTwoFactorVerify ?? false,
     emailVerified: options.emailVerified ?? identity.emailVerified,
+    mustChangePassword: identity.mustChangePassword,
   });
 }
 

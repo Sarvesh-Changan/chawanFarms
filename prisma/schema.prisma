@@ -197,6 +197,7 @@ model User {
   type             UserType          @default(CUSTOMER)
   status           UserStatus        @default(ACTIVE)
   twoFactorEnabled Boolean           @default(false)
+  mustChangePassword Boolean         @default(false)
   failedLoginCount Int               @default(0)
   lockedUntil      DateTime?
   lastLoginAt      DateTime?

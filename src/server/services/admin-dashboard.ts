@@ -170,6 +170,8 @@ export async function listStaff(page: number, pageSize: number, query: string, s
         email: true,
         status: true,
         twoFactorEnabled: true,
+        mustChangePassword: true,
+        lastLoginAt: true,
         createdAt: true,
         staffRoles: { select: { role: { select: { id: true, name: true } } } },
       },

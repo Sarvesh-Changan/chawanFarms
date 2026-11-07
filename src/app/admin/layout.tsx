@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
@@ -5,13 +6,36 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { NoAccess } from "@/components/admin/NoAccess";
 import { adminNavigation, filterAdminNavigation } from "@/config/admin-navigation";
 import { getSession } from "@/server/auth";
-import { can, getStaffPrincipal } from "@/server/authz";
+import { can, getStaffPrincipal, requiresTwoFactor } from "@/server/authz";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await getSession();
   if (!session) redirect("/login?callbackUrl=%2Fadmin");
   const staff = await getStaffPrincipal(session.user.id);
   if (!staff) return <NoAccess title="Staff access required" message="The admin workspace is available to invited staff accounts." />;
+
+  const requestHeaders = await headers();
+  const currentPath = requestHeaders.get("x-pathname") || "";
+
+  if (staff.mustChangePassword) {
+    if (currentPath && currentPath !== "/admin/security/change-password") {
+      redirect("/admin/security/change-password");
+    }
+    return (
+      <div className="flex min-h-screen flex-col bg-cream-50 text-foreground">
+        <header className="border-b bg-cream-100 px-6 py-4">
+          <span className="text-lg font-bold text-forest-900 font-serif">Chawan Farms Admin</span>
+        </header>
+        <main className="flex-1 p-6 md:p-10">{children}</main>
+      </div>
+    );
+  }
+
+  if (requiresTwoFactor(staff.roleNames) && !staff.twoFactorEnabled) {
+    if (currentPath && currentPath !== "/admin/security/two-factor") {
+      redirect("/admin/security/two-factor?step=setup");
+    }
+  }
 
   const { PERMISSIONS } = await import("@/server/authz/permissions");
   const allowed = new Set((await Promise.all(PERMISSIONS.map(async (permission) => ({ permission, allowed: await can(staff, permission) })))).filter(({ allowed: isAllowed }) => isAllowed).map(({ permission }) => permission));

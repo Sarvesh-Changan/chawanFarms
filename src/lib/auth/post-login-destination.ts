@@ -1,7 +1,12 @@
 import { safeCallbackUrl } from "@/lib/safe-url";
 
 export type PostLoginUserType = "STAFF" | "CUSTOMER";
-export type PostLoginStep = "email-verification" | "two-factor-setup" | "two-factor-verify" | null;
+export type PostLoginStep =
+  | "email-verification"
+  | "two-factor-setup"
+  | "two-factor-verify"
+  | "change-password"
+  | null;
 
 export type PostLoginDestination = {
   destination: string;
@@ -28,12 +33,14 @@ export function resolvePostLoginDestination({
   needsTwoFactorSetup,
   needsTwoFactorVerify,
   emailVerified = true,
+  mustChangePassword = false,
 }: {
   userType: PostLoginUserType;
   callbackUrl?: unknown;
   needsTwoFactorSetup: boolean;
   needsTwoFactorVerify: boolean;
   emailVerified?: boolean;
+  mustChangePassword?: boolean;
 }): PostLoginDestination {
   const defaultDestination = userType === "STAFF" ? "/admin" : "/account";
   const safeCallback = safeCallbackUrl(callbackUrl, defaultDestination);
@@ -44,17 +51,21 @@ export function resolvePostLoginDestination({
 
   const step: PostLoginStep = !emailVerified
     ? "email-verification"
-    : needsTwoFactorSetup
-      ? "two-factor-setup"
-      : needsTwoFactorVerify
-        ? "two-factor-verify"
-        : null;
+    : mustChangePassword && userType === "STAFF"
+      ? "change-password"
+      : needsTwoFactorSetup
+        ? "two-factor-setup"
+        : needsTwoFactorVerify
+          ? "two-factor-verify"
+          : null;
 
   const redirectTo = step === "email-verification"
     ? `/verify-email?callbackUrl=${encodeURIComponent(destination)}`
-    : step === "two-factor-setup" || step === "two-factor-verify"
-      ? `/admin/security/two-factor?step=${step === "two-factor-setup" ? "setup" : "verify"}&callbackUrl=${encodeURIComponent(destination)}`
-      : destination;
+    : step === "change-password"
+      ? `/admin/security/change-password?callbackUrl=${encodeURIComponent(destination)}`
+      : step === "two-factor-setup" || step === "two-factor-verify"
+        ? `/admin/security/two-factor?step=${step === "two-factor-setup" ? "setup" : "verify"}&callbackUrl=${encodeURIComponent(destination)}`
+        : destination;
 
   return { destination, redirectTo, step };
 }

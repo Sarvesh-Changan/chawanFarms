@@ -23,11 +23,13 @@ export type PermissionContext = AuthorizationContext & {
 
 export type StaffPrincipal = {
   id: string;
+  email: string;
   type: "STAFF";
   status: string;
   roleNames: readonly string[];
   permissionKeys: readonly string[];
   twoFactorEnabled: boolean;
+  mustChangePassword: boolean;
 };
 
 export type StaffInvitePrincipal = {
@@ -60,10 +62,12 @@ async function loadStaffUser(userId: string): Promise<StaffPrincipal | null> {
     where: { id: userId },
     select: {
       id: true,
+      email: true,
       type: true,
       status: true,
       deletedAt: true,
       twoFactorEnabled: true,
+      mustChangePassword: true,
       staffRoles: {
         select: {
           role: {
@@ -83,6 +87,7 @@ async function loadStaffUser(userId: string): Promise<StaffPrincipal | null> {
 
   return {
     id: user.id,
+    email: user.email,
     type: "STAFF",
     status: user.status,
     roleNames: user.staffRoles.map(({ role }) => role.name),
@@ -90,6 +95,7 @@ async function loadStaffUser(userId: string): Promise<StaffPrincipal | null> {
       role.permissions.map(({ permission }) => permission.key),
     ),
     twoFactorEnabled: user.twoFactorEnabled,
+    mustChangePassword: user.mustChangePassword,
   };
 }
 
