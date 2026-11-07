@@ -170,7 +170,9 @@ import {
   disableStaffAction,
   forceChangePasswordAction,
   resetStaffPasswordAction,
+  startTwoFactorSetupAction,
   updateStaffNameAction,
+  verifyTwoFactorSetupAction,
 } from "@/server/actions/admin-security";
 
 // Valid RFC 4122 v4 UUIDs
@@ -216,6 +218,7 @@ describe("Super Admin Account Management", () => {
     mocks.createOTP.mockReturnValue({
       verify: vi.fn().mockResolvedValue(true),
       totp: vi.fn().mockResolvedValue("123456"),
+      url: vi.fn().mockReturnValue("otpauth://totp/Chawan%20Farms:admin%40example.com?secret=MOCKBASE32SECRET&issuer=Chawan+Farms&digits=6&period=30"),
     });
 
     // Default actor is Super Admin
@@ -741,6 +744,81 @@ describe("Super Admin Account Management", () => {
         }),
       );
       expect(mocks.sessionDeleteMany).toHaveBeenCalled();
+    });
+  });
+
+  describe("Two-Factor Authentication Setup & Verification", () => {
+    it("starts 2FA setup and returns matching Base32 secret for manual entry and QR code", async () => {
+      mocks.twoFactorUpsert.mockResolvedValue({});
+
+      const result = await startTwoFactorSetupAction();
+      expect(result).toMatchObject({
+        ok: true,
+        data: {
+          totpURI: expect.stringContaining("otpauth://totp/Chawan%20Farms:"),
+          secret: "MOCKBASE32SECRET",
+          backupCodes: expect.any(Array),
+        },
+      });
+
+      if (result.ok) {
+        expect(result.data.backupCodes).toHaveLength(10);
+      }
+      expect(mocks.twoFactorUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: superAdminActorId },
+          create: expect.objectContaining({
+            userId: superAdminActorId,
+            verified: false,
+          }),
+        }),
+      );
+    });
+
+    it("verifies TOTP successfully with matching 6-digit code and enables 2FA", async () => {
+      mocks.twoFactorFindUnique.mockResolvedValue({
+        id: "2fa-record-id",
+        userId: superAdminActorId,
+        secret: "testsecret123",
+        verified: false,
+      });
+      mocks.twoFactorUpdate.mockResolvedValue({});
+      mocks.userUpdate.mockResolvedValue({});
+
+      const result = await verifyTwoFactorSetupAction({ code: "123456" });
+      expect(result).toEqual({ ok: true, data: { enabled: true } });
+      expect(mocks.twoFactorUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "2fa-record-id" },
+          data: expect.objectContaining({ verified: true }),
+        }),
+      );
+      expect(mocks.userUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: superAdminActorId },
+          data: expect.objectContaining({ twoFactorEnabled: true }),
+        }),
+      );
+    });
+
+    it("rejects invalid TOTP code and does not enable 2FA", async () => {
+      mocks.twoFactorFindUnique.mockResolvedValue({
+        id: "2fa-record-id",
+        userId: superAdminActorId,
+        secret: "testsecret123",
+        verified: false,
+      });
+      mocks.createOTP.mockReturnValueOnce({
+        verify: vi.fn().mockResolvedValue(false),
+        totp: vi.fn(),
+      });
+
+      const result = await verifyTwoFactorSetupAction({ code: "999999" });
+      expect(result).toMatchObject({
+        ok: false,
+        error: { code: "VALIDATION", message: expect.stringContaining("Invalid verification code") },
+      });
+      expect(mocks.userUpdate).not.toHaveBeenCalled();
     });
   });
 

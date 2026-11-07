@@ -112,17 +112,6 @@ function validationError(): Result<never> {
   return err("VALIDATION", "Please check the submitted details.");
 }
 
-function generateBase32Secret(length = 32): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  const bytes = randomBytes(length);
-  let secret = "";
-  for (let i = 0; i < length; i++) {
-    const byte = bytes.at(i) ?? 0;
-    secret += chars.charAt(byte % chars.length);
-  }
-  return secret;
-}
-
 function generateBackupCodes(count = 10, length = 8): string[] {
   const chars = "abcdefghjkmnpqrstuvwxyz23456789";
   const codes: string[] = [];
@@ -999,29 +988,28 @@ export async function startTwoFactorSetupAction(): Promise<Result<{ totpURI: str
   const rate = await limit(`admin:2fa-setup:${staff.id}`, 5, 3600);
   if (!rate.allowed) return err("RATE_LIMITED", "Too many setup attempts. Please try again later.");
 
-  const secret = generateBase32Secret(32);
+  const internalSecret = randomBytes(20).toString("hex");
+  const otp = createOTP(internalSecret, { period: 30, digits: 6 });
+  const totpURI = otp.url("Chawan Farms", session.user.email);
+  const secret = new URL(totpURI).searchParams.get("secret") ?? "";
   const backupCodes = generateBackupCodes(10, 8);
 
   await db.twoFactor.upsert({
     where: { userId: staff.id },
     create: {
       userId: staff.id,
-      secret,
+      secret: internalSecret,
       backupCodes: JSON.stringify(backupCodes),
       verified: false,
     },
     update: {
-      secret,
+      secret: internalSecret,
       backupCodes: JSON.stringify(backupCodes),
       verified: false,
       failedVerificationCount: 0,
       lockedUntil: null,
     },
   });
-
-  const encodedIssuer = encodeURIComponent("Chawan Farms");
-  const encodedEmail = encodeURIComponent(session.user.email);
-  const totpURI = `otpauth://totp/${encodedIssuer}:${encodedEmail}?secret=${secret}&issuer=${encodedIssuer}&algorithm=SHA1&digits=6&period=30`;
 
   return ok({ totpURI, secret, backupCodes });
 }
@@ -1040,7 +1028,7 @@ export async function verifyTwoFactorSetupAction(rawInput: unknown): Promise<Res
   }
 
   const otp = createOTP(twoFactor.secret, { period: 30, digits: 6 });
-  const valid = await otp.verify(parsed.data.code, { window: 1 });
+  const valid = await otp.verify(parsed.data.code, { window: 2 });
 
   if (!valid) {
     return err("VALIDATION", "Invalid verification code. Please check your authenticator app and try again.");

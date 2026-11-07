@@ -109,7 +109,7 @@ export async function verifyFreshSession(
     }
 
     const otp = createOTP(twoFactor.secret, { period: 30, digits: 6 });
-    const totpValid = await otp.verify(input.totpCode.trim(), { window: 1 });
+    const totpValid = await otp.verify(input.totpCode.trim(), { window: 2 });
 
     if (!totpValid) {
       const nextFailures = twoFactor.failedVerificationCount + 1;
