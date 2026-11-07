@@ -66,23 +66,26 @@ function generateClientPassword(length = 16): string {
   const array = new Uint8Array(length);
   crypto.getRandomValues(array);
 
-  const chars = [
-    uppercase[array[0]! % uppercase.length]!,
-    lowercase[array[1]! % lowercase.length]!,
-    numbers[array[2]! % numbers.length]!,
-    symbols[array[3]! % symbols.length]!,
+  const chars: string[] = [
+    uppercase.charAt((array.at(0) ?? 0) % uppercase.length),
+    lowercase.charAt((array.at(1) ?? 0) % lowercase.length),
+    numbers.charAt((array.at(2) ?? 0) % numbers.length),
+    symbols.charAt((array.at(3) ?? 0) % symbols.length),
   ];
 
   for (let i = 4; i < length; i++) {
-    chars.push(all[array[i]! % all.length]!);
+    const val = array.at(i) ?? 0;
+    chars.push(all.charAt(val % all.length));
   }
 
   // Shuffle
   for (let i = chars.length - 1; i > 0; i--) {
-    const j = array[i]! % (i + 1);
-    const temp = chars[i]!;
-    chars[i] = chars[j]!;
-    chars[j] = temp;
+    const val = array.at(i) ?? 0;
+    const j = val % (i + 1);
+    const charI = chars.at(i) ?? "";
+    const charJ = chars.at(j) ?? "";
+    chars.splice(i, 1, charJ);
+    chars.splice(j, 1, charI);
   }
 
   return chars.join("");

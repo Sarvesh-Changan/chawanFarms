@@ -9,7 +9,13 @@ const localizedField = (max: number) => z.object({
   hi: z.string().trim().max(max).optional(),
 }).strict();
 
-const optionalText = (max: number) => z.string().trim().max(max).transform((value) => value || null);
+const optionalText = (max: number) =>
+  z.union([z.string().trim().max(max), z.null(), z.undefined()]).transform((value) => value || null);
+
+const optionalEmail = z
+  .union([z.string().trim().email().max(254), z.literal(""), z.null(), z.undefined()])
+  .transform((value) => value || null);
+
 const phoneInput = z.string().trim().min(3).max(40).transform((value, context) => {
   const parsed = parsePhoneNumberFromString(value, "IN");
   if (!parsed || !parsed.isValid()) {
@@ -19,6 +25,10 @@ const phoneInput = z.string().trim().min(3).max(40).transform((value, context) =
   return parsed.number;
 });
 
+const optionalWhatsApp = z
+  .union([phoneInput, z.literal(""), z.null(), z.undefined()])
+  .transform((value) => value || null);
+
 const phoneList = z.array(z.object({ number: phoneInput, isPrimary: z.boolean() }).strict()).max(10)
   .refine((phones) => phones.length === 0 || phones.filter((phone) => phone.isPrimary).length === 1, "Choose exactly one primary phone number.");
 
@@ -26,13 +36,19 @@ const httpsUrl = z.string().trim().max(2048).refine((value) => {
   try { return new URL(value).protocol === "https:"; } catch { return false; }
 }, "Use an https URL.");
 
-const mediaId = z.string().uuid().nullable();
+const optionalHttpsUrl = z
+  .union([httpsUrl, z.literal(""), z.null(), z.undefined()])
+  .transform((value) => value || null);
+
+const mediaId = z
+  .union([z.string().uuid(), z.literal(""), z.null(), z.undefined()])
+  .transform((value) => value || null);
 
 const settingsFieldsSchema = z.object({
   businessName: localizedField(240),
-  businessEmail: z.union([z.string().trim().email().max(254), z.literal("")]).transform((value) => value || null),
+  businessEmail: optionalEmail,
   phones: phoneList,
-  whatsappNumber: z.union([phoneInput, z.literal("")]).transform((value) => value || null),
+  whatsappNumber: optionalWhatsApp,
   whatsappDefaultMessage: optionalLocalizedTextSchema,
   address: localizedField(1_000),
   ownerDisplay: z.boolean(),
@@ -47,9 +63,9 @@ const settingsFieldsSchema = z.object({
   heroInset1MediaId: mediaId.optional().default(null),
   heroInset2MediaId: mediaId.optional().default(null),
   closingHeadline: optionalText(240),
-  instagramUrl: z.union([httpsUrl, z.literal("")]).transform((value) => value || null),
-  facebookUrl: z.union([httpsUrl, z.literal("")]).transform((value) => value || null),
-  youtubeUrl: z.union([httpsUrl, z.literal("")]).transform((value) => value || null),
+  instagramUrl: optionalHttpsUrl,
+  facebookUrl: optionalHttpsUrl,
+  youtubeUrl: optionalHttpsUrl,
 }).strict().superRefine((value, context) => {
   if (value.ownerDisplay && !value.ownerMediaId) {
     context.addIssue({ code: "custom", path: ["ownerMediaId"], message: "Choose an owner portrait before displaying this section." });

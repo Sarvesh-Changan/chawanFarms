@@ -18,7 +18,7 @@ type StaffRecord = {
 };
 
 const column = createColumnHelper<StaffRecord>();
-const columns: ColumnDef<StaffRecord, any>[] = [
+const columns: ColumnDef<StaffRecord, string>[] = [
   column.accessor((row) => row.name, { id: "name", header: "Name", enableSorting: true }),
   column.accessor((row) => row.email, { id: "email", header: "Email" }),
   column.accessor((row) => row.staffRoles.map(({ role }) => role.name).join(", ") || "No roles", { id: "roles", header: "Roles" }),
@@ -30,8 +30,8 @@ const columns: ColumnDef<StaffRecord, any>[] = [
       return <StatusBadge status={val === "ACTIVE" ? "ACTIVE" : "SUSPENDED"} />;
     },
   }),
-  column.accessor((row) => (row.twoFactorEnabled ? "Yes" : "No"), { id: "twoFactorEnabled", header: "TOTP Enrolled" }),
-  column.accessor((row) => (row.mustChangePassword ? "Yes" : "No"), { id: "mustChangePassword", header: "Must Change PW" }),
+  column.accessor((row): string => (row.twoFactorEnabled ? "Yes" : "No"), { id: "twoFactorEnabled", header: "TOTP Enrolled" }),
+  column.accessor((row): string => (row.mustChangePassword ? "Yes" : "No"), { id: "mustChangePassword", header: "Must Change PW" }),
   column.accessor(
     (row) =>
       row.lastLoginAt

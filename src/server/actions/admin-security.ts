@@ -117,7 +117,8 @@ function generateBase32Secret(length = 32): string {
   const bytes = randomBytes(length);
   let secret = "";
   for (let i = 0; i < length; i++) {
-    secret += chars[bytes[i]! % chars.length];
+    const byte = bytes.at(i) ?? 0;
+    secret += chars.charAt(byte % chars.length);
   }
   return secret;
 }
@@ -129,7 +130,8 @@ function generateBackupCodes(count = 10, length = 8): string[] {
     const bytes = randomBytes(length);
     let code = "";
     for (let j = 0; j < length; j++) {
-      code += chars[bytes[j]! % chars.length];
+      const byte = bytes.at(j) ?? 0;
+      code += chars.charAt(byte % chars.length);
     }
     codes.push(code);
   }
@@ -143,20 +145,23 @@ function generateTemporaryPassword(length = 16): string {
   const symbols = "!@#$%^&*";
   const all = uppercase + lowercase + numbers + symbols;
   const bytes = randomBytes(length);
-  const chars = [
-    uppercase[bytes[0]! % uppercase.length]!,
-    lowercase[bytes[1]! % lowercase.length]!,
-    numbers[bytes[2]! % numbers.length]!,
-    symbols[bytes[3]! % symbols.length]!,
+  const chars: string[] = [
+    uppercase.charAt((bytes.at(0) ?? 0) % uppercase.length),
+    lowercase.charAt((bytes.at(1) ?? 0) % lowercase.length),
+    numbers.charAt((bytes.at(2) ?? 0) % numbers.length),
+    symbols.charAt((bytes.at(3) ?? 0) % symbols.length),
   ];
   for (let i = 4; i < length; i++) {
-    chars.push(all[bytes[i]! % all.length]!);
+    const byte = bytes.at(i) ?? 0;
+    chars.push(all.charAt(byte % all.length));
   }
   for (let i = chars.length - 1; i > 0; i--) {
-    const j = randomBytes(1)[0]! % (i + 1);
-    const temp = chars[i]!;
-    chars[i] = chars[j]!;
-    chars[j] = temp;
+    const rand = randomBytes(1).at(0) ?? 0;
+    const j = rand % (i + 1);
+    const charI = chars.at(i) ?? "";
+    const charJ = chars.at(j) ?? "";
+    chars.splice(i, 1, charJ);
+    chars.splice(j, 1, charI);
   }
   return chars.join("");
 }

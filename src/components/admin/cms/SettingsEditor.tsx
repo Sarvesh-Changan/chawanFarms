@@ -31,9 +31,37 @@ export function SettingsEditor({ initial, canWrite, cloudName }: { initial: CmsS
   const phoneValues = useWatch({ control: form.control, name: "phones" });
   const phoneErrors = Array.isArray(form.formState.errors.phones) ? form.formState.errors.phones : [];
   function submit(data: z.output<typeof settingsFormSchema>) {
-    startTransition(async () => { const result = await saveCmsSettingsAction(data); setMessage(result.ok ? "Settings saved." : result.error.message); if (result.ok) router.refresh(); });
+    startTransition(async () => {
+      const result = await saveCmsSettingsAction(data);
+      if (result.ok) {
+        setMessage("Settings saved successfully.");
+        router.refresh();
+      } else {
+        setMessage(result.error.message);
+        if (result.error.fieldErrors) {
+          for (const [key, messages] of Object.entries(result.error.fieldErrors)) {
+            const msg = messages?.at(0);
+            if (msg) {
+              form.setError(key as never, { message: msg });
+            }
+          }
+        }
+      }
+    });
   }
   return <div className="grid gap-6">
+    {message ? (
+      <div
+        role="status"
+        className={`rounded-lg p-4 text-sm font-medium ${
+          message.includes("saved")
+            ? "border border-emerald-200 bg-emerald-50 text-emerald-900"
+            : "border border-destructive/20 bg-destructive/10 text-destructive"
+        }`}
+      >
+        {message}
+      </div>
+    ) : null}
     <form onSubmit={form.handleSubmit(submit)} className="grid gap-6">
       <SettingsSection title="Company details" description="Contact details are shown only when configured. Keep unknown values empty.">
         <div className="grid gap-4 sm:grid-cols-2"><LocalizedField title="Business name" path="businessName" form={form} required /><label className="grid gap-1 text-sm font-medium">Email (optional)<Input type="email" {...form.register("businessEmail")} />{error(form.formState.errors.businessEmail)}</label></div>
@@ -41,14 +69,14 @@ export function SettingsEditor({ initial, canWrite, cloudName }: { initial: CmsS
         <label className="grid gap-1 text-sm font-medium">WhatsApp number (optional)<Input {...form.register("whatsappNumber")} /><span className="text-xs font-normal text-muted-foreground">Leave empty to hide WhatsApp buttons across the site.</span>{error(form.formState.errors.whatsappNumber)}</label>
         <LocalizedField title="WhatsApp default message" path="whatsappDefaultMessage" form={form} multiline />
         <LocalizedField title="Address" path="address" form={form} multiline />
-        <SaveButton pending={pending} disabled={!canWrite} label="Save company details" />
+        <SaveButton pending={pending} disabled={!canWrite} label="Save company details" message={message} />
       </SettingsSection>
 
       <SettingsSection title="Owner portrait" description="This section is hidden by default. Never add owner details unless the client provides them.">
         <label className="flex min-h-11 items-center gap-3 text-sm font-medium"><input type="checkbox" {...form.register("ownerDisplay")} /> Display section on Home page</label>
         <LocalImageUploader label="Owner portrait" value={ownerMediaId ?? ""} media={initial.ownerMedia} cloudName={cloudName} onChange={(value) => form.setValue("ownerMediaId", value, { shouldDirty: true })} onRemove={() => form.setValue("ownerMediaId", null, { shouldDirty: true })} helperText="Recommended landscape image, at least 1200px wide." disabled={!canWrite} />
         <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1 text-sm font-medium">Name (optional)<Input {...form.register("ownerName")} /></label><label className="grid gap-1 text-sm font-medium">Short caption (optional)<Textarea rows={3} {...form.register("ownerCaption")} /></label></div>
-        {error(form.formState.errors.ownerMediaId)}<SaveButton pending={pending} disabled={!canWrite} label="Save owner portrait" />
+        {error(form.formState.errors.ownerMediaId)}<SaveButton pending={pending} disabled={!canWrite} label="Save owner portrait" message={message} />
       </SettingsSection>
 
       <SettingsSection title="Hero section content" description="Empty fields fall back to the approved defaults in site-content.ts.">
@@ -58,11 +86,11 @@ export function SettingsEditor({ initial, canWrite, cloudName }: { initial: CmsS
           <LocalImageUploader label="Hero inset image 1 (optional, top-right)" value={heroInset1MediaId ?? ""} media={(initial as unknown as { heroInset1Media?: typeof initial.heroMedia }).heroInset1Media} cloudName={cloudName} onChange={(value) => form.setValue("heroInset1MediaId", value, { shouldDirty: true })} onRemove={() => form.setValue("heroInset1MediaId", null, { shouldDirty: true })} disabled={!canWrite} />
           <LocalImageUploader label="Hero inset image 2 (optional, bottom-left)" value={heroInset2MediaId ?? ""} media={(initial as unknown as { heroInset2Media?: typeof initial.heroMedia }).heroInset2Media} cloudName={cloudName} onChange={(value) => form.setValue("heroInset2MediaId", value, { shouldDirty: true })} onRemove={() => form.setValue("heroInset2MediaId", null, { shouldDirty: true })} disabled={!canWrite} />
         </div>
-        <label className="grid gap-1 text-sm font-medium">Closing statement headline<Input {...form.register("closingHeadline")} /></label><SaveButton pending={pending} disabled={!canWrite} label="Save hero content" />
+        <label className="grid gap-1 text-sm font-medium">Closing statement headline<Input {...form.register("closingHeadline")} /></label><SaveButton pending={pending} disabled={!canWrite} label="Save hero content" message={message} />
       </SettingsSection>
 
       <SettingsSection title="Social links" description="Only HTTPS links are accepted. Empty fields hide the corresponding link everywhere.">
-        <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1 text-sm font-medium">Instagram<Input type="url" placeholder="https://…" {...form.register("instagramUrl")} />{error(form.formState.errors.instagramUrl)}</label><label className="grid gap-1 text-sm font-medium">Facebook<Input type="url" placeholder="https://…" {...form.register("facebookUrl")} />{error(form.formState.errors.facebookUrl)}</label><label className="grid gap-1 text-sm font-medium">YouTube<Input type="url" placeholder="https://…" {...form.register("youtubeUrl")} />{error(form.formState.errors.youtubeUrl)}</label></div><SaveButton pending={pending} disabled={!canWrite} label="Save social links" />
+        <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1 text-sm font-medium">Instagram<Input type="url" placeholder="https://…" {...form.register("instagramUrl")} />{error(form.formState.errors.instagramUrl)}</label><label className="grid gap-1 text-sm font-medium">Facebook<Input type="url" placeholder="https://…" {...form.register("facebookUrl")} />{error(form.formState.errors.facebookUrl)}</label><label className="grid gap-1 text-sm font-medium">YouTube<Input type="url" placeholder="https://…" {...form.register("youtubeUrl")} />{error(form.formState.errors.youtubeUrl)}</label></div><SaveButton pending={pending} disabled={!canWrite} label="Save social links" message={message} />
       </SettingsSection>
     </form>
 
@@ -80,6 +108,6 @@ function PasswordSection({ canWrite }: { canWrite: boolean }) {
 }
 
 function SettingsSection({ title, description, children }: { title: string; description: string; children: React.ReactNode }) { return <section className="grid gap-5 rounded-2xl border border-border/70 bg-card p-5 sm:p-7"><div className="border-b border-border/70 pb-4"><h2 className="font-heading text-2xl text-forest-900">{title}</h2><p className="mt-1 text-sm text-muted-foreground">{description}</p></div>{children}</section>; }
-function SaveButton({ pending, disabled, label }: { pending: boolean; disabled: boolean; label: string }) { return <Button type="submit" disabled={disabled || pending} className="w-fit">{pending ? "Saving…" : label}</Button>; }
+function SaveButton({ pending, disabled, label, message }: { pending: boolean; disabled: boolean; label: string; message?: string }) { return <div className="flex flex-wrap items-center gap-3"><Button type="submit" disabled={disabled || pending} className="w-fit">{pending ? "Saving…" : label}</Button>{message && message.includes("saved") ? <span className="text-xs font-medium text-emerald-700">✓ Settings saved</span> : null}</div>; }
 function error(value: { message?: string } | { root?: { message?: string } } | undefined) { const message = value && "message" in value ? value.message : value && "root" in value ? value.root?.message : undefined; return message ? <span className="text-xs text-destructive">{message}</span> : null; }
 function LocalizedField({ title, path, form, required = false, multiline = false }: { title: string; path: "businessName" | "address" | "whatsappDefaultMessage"; form: ReturnType<typeof useForm<SettingsInput, unknown, z.output<typeof settingsFormSchema>>>; required?: boolean; multiline?: boolean }) { const name = `${path}.en` as const; return <fieldset className="grid gap-3"><legend className="text-sm font-semibold">{title}</legend><label className="grid gap-1 text-xs font-medium">English{required ? " · required" : ""}{multiline ? <Textarea {...form.register(name)} required={required} /> : <Input {...form.register(name)} required={required} />}</label></fieldset>; }

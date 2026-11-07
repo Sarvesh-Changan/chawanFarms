@@ -137,22 +137,40 @@ describe("CMS schemas", () => {
     expect(packageRateFormSchema.safeParse(input).success).toBe(false);
   });
 
-  it("does not require client-unprovided business email or WhatsApp details", () => {
-    const result = settingsFormSchema.safeParse({
-      businessName: { en: "Chawan Farms", mr: "", hi: "" },
-      businessPhones: "",
+  it("validates client-submitted and client-transformed settings payloads", () => {
+    const userFormValues = {
+      businessName: { en: "Chawan Farms — Agri-Tourism Centre", mr: "", hi: "" },
       businessEmail: "",
-      address: { en: "Baitwadi", mr: "", hi: "" },
-      socialLinks: [],
+      phones: [
+        { number: "9821502956", isPrimary: true },
+        { number: "9359895322", isPrimary: false },
+      ],
       whatsappNumber: "",
       whatsappDefaultMessage: { en: "", mr: "", hi: "" },
-      minLeadTimeHours: "",
-      minimumGroupSize: "",
-      checkInTime: "",
-      checkOutTime: "",
-      bookingPolicyText: { en: "", mr: "", hi: "" },
-      notificationRecipients: "",
-    });
-    expect(result.success).toBe(true);
+      address: { en: "Baitwadi, Kolad, Tal. Roha, Raigad, Maharashtra, India", mr: "", hi: "" },
+      ownerDisplay: false,
+      ownerMediaId: null,
+      ownerName: "",
+      ownerCaption: "",
+      heroHeadline: "",
+      heroSubhead: "",
+      heroPrimaryCta: "",
+      heroSecondaryCta: "",
+      heroMediaId: null,
+      heroInset1MediaId: null,
+      heroInset2MediaId: null,
+      closingHeadline: "",
+      instagramUrl: "",
+      facebookUrl: "",
+      youtubeUrl: "",
+    };
+
+    const firstParse = settingsFormSchema.safeParse(userFormValues);
+    expect(firstParse.success).toBe(true);
+
+    if (firstParse.success) {
+      const secondParse = settingsFormSchema.safeParse(firstParse.data);
+      expect(secondParse.success).toBe(true);
+    }
   });
 });

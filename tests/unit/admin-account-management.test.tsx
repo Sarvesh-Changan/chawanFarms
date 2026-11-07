@@ -145,10 +145,13 @@ vi.mock("@/server/db", () => {
       count: mocks.pointsAdjustmentRequestCount,
     },
     $queryRaw: mocks.queryRaw,
-    $transaction: (fn: (tx: any) => Promise<any>) => fn(mockDb),
+    $transaction: (fn: (tx: unknown) => Promise<unknown>) => fn(mockDb),
   };
   return { db: mockDb };
 });
+
+type QueryWhere = { where: { id?: string; email?: string } };
+type RoleQueryArgs = { where?: { id?: { in?: string[] } } };
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
@@ -224,19 +227,20 @@ describe("Super Admin Account Management", () => {
     });
 
     // Default roles in DB
-    mocks.roleFindUnique.mockImplementation(({ where }: any) => {
+    mocks.roleFindUnique.mockImplementation(({ where }: QueryWhere) => {
       if (where.id === superAdminRoleId) return Promise.resolve({ id: superAdminRoleId, name: "Super Admin" });
       if (where.id === ownerManagerRoleId) return Promise.resolve({ id: ownerManagerRoleId, name: "Owner/Manager" });
       return Promise.resolve(null);
     });
 
-    mocks.roleFindMany.mockImplementation((args?: any) => {
+    mocks.roleFindMany.mockImplementation((args?: RoleQueryArgs) => {
       const all = [
         { id: superAdminRoleId, name: "Super Admin" },
         { id: ownerManagerRoleId, name: "Owner/Manager" },
       ];
-      if (args?.where?.id?.in) {
-        return Promise.resolve(all.filter((r) => args.where.id.in.includes(r.id)));
+      const inList = args?.where?.id?.in;
+      if (inList) {
+        return Promise.resolve(all.filter((r) => inList.includes(r.id)));
       }
       return Promise.resolve(all);
     });
@@ -245,7 +249,7 @@ describe("Super Admin Account Management", () => {
     mocks.accountFindFirst.mockResolvedValue({ id: "acc-1", password: "current-hashed-password" });
 
     // Default fresh session user & 2FA
-    mocks.userFindUnique.mockImplementation(({ where }: any) => {
+    mocks.userFindUnique.mockImplementation(({ where }: QueryWhere) => {
       if (where.id === superAdminActor.id) {
         return Promise.resolve({
           id: superAdminActor.id,
@@ -334,9 +338,35 @@ describe("Super Admin Account Management", () => {
       expect(mocks.userDelete).not.toHaveBeenCalled();
     });
 
+    it("allows updating staff name and audits the update", async () => {
+      mocks.requirePermission.mockResolvedValue(superAdminActor);
+      mocks.userFindUnique.mockResolvedValueOnce({
+        id: targetStaffId,
+        name: "Old Name",
+        type: "STAFF",
+        deletedAt: null,
+      });
+      mocks.userUpdate.mockResolvedValueOnce({
+        id: targetStaffId,
+        name: "New Admin Name",
+      });
+
+      const result = await updateStaffNameAction({
+        targetUserId: targetStaffId,
+        name: "New Admin Name",
+      });
+
+      expect(result).toEqual({ ok: true, data: { updated: true } });
+      expect(mocks.audit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "staff.name.update",
+        }),
+      );
+    });
+
     it("prevents non-Super Admin from granting the Super Admin role", async () => {
       mocks.requirePermission.mockResolvedValue(ownerManagerActor);
-      mocks.userFindUnique.mockImplementation(({ where }: any) => {
+      mocks.userFindUnique.mockImplementation(({ where }: QueryWhere) => {
         if (where.id === targetStaffId) {
           return Promise.resolve({
             id: targetStaffId,
@@ -414,7 +444,7 @@ describe("Super Admin Account Management", () => {
 
   describe("Fresh Session Authentication", () => {
     it("requires fresh session password and valid TOTP when promoting to Super Admin", async () => {
-      mocks.userFindUnique.mockImplementation(({ where }: any) => {
+      mocks.userFindUnique.mockImplementation(({ where }: QueryWhere) => {
         if (where.id === targetStaffId) {
           return Promise.resolve({
             id: targetStaffId,
@@ -476,7 +506,7 @@ describe("Super Admin Account Management", () => {
 
   describe("Last Super Admin Protection & Replacement Requirements", () => {
     it("refuses deleting the only active Super Admin", async () => {
-      mocks.userFindUnique.mockImplementation(({ where }: any) => {
+      mocks.userFindUnique.mockImplementation(({ where }: QueryWhere) => {
         if (where.id === targetStaffId) {
           return Promise.resolve({
             id: targetStaffId,
@@ -514,7 +544,7 @@ describe("Super Admin Account Management", () => {
     });
 
     it("succeeds when a replacement Super Admin has completed login and enrolled in 2FA", async () => {
-      mocks.userFindUnique.mockImplementation(({ where }: any) => {
+      mocks.userFindUnique.mockImplementation(({ where }: QueryWhere) => {
         if (where.id === targetStaffId) {
           return Promise.resolve({
             id: targetStaffId,
@@ -571,7 +601,7 @@ describe("Super Admin Account Management", () => {
     });
 
     it("hard-deletes the user row if zero references exist anywhere", async () => {
-      mocks.userFindUnique.mockImplementation(({ where }: any) => {
+      mocks.userFindUnique.mockImplementation(({ where }: QueryWhere) => {
         if (where.id === targetStaffId) {
           return Promise.resolve({
             id: targetStaffId,
