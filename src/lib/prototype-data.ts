@@ -138,14 +138,6 @@ export const prototypeGallery = [
   { id: "activities", category: "Activities", title: "Make a day of it", imageAlt: "Reserved activities gallery image" },
 ] as const;
 
-export const prototypeFood = {
-  vegLunchDinner: ["Dal", "Rice", "Four chapati / three bhakri", "2 vegetables", "Sweet", "Pickle", "Papad", "Salad"],
-  nonVegLunchDinner: ["Dal", "Rice", "Four chapati / three bhakri", "Chicken/mutton curry", "Chicken/mutton masala", "Sweet", "Pickle", "Papad", "Salad"],
-  vegBreakfast: ["Kanda-poha", "Sweet sheera", "Upma", "Misal-pav", "Idli-sambar"],
-  nonVegBreakfast: ["Bread-omelette", "Egg bhurji"],
-  extras: ["Fish / shellfish as per availability & size", "Mutton charged per kg", "Chicken charged per kg", "Barbecue facility available"],
-} as const;
-
 export const prototypeStories = {
   title: "Stories are waiting to be shared",
   description: "Customer stories will appear here after the farm receives publishing consent.",

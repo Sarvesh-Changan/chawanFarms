@@ -5,7 +5,7 @@ import { ClosingCta } from "@/components/marketing/ClosingCta";
 import { HomeHero } from "@/components/marketing/HomeHero";
 import { HomeScrollMotion } from "@/components/marketing/HomeScrollMotion";
 import { HomeStories } from "@/components/marketing/HomeStories";
-import { PlateExplorer } from "@/components/marketing/PlateExplorer";
+import { FoodMenuText } from "@/components/marketing/FoodMenuText";
 import { SectionHeading } from "@/components/marketing/SectionHeading";
 import { StayCards } from "@/components/marketing/StayCards";
 import { WhereWeAre } from "@/components/marketing/WhereWeAre";
@@ -109,7 +109,7 @@ function HomeParallaxScene({ gallery, heroMedia }: { gallery?: PublicHomeData["g
 }
 
 function HomeFood({ food }: { food?: PublicHomeData["food"] }) {
-  if (!food?.length) return null;
+  if (!food?.some((category) => category.items.length > 0)) return null;
   return (
     <section
       id="food"
@@ -120,11 +120,11 @@ function HomeFood({ food }: { food?: PublicHomeData["food"] }) {
         <SectionHeading
           id="home-food-heading"
           eyebrow="// FOOD"
-          title="Build your plate"
-          description="Pick a meal and veg or non-veg, and the plate changes to match."
+          title="From the farm kitchen"
+          description="Browse the dishes currently listed by the farm."
         />
         <div className="mt-8">
-          <PlateExplorer categories={food} />
+          <FoodMenuText categories={food} />
         </div>
       </div>
     </section>
@@ -168,7 +168,7 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
     data.activities?.length ? "activities" : null,
     data.gallery?.length ? "parallax-scene" : null,
     data.stories?.length ? "stories" : null,
-    data.food?.length ? "food" : null,
+    data.food?.some((category) => category.items.length > 0) ? "food" : null,
     data.settings.address || data.settings.phones.length ? "location" : null,
     "closing-cta",
   ].filter((id): id is string => Boolean(id));
