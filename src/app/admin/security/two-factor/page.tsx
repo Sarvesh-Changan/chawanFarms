@@ -11,12 +11,12 @@ type TwoFactorPageProps = {
 export default async function TwoFactorPage({ searchParams }: TwoFactorPageProps) {
   const session = await getSession();
   if (!session) {
-    redirect("/login?callbackUrl=%2Fadmin%2Fsecurity%2Ftwo-factor");
+    redirect("/admin/login?callbackUrl=%2Fadmin%2Fsecurity%2Ftwo-factor");
   }
 
   const staff = await getStaffPrincipal(session.user.id);
   if (!staff) {
-    redirect("/login");
+    redirect("/admin/login");
   }
 
   // If password change is still pending, route to password change first

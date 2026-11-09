@@ -31,7 +31,7 @@ export function OwnSessions({ sessions, isDevelopment }: { sessions: SessionRow[
         return;
       }
       if (result.data.current) {
-        router.replace("/login");
+        router.replace("/admin/login");
         router.refresh();
         return;
       }

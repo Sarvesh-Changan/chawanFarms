@@ -210,7 +210,7 @@ export function StaffPasswordResetForm() {
           )}
 
           <div className="text-muted-foreground mt-6 flex justify-between gap-3 text-sm">
-            <Link className="underline underline-offset-4" href="/login?callbackUrl=%2Fadmin">
+            <Link className="underline underline-offset-4" href="/admin/login">
               Back to admin login
             </Link>
           </div>

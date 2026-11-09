@@ -30,6 +30,7 @@ describe("removed contact number content guard", () => {
       for (const file of filesUnder(path.join(root, relativeRoot))) {
         const raw = readFileSync(file, "utf8");
         const decoded = decodeText(raw);
+        /* eslint-disable-next-line security/detect-unsafe-regex */
         const found = decoded.match(/(?<!\d)(?:91[\s().-]*)?9(?:[\s().-]*\d){9}(?!\d)/g) ?? [];
         if (found.some((phone) => phone.replace(/\D/g, "").endsWith(forbidden))) matches.push(path.relative(root, file));
       }

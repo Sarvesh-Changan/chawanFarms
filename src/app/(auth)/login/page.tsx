@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { safeCallbackUrl } from "@/lib/safe-url";
 import { getSession } from "@/server/auth";
-import { loginAction } from "@/server/auth/actions";
 import { resolveUserPostLogin } from "@/server/auth/post-login";
 
 export default async function LoginPage({
@@ -13,6 +12,17 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const rawCallback = typeof params.callbackUrl === "string" ? params.callbackUrl : undefined;
+
+  const isAdminRequested =
+    params.tab === "admin" ||
+    params.role === "admin" ||
+    (typeof rawCallback === "string" && (rawCallback.startsWith("/admin") || rawCallback.includes("/admin")));
+
+  if (isAdminRequested) {
+    const adminCallback = rawCallback && rawCallback !== "/admin" ? `?callbackUrl=${encodeURIComponent(rawCallback)}` : "";
+    redirect(`/admin/login${adminCallback}`);
+  }
+
   const callbackUrl = safeCallbackUrl(rawCallback, "/account");
 
   const session = await getSession();
@@ -24,13 +34,6 @@ export default async function LoginPage({
   const isInactivityTimeout = params.reason === "inactivity";
   const urlError = typeof params.error === "string" ? params.error : undefined;
   const urlErrorDescription = typeof params.error_description === "string" ? params.error_description : undefined;
-
-  const isAdminRequested =
-    params.tab === "admin" ||
-    params.role === "admin" ||
-    (typeof rawCallback === "string" && (rawCallback.startsWith("/admin") || rawCallback.includes("/admin")));
-
-  const initialTab: "user" | "admin" = isAdminRequested ? "admin" : "user";
 
   return (
     <div className="space-y-4">
@@ -58,9 +61,7 @@ export default async function LoginPage({
         </div>
       )}
       <LoginForm
-        adminAction={loginAction}
         defaultValues={{ callbackUrl }}
-        initialTab={initialTab}
         urlError={urlError}
         urlErrorDescription={urlErrorDescription}
       />

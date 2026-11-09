@@ -248,6 +248,6 @@ export async function completeStaffResetPasswordAction(rawInput: unknown): Promi
   return {
     ok: true,
     message: "Your password has been changed. You can now sign in.",
-    redirectTo: "/login?callbackUrl=%2Fadmin",
+    redirectTo: "/admin/login?callbackUrl=%2Fadmin",
   };
 }

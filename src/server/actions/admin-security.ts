@@ -449,7 +449,7 @@ export async function createStaffAccountAction(rawInput: unknown): Promise<Resul
       to: newUser.email,
       name: newUser.name,
       roleNames: [selectedRole.name],
-      loginUrl: `${env.NEXT_PUBLIC_SITE_URL}/login?callbackUrl=/admin`,
+      loginUrl: `${env.NEXT_PUBLIC_SITE_URL}/admin/login`,
     });
 
     return ok({ user: newUser });

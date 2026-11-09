@@ -9,13 +9,22 @@ import { getSession } from "@/server/auth";
 import { can, getStaffPrincipal, requiresTwoFactor } from "@/server/authz";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const session = await getSession();
-  if (!session) redirect("/login?callbackUrl=%2Fadmin");
-  const staff = await getStaffPrincipal(session.user.id);
-  if (!staff) return <NoAccess title="Staff access required" message="The admin workspace is available to invited staff accounts." />;
-
   const requestHeaders = await headers();
   const currentPath = requestHeaders.get("x-pathname") || "";
+
+  // Bypass AdminShell and session check for admin login route
+  if (currentPath === "/admin/login" || currentPath.startsWith("/admin/login")) {
+    return <>{children}</>;
+  }
+
+  const session = await getSession();
+  if (!session) {
+    const callback = currentPath && currentPath !== "/admin" ? `?callbackUrl=${encodeURIComponent(currentPath)}` : "";
+    redirect(`/admin/login${callback}`);
+  }
+
+  const staff = await getStaffPrincipal(session.user.id);
+  if (!staff) return <NoAccess title="Staff access required" message="The admin workspace is available to invited staff accounts." />;
 
   if (staff.mustChangePassword) {
     if (currentPath && currentPath !== "/admin/security/change-password") {

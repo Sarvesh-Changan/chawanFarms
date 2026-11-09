@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ForgotPasswordPage from "@/app/(auth)/forgot-password/page";
 import SignupPage from "@/app/(auth)/signup/page";
+import { AdminLoginForm } from "@/components/auth/AdminLoginForm";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { forgotPasswordAction, loginAction, signupAction } from "@/server/auth/actions";
 import { validateGoogleUserInfo } from "@/server/auth/google-gate";
@@ -56,90 +57,47 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-describe("Login Form UI & Toggle Behaviour", () => {
-  const dummyAdminAction = vi.fn().mockResolvedValue({ ok: true, redirectTo: "/admin" });
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Customer Login Form (/login) — Google sign-in only, no toggle
+// ─────────────────────────────────────────────────────────────────────────────
+describe("Customer Login Form UI (/login)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders with User tab selected by default and has no a11y violations (jest-axe)", async () => {
-    const { container } = render(<LoginForm adminAction={dummyAdminAction} />);
+  it("renders 'Welcome back' heading and Google button, has no a11y violations (jest-axe)", async () => {
+    const { container } = render(<LoginForm />);
 
-    expect(screen.getByRole("tab", { name: /user/i })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("tab", { name: /admin/i })).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("heading", { name: /welcome back/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /continue with google/i })).toBeInTheDocument();
 
-    const results = await axe(container);
-    expect(results.violations).toEqual([]);
-  });
-
-  it("renders Admin tab cleanly without a11y violations (jest-axe)", async () => {
-    const { container } = render(<LoginForm adminAction={dummyAdminAction} initialTab="admin" />);
-
-    expect(screen.getByRole("tab", { name: /admin/i })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("tab", { name: /user/i })).toHaveAttribute("aria-selected", "false");
-    expect(screen.getByLabelText(/staff email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^password/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^sign in$/i })).toBeInTheDocument();
-    expect(screen.queryByText(/create account/i)).not.toBeInTheDocument();
+    // No admin tab, no toggle, no email/password fields
+    expect(screen.queryByRole("tab")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/staff email/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^password/i)).not.toBeInTheDocument();
 
     const results = await axe(container);
     expect(results.violations).toEqual([]);
   });
 
-  it("switches tabs using arrow keys (ArrowRight / ArrowLeft)", () => {
-    render(<LoginForm adminAction={dummyAdminAction} />);
-
-    const userTab = screen.getByRole("tab", { name: /user/i });
-    const adminTab = screen.getByRole("tab", { name: /admin/i });
-
-    userTab.focus();
-    fireEvent.keyDown(userTab, { key: "ArrowRight" });
-
-    expect(adminTab).toHaveAttribute("aria-selected", "true");
-    expect(userTab).toHaveAttribute("aria-selected", "false");
-    expect(screen.getByLabelText(/staff email/i)).toBeInTheDocument();
-
-    fireEvent.keyDown(adminTab, { key: "ArrowLeft" });
-    expect(userTab).toHaveAttribute("aria-selected", "true");
-    expect(adminTab).toHaveAttribute("aria-selected", "false");
-  });
-
-  it("displays proper error message and switch button when redirected with staff_account_not_allowed", () => {
-    render(
-      <LoginForm
-        adminAction={dummyAdminAction}
-        urlError="staff_account_not_allowed"
-      />,
-    );
+  it("displays staff_account_not_allowed error with a link to /admin/login", () => {
+    render(<LoginForm urlError="staff_account_not_allowed" />);
 
     expect(
-      screen.getByText(/this email belongs to a staff account\. please switch to the admin tab to sign in\./i),
+      screen.getByText(/this email belongs to a staff account/i),
     ).toBeInTheDocument();
 
-    // Clicking 'Switch to Admin tab' switches tabs
-    fireEvent.click(screen.getByRole("button", { name: /switch to admin tab/i }));
-    expect(screen.getByRole("tab", { name: /admin/i })).toHaveAttribute("aria-selected", "true");
+    const adminLink = screen.getByRole("link", { name: /go to admin login/i });
+    expect(adminLink).toHaveAttribute("href", "/admin/login");
   });
 
-  it("displays proper error message when redirected with access_denied", () => {
-    render(
-      <LoginForm
-        adminAction={dummyAdminAction}
-        urlError="access_denied"
-      />,
-    );
+  it("displays access_denied error message", () => {
+    render(<LoginForm urlError="access_denied" />);
     expect(screen.getByText(/google sign-in was cancelled/i)).toBeInTheDocument();
   });
 
-  it("displays proper error message when redirected with email_not_verified", () => {
-    render(
-      <LoginForm
-        adminAction={dummyAdminAction}
-        urlError="email_not_verified"
-      />,
-    );
+  it("displays email_not_verified error message", () => {
+    render(<LoginForm urlError="email_not_verified" />);
     expect(screen.getByText(/your google account email is not verified/i)).toBeInTheDocument();
   });
 
@@ -156,7 +114,7 @@ describe("Login Form UI & Toggle Behaviour", () => {
       json: () => Promise.resolve({ url: "https://accounts.google.com/o/oauth2/v2/auth?client_id=mock" }),
     } as unknown as Response);
 
-    render(<LoginForm adminAction={dummyAdminAction} defaultValues={{ callbackUrl: "/account/bookings" }} />);
+    render(<LoginForm defaultValues={{ callbackUrl: "/account/bookings" }} />);
 
     const googleBtn = screen.getByRole("button", { name: /continue with google/i });
     fireEvent.click(googleBtn);
@@ -168,7 +126,7 @@ describe("Login Form UI & Toggle Behaviour", () => {
         body: JSON.stringify({
           provider: "google",
           callbackURL: "/account/bookings",
-          errorURL: "/login?tab=user&callbackUrl=%2Faccount%2Fbookings",
+          errorURL: "/login?callbackUrl=%2Faccount%2Fbookings",
         }),
       });
       expect(assignMock).toHaveBeenCalledWith("https://accounts.google.com/o/oauth2/v2/auth?client_id=mock");
@@ -177,16 +135,74 @@ describe("Login Form UI & Toggle Behaviour", () => {
     fetchMock.mockRestore();
     window.location.assign = originalAssign;
   });
+});
 
-  it("has 'Forgot password?' link pointing to /forgot-password?role=admin and no 'Create account' link", () => {
-    render(<LoginForm adminAction={dummyAdminAction} initialTab="admin" />);
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin Login Form (/admin/login) — email + password, no Google
+// ─────────────────────────────────────────────────────────────────────────────
+describe("Admin Login Form UI (/admin/login)", () => {
+  const dummyAdminAction = vi.fn().mockResolvedValue({ ok: true, redirectTo: "/admin" });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("renders 'Admin Login' heading with staff email and password fields, has no a11y violations (jest-axe)", async () => {
+    const { container } = render(<AdminLoginForm adminAction={dummyAdminAction} />);
+
+    expect(screen.getByRole("heading", { name: /admin login/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/staff email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^sign in$/i })).toBeInTheDocument();
+
+    // No Google button, no toggle
+    expect(screen.queryByRole("button", { name: /continue with google/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("tab")).not.toBeInTheDocument();
+
+    const results = await axe(container);
+    expect(results.violations).toEqual([]);
+  });
+
+  it("has 'Forgot password?' link pointing to /forgot-password?role=admin", () => {
+    render(<AdminLoginForm adminAction={dummyAdminAction} />);
 
     const forgotLink = screen.getByRole("link", { name: /forgot password\?/i });
     expect(forgotLink).toHaveAttribute("href", "/forgot-password?role=admin");
-    expect(screen.queryByRole("link", { name: /create account/i })).not.toBeInTheDocument();
+  });
+
+  it("renders inactivity timeout banner when isInactivityTimeout is true", () => {
+    render(<AdminLoginForm adminAction={dummyAdminAction} isInactivityTimeout />);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByText(/session timed out/i)).toBeInTheDocument();
+  });
+
+  it("calls adminAction and redirects on successful sign-in", async () => {
+    const assignMock = vi.fn();
+    Object.defineProperty(window, "location", {
+      writable: true,
+      value: { ...window.location, assign: assignMock },
+    });
+
+    render(<AdminLoginForm adminAction={dummyAdminAction} />);
+
+    fireEvent.change(screen.getByLabelText(/staff email/i), {
+      target: { value: "staff@chawanfarms.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/^password/i), {
+      target: { value: "valid-password-123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^sign in$/i }));
+
+    await waitFor(() => {
+      expect(dummyAdminAction).toHaveBeenCalled();
+      expect(assignMock).toHaveBeenCalledWith("/admin");
+    });
   });
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Server-Side Authentication Enforcement
+// ─────────────────────────────────────────────────────────────────────────────
 describe("Server-Side Authentication Enforcement", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -297,6 +313,9 @@ describe("Server-Side Authentication Enforcement", () => {
   });
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Old Route Permanent Redirects
+// ─────────────────────────────────────────────────────────────────────────────
 describe("Old Route Permanent Redirects", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -322,6 +341,9 @@ describe("Old Route Permanent Redirects", () => {
   });
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Google OAuth Gatekeeping (validateGoogleUserInfo)
+// ─────────────────────────────────────────────────────────────────────────────
 describe("Google OAuth Gatekeeping (validateGoogleUserInfo)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -425,4 +447,3 @@ describe("Google OAuth Gatekeeping (validateGoogleUserInfo)", () => {
     expect(mocks.userFindFirst).not.toHaveBeenCalled();
   });
 });
-

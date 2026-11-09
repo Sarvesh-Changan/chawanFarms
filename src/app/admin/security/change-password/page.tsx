@@ -7,12 +7,12 @@ import { getStaffPrincipal } from "@/server/authz";
 export default async function ChangePasswordPage() {
   const session = await getSession();
   if (!session) {
-    redirect("/login?callbackUrl=%2Fadmin%2Fsecurity%2Fchange-password");
+    redirect("/admin/login?callbackUrl=%2Fadmin%2Fsecurity%2Fchange-password");
   }
 
   const staff = await getStaffPrincipal(session.user.id);
   if (!staff) {
-    redirect("/login");
+    redirect("/admin/login");
   }
 
   if (!staff.mustChangePassword) {

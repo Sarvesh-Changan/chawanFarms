@@ -30,7 +30,7 @@ export function AdminLogoutButton({
       try {
         await logoutAction();
         toast.success("Logged out successfully");
-        router.push("/login");
+        router.push("/admin/login");
       } catch {
         toast.error("Failed to log out. Please try again.");
       }

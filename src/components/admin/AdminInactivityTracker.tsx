@@ -56,7 +56,7 @@ export function AdminInactivityTracker({
         // Fallback redirection even if network action fails
       }
 
-      router.push("/login?reason=inactivity");
+      router.push("/admin/login?reason=inactivity");
     };
 
     const recordActivity = () => {

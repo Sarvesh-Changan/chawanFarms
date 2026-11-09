@@ -53,7 +53,7 @@ export async function validateGoogleUserInfo(
     if (existingStaff) {
       return {
         error: "staff_account_not_allowed",
-        errorDescription: "This email belongs to a staff account. Please sign in via the Admin tab.",
+        errorDescription: "This email belongs to a staff account. Please sign in at the admin login page.",
       };
     }
 
@@ -64,7 +64,7 @@ export async function validateGoogleUserInfo(
     if (pendingInvite) {
       return {
         error: "staff_account_not_allowed",
-        errorDescription: "This email belongs to a staff account. Please sign in via the Admin tab.",
+        errorDescription: "This email belongs to a staff account. Please sign in at the admin login page.",
       };
     }
   }

@@ -41,8 +41,8 @@ export async function loginAsStaff(page: Page): Promise<void> {
   const password = process.env.QA_ADMIN_PASSWORD;
   if (!email || !password) throw new Error("QA_ADMIN_EMAIL and QA_ADMIN_PASSWORD are required.");
 
-  await page.goto("/login?callbackUrl=%2Fadmin");
-  await page.getByLabel("Email").fill(email);
+  await page.goto("/admin/login");
+  await page.getByLabel("Staff email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.waitForURL(/\/admin(?:\/|$)/, { timeout: 15_000 });
