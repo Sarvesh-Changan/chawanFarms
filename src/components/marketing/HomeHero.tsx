@@ -21,6 +21,12 @@ function text(value: unknown): string {
   return typeof english === "string" ? english : "";
 }
 
+function cleanEyebrow(value: string): string {
+  let result = value.trim();
+  while (result.startsWith("//")) result = result.slice(2).trimStart();
+  return result;
+}
+
 function mediaAlt(media: PublicMedia | null | undefined, fallback: string): string {
   if (!media) return fallback;
   const alt = text(media.altText);
@@ -41,7 +47,7 @@ export function HomeHero({
   const body =
     settings.home.hero.subhead ||
     "Agri-tourism could create awareness about rural life and knowledge about agriculture science among the urban school children as well as citizens.";
-  const eyebrow = text(content.eyebrow) || "// Agri-tourism centre · Kolad, Raigad";
+  const eyebrow = cleanEyebrow(text(content.eyebrow)) || "Agri-tourism centre · Kolad, Raigad";
   const primaryLabel = settings.home.hero.cta || "Plan your stay";
   const primaryHref = "/book";
   const secondaryLabel = settings.home.hero.secondaryCta || "Explore the farm";
@@ -79,7 +85,7 @@ export function HomeHero({
             <HeroHeadline
               id="hero-heading"
               text={heading}
-              className="font-heading mt-5 text-[clamp(2.5rem,6.5vw,5.5rem)] leading-[0.96] tracking-[-0.035em] text-cream-50"
+              className="font-heading mt-5 text-[clamp(2rem,6.5vw,5.5rem)] leading-[0.96] tracking-[-0.035em] text-cream-50"
             />
 
             <HeroReveal delay={90}>
@@ -125,7 +131,7 @@ export function HomeHero({
           </div>
 
           {/* Right Column: Organic Blob Photo with Overlapping Insets */}
-          <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
+          <div className="relative mx-auto mt-4 w-full max-w-lg min-w-0 lg:mt-0 lg:max-w-none">
             <div className="relative aspect-square w-full max-w-[460px] mx-auto">
               {/* Main Organic Blob (Centerpiece) */}
               <HeroDriftLayer
@@ -157,13 +163,13 @@ export function HomeHero({
               </HeroDriftLayer>
 
               {/* Inset 1: Top-Right (e.g. crops/agriculture) */}
-              <HeroDriftLayer
+              {inset1Photo ? <HeroDriftLayer
                 driftRate={-0.04}
                 delay={320}
-                className="absolute -top-3 -right-3 sm:-top-5 sm:-right-5 z-20 size-28 sm:size-36 md:size-40"
+                className="absolute top-0 right-0 z-20 size-28 sm:-top-5 sm:-right-5 sm:size-36 md:size-40"
               >
                 <div className="relative size-full rounded-full border-4 border-turmeric-500 overflow-hidden shadow-xl bg-forest-700">
-                  {inset1Photo && cloudName ? (
+                  {cloudName ? (
                     <CldImage
                       cloudName={cloudName}
                       publicId={inset1Photo.publicId}
@@ -175,20 +181,18 @@ export function HomeHero({
                       sizes="(min-width: 640px) 144px, 112px"
                       className="object-cover"
                     />
-                  ) : (
-                    <InsetFallbackCrops />
-                  )}
+                  ) : null}
                 </div>
-              </HeroDriftLayer>
+              </HeroDriftLayer> : null}
 
               {/* Inset 2: Bottom-Left (e.g. guest house/stay) */}
-              <HeroDriftLayer
+              {inset2Photo ? <HeroDriftLayer
                 driftRate={0.08}
                 delay={440}
-                className="absolute -bottom-3 -left-3 sm:-bottom-5 sm:-left-5 z-20 size-28 sm:size-36 md:size-40"
+                className="absolute bottom-0 left-0 z-20 size-28 sm:-bottom-5 sm:-left-5 sm:size-36 md:size-40"
               >
                 <div className="relative size-full rounded-full border-4 border-laterite-600 overflow-hidden shadow-xl bg-forest-800">
-                  {inset2Photo && cloudName ? (
+                  {cloudName ? (
                     <CldImage
                       cloudName={cloudName}
                       publicId={inset2Photo.publicId}
@@ -200,11 +204,9 @@ export function HomeHero({
                       sizes="(min-width: 640px) 144px, 112px"
                       className="object-cover"
                     />
-                  ) : (
-                    <InsetFallbackGuestHouse />
-                  )}
+                  ) : null}
                 </div>
-              </HeroDriftLayer>
+              </HeroDriftLayer> : null}
             </div>
           </div>
         </div>
@@ -249,50 +251,3 @@ function LayeredHillsFallback() {
   );
 }
 
-function InsetFallbackCrops() {
-  return (
-    <div
-      aria-hidden="true"
-      className="flex size-full flex-col items-center justify-center bg-gradient-to-br from-turmeric-500/90 to-turmeric-500 text-forest-900 p-2 text-center"
-    >
-      <svg
-        className="size-8 sm:size-10 text-forest-900/80 mb-1"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 21v-8m0 0a4 4 0 10-8 0 4 4 0 008 0zm0 0a4 4 0 118 0 4 4 0 01-8 0z"
-        />
-      </svg>
-      <span className="font-heading text-[10px] sm:text-xs font-semibold tracking-wide uppercase">Crops & Trees</span>
-    </div>
-  );
-}
-
-function InsetFallbackGuestHouse() {
-  return (
-    <div
-      aria-hidden="true"
-      className="flex size-full flex-col items-center justify-center bg-gradient-to-br from-laterite-600/90 to-laterite-600 text-cream-50 p-2 text-center"
-    >
-      <svg
-        className="size-8 sm:size-10 text-cream-50/85 mb-1"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-        />
-      </svg>
-      <span className="font-heading text-[10px] sm:text-xs font-semibold tracking-wide uppercase">Farm Cottages</span>
-    </div>
-  );
-}

@@ -34,6 +34,14 @@ describe("home hero", () => {
     expect(screen.queryByRole("link", { name: "Explore experiences" })).toBeNull();
   });
 
+  it("keeps the eyebrow prefix in one place and hides empty inset badges", () => {
+    render(<HomeHero section={{ content: { eyebrow: { en: "// // AGRI-TOURISM CENTRE · KOLAD, RAIGAD" } } }} media={null} settings={emptySettings} />);
+
+    expect(screen.getByText("AGRI-TOURISM CENTRE · KOLAD, RAIGAD")).toBeInTheDocument();
+    expect(screen.queryByText(/Crops & Trees|Farm Cottages/i)).toBeNull();
+    expect(screen.getByText("AGRI-TOURISM CENTRE · KOLAD, RAIGAD").parentElement).toHaveTextContent("// AGRI-TOURISM CENTRE · KOLAD, RAIGAD");
+  });
+
   it("hides the optional facts bar when settings are empty", () => {
     render(<HomeHero section={{ content: { heading: { en: "Sample heading" } } }} media={null} settings={emptySettings} />);
 
