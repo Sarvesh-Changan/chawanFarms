@@ -139,6 +139,7 @@ describe("CMS schemas", () => {
 
   it("validates client-submitted and client-transformed settings payloads", () => {
     const userFormValues = {
+      businessTagline: "Agri-Tourism & Home Stay",
       businessName: { en: "Chawan Farms — Agri-Tourism Centre", mr: "", hi: "" },
       businessEmail: "",
       phones: [

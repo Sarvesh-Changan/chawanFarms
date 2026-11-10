@@ -46,7 +46,7 @@ const envSchema = z
     CLOUDINARY_UPLOAD_PRESET_ADMIN_IMAGE: z.string().min(1).optional(),
     CLOUDINARY_UPLOAD_PRESET_ADMIN_VIDEO: z.string().min(1).optional(),
     CLOUDINARY_UPLOAD_PRESET_BOOKING_GUEST_ID: z.string().min(1).optional(),
-    CLOUDINARY_FOLDER_MODE: z.enum(["dynamic", "fixed"]).default("dynamic"),
+    CLOUDINARY_FOLDER_MODE: z.enum(["dynamic", "fixed"]).optional(),
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
     CLOUDINARY_TEST_MODE: z.enum(["0", "1"]).default("0").transform((value) => value === "1"),
     NODE_ENV: z
@@ -107,6 +107,28 @@ const envSchema = z
       }
     }
 
+    if (data.APP_ENV === "production" || data.APP_ENV === "preview") {
+      const uploadRequired: Array<[keyof typeof data, unknown]> = [
+        ["CLOUDINARY_CLOUD_NAME", data.CLOUDINARY_CLOUD_NAME],
+        ["CLOUDINARY_API_KEY", data.CLOUDINARY_API_KEY],
+        ["CLOUDINARY_API_SECRET", data.CLOUDINARY_API_SECRET],
+        ["CLOUDINARY_UPLOAD_PRESET_ADMIN_IMAGE", data.CLOUDINARY_UPLOAD_PRESET_ADMIN_IMAGE],
+        ["CLOUDINARY_FOLDER_MODE", data.CLOUDINARY_FOLDER_MODE],
+        ["NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME", data.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME],
+      ];
+      for (const [path, value] of uploadRequired) {
+        if (value === undefined || value === "") {
+          context.addIssue({ code: "custom", path: [path], message: `${String(path)} is required in ${data.APP_ENV} for Settings image uploads.` });
+        }
+      }
+      if (data.CLOUDINARY_CLOUD_NAME && data.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME && data.CLOUDINARY_CLOUD_NAME !== data.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
+        context.addIssue({ code: "custom", path: ["NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME"], message: "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME must match CLOUDINARY_CLOUD_NAME so uploaded images can render." });
+      }
+      if (data.CLOUDINARY_FOLDER_MODE === undefined) {
+        context.addIssue({ code: "custom", path: ["CLOUDINARY_FOLDER_MODE"], message: "Set CLOUDINARY_FOLDER_MODE explicitly to dynamic or fixed in deployed environments." });
+      }
+    }
+
     if (data.SMTP_HOST || data.SMTP_USER || data.SMTP_PASS || data.SMTP_PORT) {
       if (data.SMTP_PORT !== undefined && data.SMTP_PORT !== 465 && data.SMTP_PORT !== 587) {
         context.addIssue({ code: "custom", path: ["SMTP_PORT"], message: "SMTP_PORT must be 465 or 587." });
@@ -118,7 +140,8 @@ const envSchema = z
         context.addIssue({ code: "custom", path: ["SMTP_SECURE"], message: "SMTP_SECURE must be false on port 587; STARTTLS is required." });
       }
     }
-  });
+  })
+  .transform((data) => ({ ...data, CLOUDINARY_FOLDER_MODE: data.CLOUDINARY_FOLDER_MODE ?? "dynamic" as const }));
 
 export function parseEnv(input: Record<string, unknown>) {
   return envSchema.parse(input);

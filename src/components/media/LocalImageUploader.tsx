@@ -31,7 +31,7 @@ async function uploadVerifiedImage(file: File, altText: string, onProgress: (val
   return { mediaId: confirmed.mediaId, publicId };
 }
 
-export function LocalImageUploader({ label = "Image", value, media, cloudName, onChange, onRemove, helperText, disabled = false }: { label?: string; value: string; media?: LocalUploaderMedia; cloudName?: string; onChange: (mediaId: string) => void; onRemove: () => void; helperText?: string; disabled?: boolean }) {
+export function LocalImageUploader({ label = "Image", value, media, cloudName, onChange, onRemove, onPendingChange, helperText, disabled = false }: { label?: string; value: string; media?: LocalUploaderMedia; cloudName?: string; onChange: (mediaId: string) => void; onRemove: () => void; onPendingChange?: (pending: boolean) => void; helperText?: string; disabled?: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploadedMedia, setUploadedMedia] = useState<LocalUploaderMedia>();
   const [localPreview, setLocalPreview] = useState<{ url: string; name: string }>();
@@ -42,7 +42,9 @@ export function LocalImageUploader({ label = "Image", value, media, cloudName, o
   const [pending, startTransition] = useTransition();
   const policy = mediaPolicy("admin_image");
   const accept = policy.formats.map((format) => `.${format}`).join(",");
-  const currentMedia = uploadedMedia?.id === value ? uploadedMedia : media;
+  const savedSelection = Boolean(value) && media?.id === value;
+  const visiblePreview = savedSelection ? undefined : localPreview;
+  const currentMedia = savedSelection ? media : uploadedMedia?.id === value ? uploadedMedia : media;
   const provisional = currentMedia?.tags?.some((tag) => tag === "provisional-pdf" || tag === "provisional-oldsite");
 
   useEffect(() => () => {
@@ -54,6 +56,7 @@ export function LocalImageUploader({ label = "Image", value, media, cloudName, o
     const error = imageFileError(file);
     if (error) { setMessage(error); return; }
     setLocalPreview({ url: URL.createObjectURL(file), name: file.name });
+    onPendingChange?.(true);
     startTransition(async () => {
       setMessage("Preparing secure upload..."); setProgress(0);
       try {
@@ -62,12 +65,13 @@ export function LocalImageUploader({ label = "Image", value, media, cloudName, o
         onChange(result.mediaId); setMessage("Photo uploaded and verified. Save the form to attach it.");
         if (fileRef.current) fileRef.current.value = "";
       } catch (uploadError) { setMessage(uploadError instanceof Error ? uploadError.message : "Upload failed."); }
+      finally { onPendingChange?.(false); }
     });
   }
 
   return <fieldset className="grid gap-3 rounded-xl border border-border/70 p-4" disabled={disabled || pending}>
     <legend className="px-1 text-sm font-semibold">{label}</legend>
-    {localPreview || (currentMedia && cloudName) ? <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-muted">{localPreview ? <Image src={localPreview.url} alt={altText || localPreview.name || label} fill unoptimized sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" /> : currentMedia && cloudName ? <CldImage cloudName={cloudName} publicId={currentMedia.publicId} alt={altValue(currentMedia.altText) || altText || label} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" /> : null}{localPreview && uploadedMedia?.id === value ? <span className="absolute left-2 top-2 rounded-full bg-forest-900/85 px-2 py-1 text-xs font-semibold text-cream-50">Uploaded preview</span> : null}{!localPreview && provisional ? <span className="absolute left-2 top-2 rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-950">Provisional photo - replace with original</span> : null}</div> : null}
+    {visiblePreview || (currentMedia && cloudName) ? <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-muted">{visiblePreview ? <Image src={visiblePreview.url} alt={altText || visiblePreview.name || label} fill unoptimized sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" /> : currentMedia && cloudName ? <CldImage cloudName={cloudName} publicId={currentMedia.publicId} alt={altValue(currentMedia.altText) || altText || label} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" /> : null}{visiblePreview && uploadedMedia?.id === value ? <span className="absolute left-2 top-2 rounded-full bg-forest-900/85 px-2 py-1 text-xs font-semibold text-cream-50">Uploaded preview</span> : null}{!visiblePreview && provisional ? <span className="absolute left-2 top-2 rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-950">Provisional photo - replace with original</span> : null}</div> : null}
     {localPreview ? <p className="truncate text-xs text-muted-foreground" title={localPreview.name}>Selected image: {localPreview.name}</p> : null}
     <div className="grid gap-2 sm:grid-cols-2"><label className="grid gap-1 text-xs font-medium">English alt text (optional)<Input value={altText} onChange={(event) => setAltText(event.target.value)} maxLength={500} aria-describedby={`${label}-alt-help`} /></label><div className="grid gap-1 text-xs text-muted-foreground"><span id={`${label}-alt-help`}>Optional. Add a short description when available.</span><span>{helperText || `JPG, PNG, WebP or AVIF - up to ${formatMediaBytes(policy.maxBytes)}.`}</span></div></div>
     <div onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); choose(event.dataTransfer.files[0]); }} className={`grid min-h-24 place-items-center rounded-lg border border-dashed p-4 text-center text-sm ${dragging ? "border-forest-700 bg-muted" : "border-border"}`}><input ref={fileRef} id={`${label.replaceAll(" ", "-")}-file`} type="file" accept={accept} className="sr-only" onChange={(event) => choose(event.target.files?.[0])} /><label htmlFor={`${label.replaceAll(" ", "-")}-file`} className="cursor-pointer underline underline-offset-4">Choose or drag an image here</label></div>

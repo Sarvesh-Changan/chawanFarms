@@ -8,6 +8,7 @@
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "db:remove-phone": "tsx scripts/remove-phone-number.ts",
+    "db:diagnose-settings-images": "tsx scripts/diagnose-settings-images.ts",
     "admin:create": "tsx scripts/create-super-admin.ts",
     "create-admin": "tsx scripts/create-super-admin.ts",
     "start": "next start",

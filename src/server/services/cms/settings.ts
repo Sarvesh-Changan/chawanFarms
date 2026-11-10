@@ -157,6 +157,39 @@ export async function saveCmsSettings(data: CmsSettingsData, actorId: string) {
       await tx.mediaUsage.create({ data: { mediaId: item.mediaId, entityType: "Setting", entityId: "home", field: item.field } });
     }
   }, { isolationLevel: "Serializable" });
+
+  // Settings are the source of truth for both the admin preview and the public
+  // hero. Verify the four media references after the transaction so a save can
+  // never report success while a selected image silently disappears on reload.
+  const mediaSettings = [
+    ["owner.mediaId", data.ownerMediaId],
+    ["home.hero.mediaId", data.heroMediaId],
+    ["home.hero.inset1MediaId", data.heroInset1MediaId],
+    ["home.hero.inset2MediaId", data.heroInset2MediaId],
+  ] as const;
+  const persistedRows = await db.setting.findMany({
+    where: { key: { in: mediaSettings.map(([key]) => key) } },
+    select: { key: true, value: true },
+  });
+  const persisted = new Map(persistedRows.map((row) => [row.key, row.value]));
+  if (mediaSettings.some(([key, mediaId]) => {
+    const stored = persisted.get(key);
+    return mediaId ? stored !== mediaId : typeof stored === "string";
+  })) {
+    throw new Error("SETTINGS_MEDIA_REFERENCE_NOT_PERSISTED");
+  }
+
+  const selectedMediaIds = mediaSettings.flatMap(([, mediaId]) => mediaId ? [mediaId] : []);
+  if (selectedMediaIds.length) {
+    const available = await db.media.findMany({
+      where: { id: { in: selectedMediaIds }, kind: "IMAGE", origin: "ADMIN", isPublic: true, deletedAt: null },
+      select: { id: true },
+    });
+    if (new Set(available.map((media) => media.id)).size !== new Set(selectedMediaIds).size) {
+      throw new Error("SETTINGS_MEDIA_NOT_AVAILABLE_AFTER_SAVE");
+    }
+  }
+
   for (const oldId of oldMediaIds) if (oldId && oldId !== data.ownerMediaId && oldId !== data.heroMediaId && oldId !== data.heroInset1MediaId && oldId !== data.heroInset2MediaId) await cleanupIfUnused(oldId);
   return { updatedKeys: keys.map(([key]) => key) };
 }

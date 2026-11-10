@@ -301,7 +301,13 @@ export async function saveCmsSettingsAction(rawInput: unknown): Promise<Result<{
     });
     return auditResult.ok ? ok({ id: updated.updatedKeys.join(",") }) : auditResult;
   } catch (error) {
-    return err("CONFLICT", error instanceof Error && error.message === "SETTINGS_MEDIA_UNAVAILABLE" ? "Choose a verified admin image that belongs to your account." : "Settings could not be saved.");
+    if (error instanceof Error && error.message === "SETTINGS_MEDIA_UNAVAILABLE") {
+      return err("CONFLICT", "Choose a verified admin image that belongs to your account.");
+    }
+    if (error instanceof Error && error.message.startsWith("SETTINGS_MEDIA_")) {
+      return err("CONFLICT", "The image could not be verified after saving. Please refresh and try again.");
+    }
+    return err("CONFLICT", "Settings could not be saved.");
   }
 }
 
