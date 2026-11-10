@@ -46,3 +46,6 @@ next-env.d.ts
 # local-only reference study media
 docs/reference/**/*.png
 docs/reference/**/*.webm
+
+# Local responsive QA captures and measurements
+docs/qa/responsive/

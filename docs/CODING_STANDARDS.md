@@ -105,6 +105,14 @@ Add only with justification (size, maintenance, license, install scripts). Prefe
 ## 15. Code review standards
 Reviewer checks: (1) matches PRD/ARCHITECTURE/DATABASE/SECURITY; (2) authN/authZ/validation present; (3) no client-trusted values; (4) transactions & idempotency for money/points; (5) no PII/secrets in logs; (6) accessibility & responsive; (7) performance (client JS, images, queries); (8) tests meaningful; (9) migrations safe/reversible-by-forward-fix; (10) no invented client content; (11) docs updated. Small PRs (<~400 changed lines excluding generated). Blocking issues fixed before merge; nitpicks labelled `nit:`.
 
+### Mobile checklist
+- [ ] Start with the narrow layout; verify at 320px before adding wider breakpoints.
+- [ ] Give every interactive target at least 44×44 CSS px and keep adjacent targets at least 8px apart.
+- [ ] Avoid fixed widths that exceed the viewport; let flex/grid children shrink and long content wrap.
+- [ ] Use `svh`/`dvh` for viewport-height layouts, with safe-area insets for fixed edges.
+- [ ] Keep form inputs at 16px or larger to prevent iOS zoom.
+- [ ] Check keyboard, touch, orientation changes, and reduced motion as well as desktop pointer use.
+
 ## 16. Documentation duties
 Update docs when behaviour changes: `docs/ADR-xxx.md` for decisions (auth library, id strategy, caching approach), `docs/RUNBOOK.md` (deploy, rollback, restore, rotate secrets, cron), `docs/CONTENT_CONFLICTS.md`, `README.md` (setup in <15 min), admin user guide for client handover.
 - Notification jobs must be post-commit, idempotent and server-authorised. Outbox processors may log event type and delivery result, but never message bodies, tokens or credentials; temporary delivery/quota failures remain pending for retry.
