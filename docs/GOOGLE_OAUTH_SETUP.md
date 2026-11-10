@@ -54,12 +54,14 @@ This guide details the step-by-step setup required in Google Cloud Console to en
 4. Set **Name**: `Chawan Farms Web Client`.
 5. Under **Authorized JavaScript origins**, click **+ Add URI** and add:
    - `http://localhost:3000`
-   - `https://chawan-farms.vercel.app`
-   - `https://<your-live-custom-domain>`
+   - `https://www.chawanfarms.com`
+   - `https://chawanfarms.com`
+   - `https://chawan-farms.vercel.app` (if using Vercel preview)
 6. Under **Authorized redirect URIs**, click **+ Add URI** and add the exact callback URLs:
    - `http://localhost:3000/api/auth/callback/google`
+   - `https://www.chawanfarms.com/api/auth/callback/google`
+   - `https://chawanfarms.com/api/auth/callback/google`
    - `https://chawan-farms.vercel.app/api/auth/callback/google`
-   - `https://<your-live-custom-domain>/api/auth/callback/google`
 7. Click **Create**.
 8. A modal will display your:
    - **Client ID** (e.g., `xxxxxxxxxxxx-xxxxxxxxxxxxxxxx.apps.googleusercontent.com`)

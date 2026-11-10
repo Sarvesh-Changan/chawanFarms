@@ -5,7 +5,7 @@ import { HeroDriftLayer, HeroHeadline, HeroReveal } from "@/components/marketing
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { CldImage } from "@/components/media/CldImage";
 import { env } from "@/config/env";
-import { isMarketingPhoto } from "@/lib/marketing-media";
+import { isMarketingPhoto, isPublicImage } from "@/lib/marketing-media";
 import type { PublicHomeData, PublicMedia } from "@/server/services/public-content";
 
 type HeroSection = { content: unknown };
@@ -48,11 +48,11 @@ export function HomeHero({
   const secondaryHref = "#stays";
 
   const cloudName = env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const mainPhoto = isMarketingPhoto(media) && cloudName ? media : null;
+  const mainPhoto = (isMarketingPhoto(media) || isPublicImage(media)) && cloudName ? media : null;
   const inset1Photo =
-    isMarketingPhoto(settings.home.hero.inset1Media) && cloudName ? settings.home.hero.inset1Media : null;
+    isPublicImage(settings.home.hero.inset1Media) && cloudName ? settings.home.hero.inset1Media : null;
   const inset2Photo =
-    isMarketingPhoto(settings.home.hero.inset2Media) && cloudName ? settings.home.hero.inset2Media : null;
+    isPublicImage(settings.home.hero.inset2Media) && cloudName ? settings.home.hero.inset2Media : null;
 
   return (
     <section

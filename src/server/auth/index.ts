@@ -19,12 +19,80 @@ function accountLoginRateLimitKey(email: string): string {
   return `auth:login:account:${createHash("sha256").update(email.trim().toLowerCase()).digest("hex")}`;
 }
 
+function getTrustedOrigins(): string[] {
+  const origins = new Set<string>();
+
+  // Always trust development origins
+  origins.add("http://localhost:3000");
+  origins.add("http://127.0.0.1:3000");
+
+  // Always trust production domain and its www/non-www variants
+  origins.add("https://www.chawanfarms.com");
+  origins.add("https://chawanfarms.com");
+
+  // Add NEXT_PUBLIC_SITE_URL and its www/non-www variant
+  if (env.NEXT_PUBLIC_SITE_URL) {
+    const siteUrl = env.NEXT_PUBLIC_SITE_URL.replace(/\/+$/, "");
+    origins.add(siteUrl);
+    try {
+      const parsed = new URL(siteUrl);
+      if (parsed.hostname.startsWith("www.")) {
+        origins.add(`${parsed.protocol}//${parsed.hostname.slice(4)}${parsed.port ? `:${parsed.port}` : ""}`);
+      } else if (!parsed.hostname.includes("localhost") && !parsed.hostname.includes("127.0.0.1")) {
+        origins.add(`${parsed.protocol}//www.${parsed.hostname}${parsed.port ? `:${parsed.port}` : ""}`);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // Add all explicitly configured origins from AUTH_TRUSTED_ORIGINS
+  if (env.AUTH_TRUSTED_ORIGINS) {
+    for (const raw of env.AUTH_TRUSTED_ORIGINS.split(",")) {
+      const trimmed = raw.trim().replace(/\/+$/, "");
+      if (trimmed) {
+        origins.add(trimmed);
+        try {
+          const parsed = new URL(trimmed);
+          if (parsed.hostname.startsWith("www.")) {
+            origins.add(`${parsed.protocol}//${parsed.hostname.slice(4)}${parsed.port ? `:${parsed.port}` : ""}`);
+          } else if (!parsed.hostname.includes("localhost") && !parsed.hostname.includes("127.0.0.1")) {
+            origins.add(`${parsed.protocol}//www.${parsed.hostname}${parsed.port ? `:${parsed.port}` : ""}`);
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }
+
+  // Support Vercel deployment preview and production URLs if present
+  if (process.env.VERCEL_URL) {
+    origins.add(`https://${process.env.VERCEL_URL}`);
+  }
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    origins.add(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
+  }
+
+  return Array.from(origins);
+}
+
+function getBaseUrl(): string {
+  if (
+    (env.APP_ENV === "production" || process.env.NODE_ENV === "production") &&
+    (!env.NEXT_PUBLIC_SITE_URL || env.NEXT_PUBLIC_SITE_URL.includes("localhost"))
+  ) {
+    return "https://www.chawanfarms.com";
+  }
+  return env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+}
+
 export const auth = betterAuth({
   appName: "Chawan Farms",
   secret: env.AUTH_SECRET,
-  baseURL: env.NEXT_PUBLIC_SITE_URL,
+  baseURL: getBaseUrl(),
   basePath: "/api/auth",
-  trustedOrigins: env.AUTH_TRUSTED_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean),
+  trustedOrigins: getTrustedOrigins(),
   database: prismaAdapter(db, { provider: "postgresql", transaction: true }),
   socialProviders: {
     google: {
