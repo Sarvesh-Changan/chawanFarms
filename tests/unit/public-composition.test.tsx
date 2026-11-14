@@ -10,6 +10,7 @@ describe("public Home composition", () => {
       "activities",
       "parallax-scene",
       "stories",
+      "owner",
       "food",
       "location",
       "closing-cta",

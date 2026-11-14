@@ -56,12 +56,11 @@ This guide details the step-by-step setup required in Google Cloud Console to en
    - `http://localhost:3000`
    - `https://www.chawanfarms.com`
    - `https://chawanfarms.com`
-   - `https://chawan-farms.vercel.app` (if using Vercel preview)
 6. Under **Authorized redirect URIs**, click **+ Add URI** and add the exact callback URLs:
    - `http://localhost:3000/api/auth/callback/google`
    - `https://www.chawanfarms.com/api/auth/callback/google`
    - `https://chawanfarms.com/api/auth/callback/google`
-   - `https://chawan-farms.vercel.app/api/auth/callback/google`
+   - Add a Vercel preview callback only when that specific preview URL is intentionally used for OAuth testing. Vercel preview hostnames are deployment-specific; do not copy a guessed project URL.
 7. Click **Create**.
 8. A modal will display your:
    - **Client ID** (e.g., `xxxxxxxxxxxx-xxxxxxxxxxxxxxxx.apps.googleusercontent.com`)
@@ -78,10 +77,13 @@ This guide details the step-by-step setup required in Google Cloud Console to en
 2. In Vercel / Production deployment settings:
    - Add `GOOGLE_CLIENT_ID` to Production and Preview environments.
    - Add `GOOGLE_CLIENT_SECRET` to Production and Preview environments.
+   - Set `NEXT_PUBLIC_SITE_URL` in Production to the canonical HTTPS domain used to visit the live site (currently `https://www.chawanfarms.com`). This value determines Better Auth's callback host.
 3. Ensure `AUTH_TRUSTED_ORIGINS` includes your deployment domains:
    ```env
-   AUTH_TRUSTED_ORIGINS=http://localhost:3000,https://chawan-farms.vercel.app
+   AUTH_TRUSTED_ORIGINS=https://www.chawanfarms.com,https://chawanfarms.com
    ```
+
+If Google reports `redirect_uri_mismatch`, open the error details and copy its `redirect_uri` value exactly. Add that URI under the same OAuth web client ID configured in Vercel; URI scheme, hostname, path, and trailing slash must match. Then redeploy after changing Vercel environment variables. Authorized JavaScript origins are just origins (scheme and host); the full callback path belongs under **Authorized redirect URIs**.
 
 ---
 

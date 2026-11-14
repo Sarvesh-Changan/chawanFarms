@@ -20,6 +20,19 @@ describe("public navigation", () => {
     expect((await axe(container)).violations).toEqual([]);
   });
 
+  it("keeps every Stay option on its own full-width row in the mobile menu", () => {
+    render(<PublicNavigation accountHref="/login" accountLabel="Login" />);
+    fireEvent.click(screen.getByRole("button", { name: "Open navigation menu" }));
+
+    const stayGroup = screen.getByText("Stay", { selector: "p" }).parentElement;
+    expect(stayGroup).toHaveClass("flex", "flex-col", "w-full");
+    for (const label of ["Accommodation", "Packages", "Food"]) {
+      const link = stayGroup?.querySelector(`a[href="/${label.toLowerCase()}"]`);
+      expect(link).not.toBeNull();
+      expect(link).toHaveClass("block", "w-full");
+    }
+  });
+
   it("uses real public routes for the primary links", () => {
     expect(publicNavigation.map((item) => item.href)).toEqual([
       "/", "/accommodation", "/packages", "/food", "/activities", "/stories", "/gallery", "/rewards", "/contact",

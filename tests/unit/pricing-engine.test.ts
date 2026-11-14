@@ -45,6 +45,41 @@ function getRatesForPackage(packageSlug: string): RateRow[] {
 }
 
 describe("Pricing Engine (Pure Functions)", () => {
+  it("prefers the selected admin meal rate over a generic package rate", () => {
+    const result = quote(
+      {
+        checkIn: "2026-11-10",
+        checkOut: "2026-11-11",
+        adults: 1,
+        packageSlug: "package-a",
+        foodPreference: "VEG",
+      },
+      [
+        { foodPreference: null, audience: "ADULT", amountPaise: 99000 },
+        { foodPreference: "VEG", audience: "ADULT", amountPaise: 140000 },
+      ],
+    );
+
+    expect(result.totalPaise).toBe(140000);
+  });
+
+  it("marks a missing active adult package rate as a quote request instead of a zero price", () => {
+    const result = quote(
+      {
+        checkIn: "2026-11-10",
+        checkOut: "2026-11-11",
+        adults: 1,
+        packageSlug: "package-a",
+        foodPreference: "VEG",
+      },
+      [],
+    );
+
+    expect(result.requiresManualQuote).toBe(true);
+    expect(result.manualQuoteReason).toContain("No active adult rate matches");
+    expect(result.totalPaise).toBe(0);
+  });
+
   it("calculates stay nights accurately for overnight stays and day visits", () => {
     expect(calculateStayNights("2026-11-01", "2026-11-02")).toBe(1);
     expect(calculateStayNights("2026-11-01", "2026-11-04")).toBe(3);

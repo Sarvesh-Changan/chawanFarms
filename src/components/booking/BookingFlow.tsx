@@ -78,7 +78,7 @@ type QuoteEstimate = {
   formattedTotal: string;
   nights: number;
   lines: Array<{
-    description: string;
+    label: string;
     quantity: number;
     unitPaise: number;
     totalPaise: number;
@@ -1349,9 +1349,9 @@ export function BookingFlow({
                 <div className="space-y-3">
                   <div className="space-y-1.5 text-sm">
                     {activeEstimate.lines.map((line) => (
-                      <div key={line.description} className="flex justify-between text-muted-foreground">
+                      <div key={line.label} className="flex justify-between text-muted-foreground">
                         <span>
-                          {line.description} (×{line.quantity})
+                          {line.label} (×{line.quantity})
                         </span>
                         <span>{line.formattedTotal}</span>
                       </div>
@@ -1369,7 +1369,7 @@ export function BookingFlow({
                       </p>
                     </div>
                     <span className="font-heading text-2xl font-bold text-forest-900">
-                      {activeEstimate.formattedTotal}
+                      {activeEstimate.requiresManualQuote ? "Quote required" : activeEstimate.formattedTotal}
                     </span>
                   </div>
 
@@ -1499,7 +1499,7 @@ export function BookingFlow({
             <div>
               <p className="text-xs text-muted-foreground font-medium">Estimated Total</p>
               <p className="font-heading text-lg font-bold text-forest-900">
-                {activeEstimate.formattedTotal}
+                {activeEstimate.requiresManualQuote ? "Quote required" : activeEstimate.formattedTotal}
               </p>
             </div>
             <button

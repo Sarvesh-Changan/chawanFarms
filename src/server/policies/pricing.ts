@@ -119,7 +119,7 @@ function findRateRow(
   foodPreference?: FoodPreference | null,
   checkInDate?: Date,
 ): RateRow | undefined {
-  return rates.find((r) => {
+  const eligible = rates.filter((r) => {
     if (r.isActive === false) return false;
     if (r.audience !== audience) return false;
 
@@ -147,6 +147,14 @@ function findRateRow(
 
     return true;
   });
+
+  // Prefer the selected meal rate over a generic rate if both are active.
+  // A generic rate is still a valid fallback for packages such as day picnic.
+  if (foodPreference) {
+    return eligible.find((r) => r.foodPreference === foodPreference)
+      ?? eligible.find((r) => r.foodPreference == null);
+  }
+  return eligible.find((r) => r.foodPreference == null) ?? eligible[0];
 }
 
 /**
@@ -188,6 +196,11 @@ export function quote(input: QuoteInput, rateCard: RateRow[]): QuoteResult {
   // 2. Resolve adult and child rates
   const adultRow = findRateRow(rateCard, "ADULT", input.foodPreference, checkInDate);
   const adultRatePaise = adultRow?.amountPaise ?? 0;
+
+  if (!requiresManualQuote && !adultRow) {
+    requiresManualQuote = true;
+    manualQuoteReason = "No active adult rate matches this package, meal preference, and date. Please contact the farm team for a quote.";
+  }
 
   const childRow = findRateRow(rateCard, "CHILD_4_10", input.foodPreference, checkInDate);
   let childRatePaise = 0;

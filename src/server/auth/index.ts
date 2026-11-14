@@ -9,6 +9,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { env } from "@/config/env";
+import { googleCallbackUrl, resolveAuthBaseUrl } from "@/server/auth/base-url";
 import { validateGoogleUserInfo } from "@/server/auth/google-gate";
 import { ensureCustomerProfile } from "@/server/auth/referral";
 import { db } from "@/server/db";
@@ -77,20 +78,16 @@ function getTrustedOrigins(): string[] {
   return Array.from(origins);
 }
 
-function getBaseUrl(): string {
-  if (
-    (env.APP_ENV === "production" || process.env.NODE_ENV === "production") &&
-    (!env.NEXT_PUBLIC_SITE_URL || env.NEXT_PUBLIC_SITE_URL.includes("localhost"))
-  ) {
-    return "https://www.chawanfarms.com";
-  }
-  return env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-}
+const authBaseUrl = resolveAuthBaseUrl({
+  configuredUrl: env.NEXT_PUBLIC_SITE_URL,
+  appEnvironment: env.APP_ENV,
+  nodeEnvironment: process.env.NODE_ENV ?? env.NODE_ENV,
+});
 
 export const auth = betterAuth({
   appName: "Chawan Farms",
   secret: env.AUTH_SECRET,
-  baseURL: getBaseUrl(),
+  baseURL: authBaseUrl,
   basePath: "/api/auth",
   trustedOrigins: getTrustedOrigins(),
   database: prismaAdapter(db, { provider: "postgresql", transaction: true }),
@@ -98,6 +95,7 @@ export const auth = betterAuth({
     google: {
       clientId: env.GOOGLE_CLIENT_ID || "google-client-id-placeholder",
       clientSecret: env.GOOGLE_CLIENT_SECRET || "google-client-secret-placeholder",
+      redirectURI: googleCallbackUrl(authBaseUrl),
       prompt: "select_account",
       scope: ["openid", "email", "profile"],
       enabled: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),

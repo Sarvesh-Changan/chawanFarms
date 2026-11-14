@@ -57,6 +57,26 @@ function ViewAll({ href, children }: { href: string; children: string }) {
   );
 }
 
+function HomeOwner({ owner }: { owner: PublicHomeData["settings"]["owner"] }) {
+  if (!owner?.display || !owner.media || !isPublicImage(owner.media)) return null;
+  const alt = localized(owner.media.altText) || "Owner portrait";
+  return (
+    <section aria-label={owner.name || "Owner portrait"} className="bg-cream-50 text-forest-900">
+      <div className={`${sectionClass} grid items-center gap-8 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]`}>
+        <div className="relative mx-auto aspect-[4/3] w-full max-w-xl overflow-hidden rounded-2xl bg-clay-100">
+          <Image media={owner.media} sizes="(min-width: 768px) 45vw, 100vw" alt={alt} />
+        </div>
+        {owner.name || owner.caption ? (
+          <div className="min-w-0">
+            {owner.name ? <h2 className="font-heading text-3xl sm:text-4xl">{owner.name}</h2> : null}
+            {owner.caption ? <p className="mt-4 max-w-prose whitespace-pre-line leading-relaxed text-forest-900/80">{owner.caption}</p> : null}
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 function Stays({ packages }: { packages?: PublicHomeData["packages"] }) {
   const ready = (packages ?? []).filter((item) => isPublicImage(item.heroMedia) && item.rates.some((rate) => rate.audience === "ADULT"));
   if (!ready.length) return null;
@@ -149,6 +169,7 @@ export const homeSectionOrder = [
   "activities",
   "parallax-scene",
   "stories",
+  "owner",
   "food",
   "location",
   "closing-cta",
@@ -168,6 +189,7 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
     data.activities?.length ? "activities" : null,
     data.gallery?.length ? "parallax-scene" : null,
     data.stories?.length ? "stories" : null,
+    data.settings.owner?.display && data.settings.owner.media ? "owner" : null,
     data.food?.some((category) => category.items.length > 0) ? "food" : null,
     data.settings.address || data.settings.phones.length ? "location" : null,
     "closing-cta",
@@ -181,6 +203,7 @@ export function HomeSections({ data }: { data: PublicHomeData }) {
       <ActivitiesRow activities={data.activities} />
       <HomeParallaxScene gallery={data.gallery} heroMedia={data.settings.home.hero.media ?? null} />
       <HomeStories stories={data.stories} />
+      <HomeOwner owner={data.settings.owner} />
       <HomeFood food={data.food} />
       <ContactStrip settings={data.settings} />
       <ClosingCta heading={closingHeadline} settings={data.settings} />

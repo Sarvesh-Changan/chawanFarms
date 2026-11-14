@@ -58,7 +58,7 @@ export default async function BookPage({
   const [packages, accommodations, dbActivities, publishedPolicy, fallbackPolicy, settingsRows] =
     await Promise.all([
       db.package.findMany({
-        where: { deletedAt: null },
+        where: { status: "PUBLISHED", deletedAt: null },
         orderBy: { sortOrder: "asc" },
       }),
       db.accommodation.findMany({

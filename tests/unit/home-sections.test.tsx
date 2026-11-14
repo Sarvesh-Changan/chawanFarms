@@ -50,4 +50,23 @@ describe("Home empty content handling", () => {
     expect(screen.getByRole("heading", { name: "Your farm stay starts here." })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: headline })).toBeNull();
   });
+
+  it("renders the owner portrait section only when it is enabled with public media", () => {
+    const data = {
+      ...emptyHome,
+      settings: {
+        ...emptyHome.settings,
+        owner: {
+          display: true,
+          name: "Farm owner",
+          caption: "A short owner introduction.",
+          media: { id: "owner-image", kind: "IMAGE", publicId: "farm/owner" },
+        },
+      },
+    } as unknown as PublicHomeData;
+    render(<HomeSections data={data} />);
+    expect(screen.getByRole("region", { name: "Farm owner" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Farm owner" })).toBeInTheDocument();
+    expect(screen.getByText("A short owner introduction.")).toBeInTheDocument();
+  });
 });

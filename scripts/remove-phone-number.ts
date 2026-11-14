@@ -99,14 +99,16 @@ async function main() {
       if (whatsappChanged && whatsappSetting) {
         await tx.setting.update({ where: { key: "whatsapp.number" }, data: { value: primaryPhone ?? Prisma.JsonNull } });
       }
-      await tx.auditLog.create({ data: {
-        actorType: "SYSTEM",
-        action: "content.business_phone_removed",
-        entityType: "Setting",
-        entityId: "business.phones",
-        before: { matchingSettingRows: matches.length, businessPhoneCount: originalPhones.length },
-        after: { businessPhoneCount: remainingPhones.length, primaryIndex, whatsappReassigned: whatsappChanged },
-      } });
+      await tx.auditLog.create({
+        data: {
+          actorType: "SYSTEM",
+          action: "content.business_phone_removed",
+          entityType: "Setting",
+          entityId: "business.phones",
+          before: { matchingSettingRows: matches.length, businessPhoneCount: originalPhones.length },
+          after: { businessPhoneCount: remainingPhones.length, primaryIndex, whatsappReassigned: whatsappChanged },
+        }
+      });
     }, { isolationLevel: "Serializable" });
   }
   await revalidatePublicCaches();
